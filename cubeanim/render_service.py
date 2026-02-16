@@ -16,21 +16,28 @@ from cubeanim.utils import slugify_formula
 RenderAction = Literal["render", "confirm_rerender", "render_alternative"]
 
 QUALITY_ALIASES = {
-    "ql": "ql",
+    "ql": "draft",
+    "draft": "draft",
+    "fast": "draft",
+    "low": "draft",
+    "qm": "standard",
+    "standard": "standard",
+    "normal": "standard",
+    "medium": "standard",
+    "qh": "high",
+    "high": "high",
+    "hq": "high",
+    "qk": "final",
+    "final": "final",
+    "ultra": "final",
+    "production": "final",
+}
+
+QUALITY_TO_MANIM_FLAG = {
     "draft": "ql",
-    "fast": "ql",
-    "low": "ql",
-    "qm": "qm",
     "standard": "qm",
-    "normal": "qm",
-    "medium": "qm",
-    "qh": "qh",
     "high": "qh",
-    "hq": "qh",
-    "qk": "qk",
     "final": "qk",
-    "ultra": "qk",
-    "production": "qk",
 }
 
 
@@ -39,7 +46,7 @@ class RenderRequest:
     formula: str
     name: str | None = None
     group: str | RenderGroup = RenderGroup.NO_GROUP
-    quality: str = "ql"
+    quality: str = "draft"
     repeat: int = 1
     play: bool = False
     manim_bin: str = "manim"
@@ -85,6 +92,22 @@ def _normalize_quality(raw_quality: str) -> str:
     return normalized
 
 
+def _quality_folders(quality: str) -> tuple[str, ...]:
+    manim_quality = QUALITY_TO_MANIM_FLAG[quality]
+    if manim_quality == quality:
+        return (quality,)
+    return (quality, manim_quality)
+
+
+def _canonical_record_quality(raw_quality: str | None) -> str | None:
+    if raw_quality is None:
+        return None
+    try:
+        return _normalize_quality(str(raw_quality))
+    except ValueError:
+        return None
+
+
 def _normalize_formula(formula: str) -> str:
     return " ".join(formula.split())
 
@@ -116,9 +139,10 @@ def _save_catalog(repo_root: Path, data: dict) -> None:
 
 def _find_record(records: list[dict], group: str, quality: str, output_name: str) -> dict | None:
     for record in reversed(records):
+        record_quality = _canonical_record_quality(record.get("quality"))
         if (
             record.get("group") == group
-            and record.get("quality") == quality
+            and record_quality == quality
             and record.get("output_name") == output_name
         ):
             return record
@@ -135,13 +159,15 @@ def _next_alternative_name(
     used = {
         record.get("output_name")
         for record in records
-        if record.get("group") == group and record.get("quality") == quality
+        if record.get("group") == group
+        and _canonical_record_quality(record.get("quality")) == quality
     }
 
-    media_dir = repo_root / "media" / "videos" / group / quality
-    if media_dir.exists():
-        for mp4 in media_dir.glob("*.mp4"):
-            used.add(mp4.stem)
+    for folder in _quality_folders(quality):
+        media_dir = repo_root / "media" / "videos" / group / folder
+        if media_dir.exists():
+            for mp4 in media_dir.glob("*.mp4"):
+                used.add(mp4.stem)
 
     index = 1
     while True:
@@ -153,6 +179,20 @@ def _next_alternative_name(
 
 def _build_final_path(repo_root: Path, group: str, quality: str, output_name: str) -> Path:
     return repo_root / "media" / "videos" / group / quality / f"{output_name}.mp4"
+
+
+def _find_existing_video_paths(
+    repo_root: Path,
+    group: str,
+    quality: str,
+    output_name: str,
+) -> list[Path]:
+    paths: list[Path] = []
+    for folder in _quality_folders(quality):
+        candidate = _build_final_path(repo_root, group, folder, output_name)
+        if candidate.exists():
+            paths.append(candidate)
+    return paths
 
 
 def plan_formula_render(request: RenderRequest, repo_root: Path) -> RenderPlan:
@@ -175,7 +215,14 @@ def plan_formula_render(request: RenderRequest, repo_root: Path) -> RenderPlan:
     final_path = _build_final_path(repo_root, group, quality, base_name)
     record = _find_record(records, group, quality, base_name)
 
-    if not final_path.exists():
+    existing_paths = _find_existing_video_paths(
+        repo_root=repo_root,
+        group=group,
+        quality=quality,
+        output_name=base_name,
+    )
+
+    if not existing_paths:
         return RenderPlan(
             action="render",
             output_name=base_name,
@@ -229,10 +276,11 @@ def _build_manim_command(
 
     group = normalize_group(request.group)
     quality = _normalize_quality(request.quality)
+    manim_quality_flag = QUALITY_TO_MANIM_FLAG[quality]
 
     cmd = [
         request.manim_bin,
-        f"-{quality}",
+        f"-{manim_quality_flag}",
         str(manim_file),
         "Formula",
         "--output_file",
@@ -296,9 +344,10 @@ def _upsert_record(
 
     replaced = False
     for index, existing in enumerate(records):
+        existing_quality = _canonical_record_quality(existing.get("quality"))
         if (
             existing.get("group") == group
-            and existing.get("quality") == quality
+            and existing_quality == quality
             and existing.get("output_name") == output_name
         ):
             records[index] = record
