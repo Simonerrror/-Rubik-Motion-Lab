@@ -9,6 +9,7 @@ from cubeanim.formula import FormulaConverter
 from cubeanim.models import AlgorithmPreset, RenderGroup
 from cubeanim.presets import get_preset
 from cubeanim.setup import CubeVisualConfig, SceneSetup
+from cubeanim.utils import normalize_formula_text
 
 
 def _parse_group(value: str | None) -> RenderGroup:
@@ -50,7 +51,19 @@ class BaseAlgorithmScene(ThreeDScene):
         preset = self.resolve_algorithm()
         cube = SceneSetup.apply(self, self.VISUAL_CONFIG)
         moves = FormulaConverter.convert(preset.formula, repeat=preset.repeat)
-        MoveExecutor.play(self, cube, moves, self.EXECUTION_CONFIG)
+        inverse_moves = FormulaConverter.invert_moves(moves)
+        display_formula = normalize_formula_text(preset.formula)
+        if preset.repeat > 1:
+            display_formula = f"({display_formula})^{preset.repeat}"
+        MoveExecutor.play(
+            self,
+            cube,
+            moves,
+            self.EXECUTION_CONFIG,
+            algorithm_name=preset.name,
+            formula_text=display_formula,
+            inverse_moves=inverse_moves,
+        )
 
 
 class PresetScene(BaseAlgorithmScene):
