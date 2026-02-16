@@ -29,8 +29,9 @@ See `docs/AI_ASSISTED_DEV_STORY.md` for commit-level details.
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
-python scripts/patch_manim_rubikscube.py
 ```
+
+`cubeanim` applies a runtime compatibility patch for `manim_rubikscube` automatically.
 
 ## Run GUI (Primary)
 

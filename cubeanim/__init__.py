@@ -1,3 +1,20 @@
+from __future__ import annotations
+
+
+def _patch_manim_rubikscube_square() -> None:
+    """Runtime compatibility patch for manim-rubikscube Square import."""
+    try:
+        import manim.mobject.geometry as geometry_module
+        from manim.mobject.geometry.polygram import Square as PolygramSquare
+    except Exception:
+        return
+
+    if getattr(geometry_module, "Square", None) is None:
+        geometry_module.Square = PolygramSquare
+
+
+_patch_manim_rubikscube_square()
+
 from cubeanim.animations import CubeMoveExtended
 from cubeanim.executor import ExecutionConfig, MoveExecutor
 from cubeanim.formula import FormulaConverter, FormulaSyntaxError
