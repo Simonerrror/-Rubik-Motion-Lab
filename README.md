@@ -1,21 +1,79 @@
 # Rubik Motion Lab
 
-AI-assisted project for rendering Rubik's Cube algorithms with Manim.
+AI-assisted renderer for Rubik's Cube algorithms built on Manim.
 
-## Goal
+## What This Project Does
 
-Build a clean pipeline from formula parsing to polished cube animation renders,
-then document the engineering evolution from a one-shot baseline to a
-production-ready result.
+Rubik Motion Lab turns cube formulas into polished animations with:
 
-## Current Scope
+- robust formula parsing (`cubeanim.formula`)
+- deterministic cube state preparation from inverse moves (`set_state` path)
+- smooth move execution with easing and timing policy
+- GUI-first workflow (`scripts/render_ui.py`) and optional CLI (`scripts/render_algo.py`)
+- render planning, naming conflict handling, and catalog persistence
 
-- core cube algorithm execution
-- CLI rendering workflow
-- GUI rendering workflow
-- render catalog and naming workflow
+## AI-Assisted Evolution
 
-## Notes
+This repository intentionally preserves an incremental history:
 
-- Python package name stays `cubeanim` for compatibility.
-- Media tracking policy in git: only `media/showcase/` is versioned.
+1. one-shot baseline prototype
+2. targeted fixes and behavior hardening
+3. motion/visual polish
+4. storage and DX refinement
+
+See `docs/AI_ASSISTED_DEV_STORY.md` for commit-level details.
+
+## Install
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python scripts/patch_manim_rubikscube.py
+```
+
+## Run GUI (Primary)
+
+```bash
+source .venv/bin/activate
+python scripts/render_ui.py
+```
+
+## CLI (Optional)
+
+```bash
+source .venv/bin/activate
+python scripts/render_algo.py --formula "R U R' U'" --name MyAlgo --group PLL --quality standard
+```
+
+## Render Contract
+
+- Output path: `media/videos/<GROUP>/<QUALITY>/<NAME>.mp4`
+- Quality folders: `draft | standard | high | final`
+- Legacy quality aliases (`ql/qm/qh/qk`) are still accepted in input.
+
+## Motion / Visual Defaults
+
+- single move: `0.65s`
+- double-turn move (`*2`): `1.7x` single move
+- inter-move pause: `5%` of single move
+- easing: `ease_in_out_sine`
+- internal cubie faces: softened dark tone (not pure black)
+
+## Quality Rule
+
+Default for iterations is `draft`/`standard`.
+Use `high`/`final` only for final export.
+
+## Testing
+
+```bash
+python3 -m py_compile cubist.py cubeanim/*.py scripts/render_algo.py scripts/render_ui.py
+source .venv/bin/activate
+python -m pytest -q
+```
+
+## Media Tracking Policy
+
+Git tracks only curated showcase artifacts in `media/showcase/`.
+All heavy render outputs in `media/videos/` are intentionally excluded.

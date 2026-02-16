@@ -27,7 +27,7 @@ QUALITY_LABEL_TO_VALUE = dict(QUALITY_OPTIONS)
 class RenderUI:
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
-        self.root.title("Cube Formula Renderer")
+        self.root.title("Rubik Motion Lab")
         self.root.geometry("820x560")
 
         self._build_form()

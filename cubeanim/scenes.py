@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from dataclasses import replace
 
 from manim import ThreeDScene
 
@@ -32,6 +33,26 @@ class BaseAlgorithmScene(ThreeDScene):
 
     VISUAL_CONFIG = CubeVisualConfig()
     EXECUTION_CONFIG = ExecutionConfig()
+    ENV_MOVE_RUN_TIME = "CUBEANIM_MOVE_RUN_TIME"
+
+    def _resolve_execution_config(self) -> ExecutionConfig:
+        raw_run_time = os.environ.get(self.ENV_MOVE_RUN_TIME, "").strip()
+        if not raw_run_time:
+            return self.EXECUTION_CONFIG
+
+        try:
+            run_time = float(raw_run_time)
+        except ValueError as exc:
+            raise ValueError(
+                f"Environment variable {self.ENV_MOVE_RUN_TIME} must be a float"
+            ) from exc
+
+        if run_time <= 0:
+            raise ValueError(
+                f"Environment variable {self.ENV_MOVE_RUN_TIME} must be > 0"
+            )
+
+        return replace(self.EXECUTION_CONFIG, run_time=run_time)
 
     def resolve_algorithm(self) -> AlgorithmPreset:
         if self.PRESET_NAME:
@@ -49,6 +70,7 @@ class BaseAlgorithmScene(ThreeDScene):
 
     def construct(self) -> None:
         preset = self.resolve_algorithm()
+        execution_config = self._resolve_execution_config()
         cube = SceneSetup.apply(self, self.VISUAL_CONFIG)
         move_steps = FormulaConverter.convert_steps(preset.formula, repeat=preset.repeat)
         inverse_steps = FormulaConverter.invert_steps(move_steps)
@@ -59,7 +81,7 @@ class BaseAlgorithmScene(ThreeDScene):
             self,
             cube,
             move_steps,
-            self.EXECUTION_CONFIG,
+            execution_config,
             algorithm_name=preset.name,
             formula_text=display_formula,
             inverse_steps=inverse_steps,
