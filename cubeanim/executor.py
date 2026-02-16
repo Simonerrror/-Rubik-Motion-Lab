@@ -3,7 +3,19 @@ from __future__ import annotations
 from functools import lru_cache
 from dataclasses import dataclass
 
-from manim import DR, DOWN, LEFT, RIGHT, RoundedRectangle, Text, ThreeDScene, UL, UP, VGroup
+from manim import (
+    DR,
+    DOWN,
+    LEFT,
+    RIGHT,
+    RoundedRectangle,
+    Text,
+    ThreeDScene,
+    UL,
+    UP,
+    VGroup,
+    rate_functions,
+)
 from manim_rubikscube import RubiksCube
 
 from cubeanim.animations import CubeMoveConcurrent, CubeMoveExtended
@@ -13,7 +25,9 @@ from cubeanim.utils import wrap_formula_for_overlay
 
 @dataclass(frozen=True)
 class ExecutionConfig:
-    run_time: float = 0.55
+    run_time: float = 0.65
+    double_turn_multiplier: float = 1.7
+    inter_move_pause_ratio: float = 0.05
     end_wait: float = 1.0
     pre_start_wait: float = 0.5
     prepare_case_from_inverse: bool = True
@@ -51,6 +65,22 @@ class ExecutionConfig:
 
 
 class MoveExecutor:
+    DEFAULT_MOVE_RATE_FUNC = rate_functions.ease_in_out_sine
+
+    @staticmethod
+    def _is_double_turn(move: str) -> bool:
+        return move.endswith("2")
+
+    @staticmethod
+    def _step_run_time(step: list[str], config: ExecutionConfig) -> float:
+        if step and all(MoveExecutor._is_double_turn(move) for move in step):
+            return config.run_time * config.double_turn_multiplier
+        return config.run_time
+
+    @staticmethod
+    def _inter_move_pause(config: ExecutionConfig) -> float:
+        return config.run_time * config.inter_move_pause_ratio
+
     @staticmethod
     @lru_cache(maxsize=1)
     def _available_fonts() -> set[str]:
@@ -195,10 +225,22 @@ class MoveExecutor:
         scene.add(cube)
         scene.wait(config.pre_start_wait)
 
-        for step in move_steps:
+        for index, step in enumerate(move_steps):
+            step_run_time = MoveExecutor._step_run_time(step, config)
             if len(step) == 1:
-                scene.play(CubeMoveExtended(cube, step[0]), run_time=config.run_time)
-                continue
-            scene.play(CubeMoveConcurrent(cube, step), run_time=config.run_time)
+                scene.play(
+                    CubeMoveExtended(cube, step[0]),
+                    run_time=step_run_time,
+                    rate_func=MoveExecutor.DEFAULT_MOVE_RATE_FUNC,
+                )
+            else:
+                scene.play(
+                    CubeMoveConcurrent(cube, step),
+                    run_time=step_run_time,
+                    rate_func=MoveExecutor.DEFAULT_MOVE_RATE_FUNC,
+                )
+
+            if index < len(move_steps) - 1:
+                scene.wait(MoveExecutor._inter_move_pause(config))
 
         scene.wait(config.end_wait)
