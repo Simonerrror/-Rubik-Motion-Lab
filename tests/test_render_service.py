@@ -80,7 +80,7 @@ def test_plan_confirm_when_file_exists_without_catalog_record(tmp_path: Path) ->
     assert plan.action == "confirm_rerender"
 
 
-def test_quality_alias_standard_maps_to_qm_path(tmp_path: Path) -> None:
+def test_quality_alias_standard_maps_to_readable_path(tmp_path: Path) -> None:
     request = RenderRequest(
         formula="R U",
         name="MyAlgo",
@@ -90,4 +90,4 @@ def test_quality_alias_standard_maps_to_qm_path(tmp_path: Path) -> None:
 
     plan = plan_formula_render(request=request, repo_root=tmp_path)
     assert plan.action == "render"
-    assert "/PLL/qm/" in str(plan.final_path)
+    assert "/PLL/standard/" in str(plan.final_path)
