@@ -1,0 +1,17 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Virtual environments
+.venv/
+.venv_backup_*/
+
+# Editor / OS
+.vscode/
+.DS_Store
+
+# Render/media policy
+media/*
+!media/showcase/
+!media/showcase/**
