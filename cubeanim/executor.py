@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from manim import DR, DOWN, LEFT, RIGHT, RoundedRectangle, Text, ThreeDScene, UL, UP, VGroup
 from manim_rubikscube import RubiksCube
 
-from cubeanim.animations import CubeMoveExtended
+from cubeanim.animations import CubeMoveConcurrent, CubeMoveExtended
 from cubeanim.state import state_string_from_moves
 from cubeanim.utils import wrap_formula_for_overlay
 
@@ -180,21 +180,25 @@ class MoveExecutor:
     def play(
         scene: ThreeDScene,
         cube: RubiksCube,
-        moves: list[str],
+        move_steps: list[list[str]],
         config: ExecutionConfig,
         algorithm_name: str | None = None,
         formula_text: str | None = None,
-        inverse_moves: list[str] | None = None,
+        inverse_steps: list[list[str]] | None = None,
     ) -> None:
-        if config.prepare_case_from_inverse and inverse_moves:
-            cube.set_state(state_string_from_moves(inverse_moves))
+        if config.prepare_case_from_inverse and inverse_steps:
+            inverse_flat = [move for step in inverse_steps for move in step]
+            cube.set_state(state_string_from_moves(inverse_flat))
 
         MoveExecutor._add_algorithm_name(scene, algorithm_name, config)
         MoveExecutor._add_formula_overlay(scene, formula_text, config)
         scene.add(cube)
         scene.wait(config.pre_start_wait)
 
-        for move in moves:
-            scene.play(CubeMoveExtended(cube, move), run_time=config.run_time)
+        for step in move_steps:
+            if len(step) == 1:
+                scene.play(CubeMoveExtended(cube, step[0]), run_time=config.run_time)
+                continue
+            scene.play(CubeMoveConcurrent(cube, step), run_time=config.run_time)
 
         scene.wait(config.end_wait)

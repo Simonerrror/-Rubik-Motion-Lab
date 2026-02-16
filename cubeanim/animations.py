@@ -14,7 +14,7 @@ def _split_move_modifier(move: str) -> tuple[str, str]:
 
 
 class CubeMoveExtended(Animation):
-    """Baseline move animation for faces/slices/wide/rotations."""
+    """Move animation that supports faces, slices, wide moves and rotations."""
 
     def __init__(self, mobject: RubiksCube, move: str, **kwargs):
         self.move = move
@@ -37,11 +37,21 @@ class CubeMoveExtended(Animation):
     def _angle_for_base(base: str, modifier: str) -> float:
         positive_bases = {"R", "F", "D", "E", "S", "r", "f", "d", "x", "z"}
         angle = PI / 2 if base in positive_bases else -PI / 2
+
         if modifier == "2":
             angle *= 2
         if modifier == "'":
             angle *= -1
         return angle
+
+    def _mid_index(self) -> int:
+        dim = self.mobject.dimensions
+        if dim % 2 == 0:
+            raise ValueError("Slice and wide moves require odd cube dimension")
+        return dim // 2
+
+    def _targets(self):
+        return self.targets_for_base(self.mobject, self.base)
 
     @staticmethod
     def targets_for_base(cube: RubiksCube, base: str):
@@ -86,9 +96,6 @@ class CubeMoveExtended(Animation):
 
         raise ValueError(f"Unsupported move base: {base}")
 
-    def _targets(self):
-        return self.targets_for_base(self.mobject, self.base)
-
     def create_starting_mobject(self):
         starting_mobject = self.mobject.copy()
         if starting_mobject.indices == {}:
@@ -102,3 +109,49 @@ class CubeMoveExtended(Animation):
     def finish(self):
         super().finish()
         self.mobject.adjust_indices(np.array(self._targets(), dtype=object))
+
+
+class CubeMoveConcurrent(Animation):
+    """Runs multiple compatible moves as one animation beat."""
+
+    def __init__(self, mobject: RubiksCube, moves: list[str], **kwargs):
+        if len(moves) < 2:
+            raise ValueError("CubeMoveConcurrent requires at least two moves")
+
+        self.moves = moves
+        self._descriptors: list[tuple[str, np.ndarray, float]] = []
+        axis_signatures = set()
+
+        for move in moves:
+            base, modifier = _split_move_modifier(move)
+            axis = CubeMoveExtended._axis_for_base(base)
+            angle = CubeMoveExtended._angle_for_base(base, modifier)
+            axis_signatures.add(tuple(axis.tolist()))
+            self._descriptors.append((base, axis, angle))
+
+        if len(axis_signatures) != 1:
+            raise ValueError(
+                "Simultaneous moves must rotate around the same axis "
+                f"(got: {moves})"
+            )
+
+        super().__init__(mobject, **kwargs)
+
+    def create_starting_mobject(self):
+        starting_mobject = self.mobject.copy()
+        if starting_mobject.indices == {}:
+            starting_mobject.set_indices()
+        return starting_mobject
+
+    def _targets_for(self, base: str):
+        return CubeMoveExtended.targets_for_base(self.mobject, base)
+
+    def interpolate_mobject(self, alpha):
+        self.mobject.become(self.starting_mobject)
+        for base, axis, angle in self._descriptors:
+            VGroup(*self._targets_for(base)).rotate(alpha * angle, axis)
+
+    def finish(self):
+        super().finish()
+        for base, _, _ in self._descriptors:
+            self.mobject.adjust_indices(np.array(self._targets_for(base), dtype=object))

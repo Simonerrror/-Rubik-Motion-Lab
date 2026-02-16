@@ -17,6 +17,12 @@ def test_formula_repeat_argument_applies_after_parse() -> None:
     assert moves == ["R", "U", "R", "U", "R", "U"]
 
 
+def test_simultaneous_moves_are_grouped_into_single_step() -> None:
+    steps = FormulaConverter.convert_steps("U+D U'+D'")
+    assert steps == [["U", "D"], ["U'", "D'"]]
+    assert FormulaConverter.convert("U+D") == ["U", "D"]
+
+
 def test_inverse_moves_are_built_in_reverse_order() -> None:
     moves = FormulaConverter.convert("R U2 F'")
     inverse = FormulaConverter.invert_moves(moves)
@@ -29,9 +35,20 @@ def test_inverse_of_repeated_formula_keeps_repeat_count() -> None:
     assert inverse == ["U'", "R'", "U'", "R'"]
 
 
+def test_inverse_steps_keep_simultaneous_slots() -> None:
+    steps = FormulaConverter.convert_steps("U+D R U'+D'")
+    inverse_steps = FormulaConverter.invert_steps(steps)
+    assert inverse_steps == [["U", "D"], ["R'"], ["U'", "D'"]]
+
+
 def test_group_repeat_and_power_repeat() -> None:
     assert FormulaConverter.convert("(R U)3") == ["R", "U", "R", "U", "R", "U"]
     assert FormulaConverter.convert("R^3") == ["R", "R", "R"]
+
+
+def test_plus_without_move_after_it_fails_fast() -> None:
+    with pytest.raises(FormulaSyntaxError):
+        FormulaConverter.convert_steps("U+")
 
 
 def test_fail_fast_on_unknown_token() -> None:

@@ -50,19 +50,19 @@ class BaseAlgorithmScene(ThreeDScene):
     def construct(self) -> None:
         preset = self.resolve_algorithm()
         cube = SceneSetup.apply(self, self.VISUAL_CONFIG)
-        moves = FormulaConverter.convert(preset.formula, repeat=preset.repeat)
-        inverse_moves = FormulaConverter.invert_moves(moves)
+        move_steps = FormulaConverter.convert_steps(preset.formula, repeat=preset.repeat)
+        inverse_steps = FormulaConverter.invert_steps(move_steps)
         display_formula = normalize_formula_text(preset.formula)
         if preset.repeat > 1:
             display_formula = f"({display_formula})^{preset.repeat}"
         MoveExecutor.play(
             self,
             cube,
-            moves,
+            move_steps,
             self.EXECUTION_CONFIG,
             algorithm_name=preset.name,
             formula_text=display_formula,
-            inverse_moves=inverse_moves,
+            inverse_steps=inverse_steps,
         )
 
 

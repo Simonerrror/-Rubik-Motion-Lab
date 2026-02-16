@@ -17,9 +17,10 @@ class _Token:
 
 
 class FormulaConverter:
-    """One-shot baseline parser: face/slice/wide/rotations + repeats."""
+    """Converts cube formulas into a flat move list consumable by the executor."""
 
     _WIDE_MOVE_BASE = set("frblud")
+
     _VALID_FACE_MOVES = set("URFDLB")
     _VALID_SLICE_MOVES = set("MES")
     _VALID_ROTATIONS = set("xyz")
@@ -40,7 +41,10 @@ class FormulaConverter:
 
         if parser.has_more():
             token = parser.peek()
-            raise FormulaSyntaxError(f"Unexpected token '{token.value}'", token.start)
+            raise FormulaSyntaxError(
+                f"Unexpected token '{token.value}'",
+                token.start,
+            )
 
         repeated: list[list[str]] = []
         for _ in range(repeat):
@@ -52,6 +56,7 @@ class FormulaConverter:
         base, modifier = cls._split_move_modifier(move)
         if not base:
             raise ValueError("Move must be non-empty")
+
         if modifier == "":
             return f"{base}'"
         if modifier == "'":
@@ -81,8 +86,13 @@ class FormulaConverter:
                 i += 1
                 continue
 
-            if char in "()^":
-                kind = {"(": "LPAREN", ")": "RPAREN", "^": "CARET"}[char]
+            if char in "()^+":
+                kind = {
+                    "(": "LPAREN",
+                    ")": "RPAREN",
+                    "^": "CARET",
+                    "+": "PLUS",
+                }[char]
                 tokens.append(_Token(kind=kind, value=char, start=i))
                 i += 1
                 continue
@@ -97,10 +107,13 @@ class FormulaConverter:
             if char.isalpha():
                 start = i
                 i += 1
+
                 if i < length and formula[i] in "wW" and formula[start].upper() in cls._VALID_FACE_MOVES:
                     i += 1
+
                 if i < length and formula[i] in "'2":
                     i += 1
+
                 tokens.append(_Token(kind="MOVE", value=formula[start:i], start=start))
                 continue
 
@@ -123,12 +136,16 @@ class FormulaConverter:
 
         if len(base) == 1 and base in cls._WIDE_MOVE_BASE:
             return [f"{base}{modifier}"]
+
         if len(base) == 2 and base[1] in "wW" and base[0].lower() in cls._WIDE_MOVE_BASE:
             return [f"{base[0].lower()}{modifier}"]
+
         if len(base) == 1 and base in cls._VALID_FACE_MOVES:
             return [f"{base}{modifier}"]
+
         if len(base) == 1 and base in cls._VALID_SLICE_MOVES:
             return [f"{base}{modifier}"]
+
         if len(base) == 1 and base.lower() in cls._VALID_ROTATIONS:
             return [f"{base.lower()}{modifier}"]
 
@@ -158,6 +175,7 @@ class _FormulaParser:
 
         while self.has_more():
             token = self.peek()
+
             if token.kind == "RPAREN":
                 if stop_at_rparen:
                     break
@@ -170,7 +188,8 @@ class _FormulaParser:
 
         if stop_at_rparen:
             if not self.has_more() or self.peek().kind != "RPAREN":
-                raise FormulaSyntaxError("Missing closing ')'", len(self.formula))
+                pos = len(self.formula)
+                raise FormulaSyntaxError("Missing closing ')'", pos)
             self.consume()
 
         return steps
@@ -184,7 +203,17 @@ class _FormulaParser:
 
         if token.kind == "MOVE":
             expanded = self.converter.expand_move(token)
-            return [[expanded[0]]], False
+            simultaneous = [expanded[0]]
+
+            while self.has_more() and self.peek().kind == "PLUS":
+                plus = self.consume()
+                if not self.has_more() or self.peek().kind != "MOVE":
+                    raise FormulaSyntaxError("Expected move after '+'", plus.start)
+                move_token = self.consume()
+                next_expanded = self.converter.expand_move(move_token)
+                simultaneous.append(next_expanded[0])
+
+            return [simultaneous], False
 
         raise FormulaSyntaxError(
             f"Expected move or '(' but got '{token.value}'",
