@@ -7,11 +7,13 @@ from manim import (
     DR,
     DOWN,
     LEFT,
+    Rectangle,
     RIGHT,
     RoundedRectangle,
     Text,
     ThreeDScene,
     UL,
+    UR,
     UP,
     VGroup,
     rate_functions,
@@ -19,6 +21,7 @@ from manim import (
 from manim_rubikscube import RubiksCube
 
 from cubeanim.animations import CubeMoveConcurrent, CubeMoveExtended
+from cubeanim.oll import OLLTopViewData
 from cubeanim.state import state_string_from_moves
 from cubeanim.utils import wrap_formula_for_overlay
 
@@ -62,6 +65,25 @@ class ExecutionConfig:
     formula_panel_text_padding_x: float = 0.22
     formula_panel_text_padding_y: float = 0.16
     formula_text_line_spacing: float = 0.12
+    show_oll_top_view_overlay: bool = True
+    oll_top_view_shift_left: float = 0.24
+    oll_top_view_shift_down: float = 0.18
+    oll_top_view_panel_width: float = 2.45
+    oll_top_view_panel_height: float = 2.45
+    oll_top_view_panel_corner_radius: float = 0.14
+    oll_top_view_panel_fill_color: str = "#EFF1F5"
+    oll_top_view_panel_fill_opacity: float = 0.92
+    oll_top_view_panel_stroke_color: str = "#B8C0CC"
+    oll_top_view_panel_stroke_width: float = 2.0
+    oll_top_view_grid_size: float = 1.45
+    oll_top_view_grid_stroke_color: str = "#11151B"
+    oll_top_view_grid_stroke_width: float = 2.1
+    oll_top_view_yellow_color: str = "#FDFF00"
+    oll_top_view_gray_color: str = "#8E939B"
+    oll_top_view_indicator_side_ratio: float = 0.30
+    oll_top_view_indicator_short: float = 0.065
+    oll_top_view_indicator_gap: float = 0.105
+    oll_top_view_indicator_stroke_width: float = 1.4
 
 
 class MoveExecutor:
@@ -207,6 +229,121 @@ class MoveExecutor:
         scene.add(panel, text_group)
 
     @staticmethod
+    def _add_oll_top_view_overlay(
+        scene: ThreeDScene,
+        oll_top_view_data: OLLTopViewData | None,
+        config: ExecutionConfig,
+    ) -> None:
+        if not config.show_oll_top_view_overlay or oll_top_view_data is None:
+            return
+
+        panel = RoundedRectangle(
+            corner_radius=config.oll_top_view_panel_corner_radius,
+            width=config.oll_top_view_panel_width,
+            height=config.oll_top_view_panel_height,
+        )
+        panel.set_fill(
+            color=config.oll_top_view_panel_fill_color,
+            opacity=config.oll_top_view_panel_fill_opacity,
+        )
+        panel.set_stroke(
+            color=config.oll_top_view_panel_stroke_color,
+            width=config.oll_top_view_panel_stroke_width,
+        )
+        panel.to_corner(UR)
+        panel.shift(
+            LEFT * config.oll_top_view_shift_left
+            + DOWN * config.oll_top_view_shift_down
+        )
+        panel.set_z_index(980)
+
+        grid_size = config.oll_top_view_grid_size
+        indicator_long = grid_size * config.oll_top_view_indicator_side_ratio
+        cell_size = grid_size / 3.0
+        grid_center = panel.get_center()
+        col_offsets = (-cell_size, 0.0, cell_size)
+        row_offsets = (cell_size, 0.0, -cell_size)
+
+        grid_cells = VGroup()
+        for row, row_values in enumerate(oll_top_view_data.u_grid):
+            for col, is_yellow in enumerate(row_values):
+                cell = Rectangle(width=cell_size, height=cell_size)
+                cell.set_fill(
+                    color=(
+                        config.oll_top_view_yellow_color
+                        if is_yellow
+                        else config.oll_top_view_gray_color
+                    ),
+                    opacity=1.0,
+                )
+                cell.set_stroke(
+                    color=config.oll_top_view_grid_stroke_color,
+                    width=config.oll_top_view_grid_stroke_width,
+                )
+                cell.move_to(
+                    grid_center
+                    + RIGHT * col_offsets[col]
+                    + UP * row_offsets[row]
+                )
+                cell.set_z_index(992)
+                grid_cells.add(cell)
+
+        grid_border = Rectangle(width=grid_size, height=grid_size)
+        grid_border.set_fill(opacity=0.0)
+        grid_border.set_stroke(
+            color=config.oll_top_view_grid_stroke_color,
+            width=config.oll_top_view_grid_stroke_width + 0.7,
+        )
+        grid_border.move_to(grid_center)
+        grid_border.set_z_index(993)
+
+        indicators = VGroup()
+        side_map = (
+            ("top_b", "horizontal", +1),
+            ("bottom_f", "horizontal", -1),
+            ("left_l", "vertical", -1),
+            ("right_r", "vertical", +1),
+        )
+        for attribute, orientation, sign in side_map:
+            values = getattr(oll_top_view_data, attribute)
+            for index, is_yellow in enumerate(values):
+                if not is_yellow:
+                    continue
+
+                if orientation == "horizontal":
+                    marker = Rectangle(
+                        width=indicator_long,
+                        height=config.oll_top_view_indicator_short,
+                    )
+                    marker_x = col_offsets[index]
+                    marker_y = (
+                        sign * (grid_size / 2.0 + config.oll_top_view_indicator_gap)
+                        + sign * (config.oll_top_view_indicator_short / 2.0)
+                    )
+                else:
+                    marker = Rectangle(
+                        width=config.oll_top_view_indicator_short,
+                        height=indicator_long,
+                    )
+                    marker_x = (
+                        sign * (grid_size / 2.0 + config.oll_top_view_indicator_gap)
+                        + sign * (config.oll_top_view_indicator_short / 2.0)
+                    )
+                    marker_y = row_offsets[index]
+
+                marker.set_fill(color=config.oll_top_view_yellow_color, opacity=1.0)
+                marker.set_stroke(
+                    color=config.oll_top_view_grid_stroke_color,
+                    width=config.oll_top_view_indicator_stroke_width,
+                )
+                marker.move_to(grid_center + RIGHT * marker_x + UP * marker_y)
+                marker.set_z_index(994)
+                indicators.add(marker)
+
+        scene.add_fixed_in_frame_mobjects(panel, grid_cells, grid_border, indicators)
+        scene.add(panel, grid_cells, grid_border, indicators)
+
+    @staticmethod
     def play(
         scene: ThreeDScene,
         cube: RubiksCube,
@@ -215,6 +352,7 @@ class MoveExecutor:
         algorithm_name: str | None = None,
         formula_text: str | None = None,
         inverse_steps: list[list[str]] | None = None,
+        oll_top_view_data: OLLTopViewData | None = None,
     ) -> None:
         if config.prepare_case_from_inverse and inverse_steps:
             inverse_flat = [move for step in inverse_steps for move in step]
@@ -222,6 +360,7 @@ class MoveExecutor:
 
         MoveExecutor._add_algorithm_name(scene, algorithm_name, config)
         MoveExecutor._add_formula_overlay(scene, formula_text, config)
+        MoveExecutor._add_oll_top_view_overlay(scene, oll_top_view_data, config)
         scene.add(cube)
         scene.wait(config.pre_start_wait)
 
