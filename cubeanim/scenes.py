@@ -8,8 +8,10 @@ from manim import ThreeDScene
 from cubeanim.executor import ExecutionConfig, MoveExecutor
 from cubeanim.formula import FormulaConverter
 from cubeanim.models import AlgorithmPreset, RenderGroup
+from cubeanim.oll import OLLTopViewData, build_oll_top_view_data, validate_oll_f2l_start_state
 from cubeanim.presets import get_preset
 from cubeanim.setup import CubeVisualConfig, SceneSetup
+from cubeanim.state import state_string_from_moves
 from cubeanim.utils import normalize_formula_text
 
 
@@ -74,6 +76,14 @@ class BaseAlgorithmScene(ThreeDScene):
         cube = SceneSetup.apply(self, self.VISUAL_CONFIG)
         move_steps = FormulaConverter.convert_steps(preset.formula, repeat=preset.repeat)
         inverse_steps = FormulaConverter.invert_steps(move_steps)
+        oll_top_view_data: OLLTopViewData | None = None
+
+        if preset.group == RenderGroup.OLL:
+            inverse_flat = [move for step in inverse_steps for move in step]
+            start_state = state_string_from_moves(inverse_flat)
+            validate_oll_f2l_start_state(start_state)
+            oll_top_view_data = build_oll_top_view_data(start_state)
+
         display_formula = normalize_formula_text(preset.formula)
         if preset.repeat > 1:
             display_formula = f"({display_formula})^{preset.repeat}"
@@ -85,6 +95,7 @@ class BaseAlgorithmScene(ThreeDScene):
             algorithm_name=preset.name,
             formula_text=display_formula,
             inverse_steps=inverse_steps,
+            oll_top_view_data=oll_top_view_data,
         )
 
 

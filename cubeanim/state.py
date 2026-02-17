@@ -176,6 +176,11 @@ def _state_slots() -> list[tuple[tuple[int, int, int], str]]:
     return slots
 
 
+def state_slots_metadata() -> list[tuple[tuple[int, int, int], str]]:
+    """Returns facelet slots in the exact order expected by RubiksCube.set_state."""
+    return list(_state_slots())
+
+
 def state_string_from_moves(moves: list[str]) -> str:
     stickers = _solved_stickers()
     for move in moves:

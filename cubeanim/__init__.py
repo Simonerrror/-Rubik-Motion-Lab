@@ -19,6 +19,7 @@ from cubeanim.animations import CubeMoveExtended
 from cubeanim.executor import ExecutionConfig, MoveExecutor
 from cubeanim.formula import FormulaConverter, FormulaSyntaxError
 from cubeanim.models import AlgorithmPreset, RenderGroup
+from cubeanim.palette import CONTRAST_SAFE_CUBE_COLORS, validate_cube_palette
 from cubeanim.presets import get_preset, list_preset_names
 from cubeanim.render_service import RenderPlan, RenderRequest, RenderResult, plan_formula_render, render_formula
 from cubeanim.scenes import BaseAlgorithmScene, FormulaScene, PresetScene
@@ -31,6 +32,7 @@ __all__ = [
     "BaseAlgorithmScene",
     "CubeMoveExtended",
     "CubeVisualConfig",
+    "CONTRAST_SAFE_CUBE_COLORS",
     "ExecutionConfig",
     "FormulaConverter",
     "FormulaScene",
@@ -48,5 +50,6 @@ __all__ = [
     "render_formula",
     "solved_state_string",
     "state_string_from_moves",
+    "validate_cube_palette",
     "slugify_formula",
 ]
