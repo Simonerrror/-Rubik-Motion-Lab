@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-from functools import lru_cache
 from dataclasses import dataclass
+from functools import lru_cache
+from typing import Sequence
 
 from manim import (
+    Arrow,
     DR,
+    DoubleArrow,
     DOWN,
     LEFT,
     Rectangle,
@@ -22,6 +25,8 @@ from manim_rubikscube import RubiksCube
 
 from cubeanim.animations import CubeMoveConcurrent, CubeMoveExtended
 from cubeanim.oll import OLLTopViewData
+from cubeanim.palette import CONTRAST_SAFE_CUBE_COLORS, FACE_ORDER
+from cubeanim.pll import PLLTopViewData
 from cubeanim.state import state_string_from_moves
 from cubeanim.utils import wrap_formula_for_overlay
 
@@ -84,6 +89,28 @@ class ExecutionConfig:
     oll_top_view_indicator_short: float = 0.065
     oll_top_view_indicator_gap: float = 0.105
     oll_top_view_indicator_stroke_width: float = 1.4
+    show_pll_top_view_overlay: bool = True
+    pll_top_view_shift_left: float = 0.24
+    pll_top_view_shift_down: float = 0.18
+    pll_top_view_panel_width: float = 2.45
+    pll_top_view_panel_height: float = 2.45
+    pll_top_view_panel_corner_radius: float = 0.14
+    pll_top_view_panel_fill_color: str = "#EFF1F5"
+    pll_top_view_panel_fill_opacity: float = 0.92
+    pll_top_view_panel_stroke_color: str = "#B8C0CC"
+    pll_top_view_panel_stroke_width: float = 2.0
+    pll_top_view_grid_size: float = 1.45
+    pll_top_view_grid_stroke_color: str = "#11151B"
+    pll_top_view_grid_stroke_width: float = 2.1
+    pll_top_view_unknown_color: str = "#8E939B"
+    pll_top_view_side_strip_side_ratio: float = 0.30
+    pll_top_view_side_strip_short: float = 0.085
+    pll_top_view_side_strip_gap: float = 0.105
+    pll_top_view_side_strip_stroke_width: float = 1.4
+    pll_top_view_arrow_color: str = "#11151B"
+    pll_top_view_arrow_stroke_width: float = 6.0
+    pll_top_view_arrow_buff: float = 0.11
+    pll_top_view_arrow_tip_length: float = 0.14
 
 
 class MoveExecutor:
@@ -122,6 +149,11 @@ class MoveExecutor:
             if font in available:
                 return font
         return None
+
+    @staticmethod
+    def _face_color_map(cube_face_colors: Sequence[str] | None) -> dict[str, str]:
+        colors = cube_face_colors if cube_face_colors and len(cube_face_colors) == 6 else CONTRAST_SAFE_CUBE_COLORS
+        return dict(zip(FACE_ORDER, colors, strict=True))
 
     @staticmethod
     def _add_algorithm_name(
@@ -344,6 +376,142 @@ class MoveExecutor:
         scene.add(panel, grid_cells, grid_border, indicators)
 
     @staticmethod
+    def _add_pll_top_view_overlay(
+        scene: ThreeDScene,
+        pll_top_view_data: PLLTopViewData | None,
+        config: ExecutionConfig,
+        cube_face_colors: Sequence[str] | None,
+    ) -> None:
+        if not config.show_pll_top_view_overlay or pll_top_view_data is None:
+            return
+
+        panel = RoundedRectangle(
+            corner_radius=config.pll_top_view_panel_corner_radius,
+            width=config.pll_top_view_panel_width,
+            height=config.pll_top_view_panel_height,
+        )
+        panel.set_fill(
+            color=config.pll_top_view_panel_fill_color,
+            opacity=config.pll_top_view_panel_fill_opacity,
+        )
+        panel.set_stroke(
+            color=config.pll_top_view_panel_stroke_color,
+            width=config.pll_top_view_panel_stroke_width,
+        )
+        panel.to_corner(UR)
+        panel.shift(
+            LEFT * config.pll_top_view_shift_left
+            + DOWN * config.pll_top_view_shift_down
+        )
+        panel.set_z_index(980)
+
+        face_color_map = MoveExecutor._face_color_map(cube_face_colors)
+        grid_size = config.pll_top_view_grid_size
+        strip_long = grid_size * config.pll_top_view_side_strip_side_ratio
+        cell_size = grid_size / 3.0
+        grid_center = panel.get_center()
+        col_offsets = (-cell_size, 0.0, cell_size)
+        row_offsets = (cell_size, 0.0, -cell_size)
+
+        def grid_point(row: int, col: int):
+            return grid_center + RIGHT * col_offsets[col] + UP * row_offsets[row]
+
+        grid_cells = VGroup()
+        for row, row_values in enumerate(pll_top_view_data.u_grid):
+            for col, face_color in enumerate(row_values):
+                cell = Rectangle(width=cell_size, height=cell_size)
+                cell.set_fill(
+                    color=face_color_map.get(face_color, config.pll_top_view_unknown_color),
+                    opacity=1.0,
+                )
+                cell.set_stroke(
+                    color=config.pll_top_view_grid_stroke_color,
+                    width=config.pll_top_view_grid_stroke_width,
+                )
+                cell.move_to(grid_point(row, col))
+                cell.set_z_index(992)
+                grid_cells.add(cell)
+
+        grid_border = Rectangle(width=grid_size, height=grid_size)
+        grid_border.set_fill(opacity=0.0)
+        grid_border.set_stroke(
+            color=config.pll_top_view_grid_stroke_color,
+            width=config.pll_top_view_grid_stroke_width + 0.7,
+        )
+        grid_border.move_to(grid_center)
+        grid_border.set_z_index(993)
+
+        side_strips = VGroup()
+        side_map = (
+            ("top_b", "horizontal", +1),
+            ("bottom_f", "horizontal", -1),
+            ("left_l", "vertical", -1),
+            ("right_r", "vertical", +1),
+        )
+        for attribute, orientation, sign in side_map:
+            values = getattr(pll_top_view_data, attribute)
+            for index, face_color in enumerate(values):
+                if orientation == "horizontal":
+                    strip = Rectangle(
+                        width=strip_long,
+                        height=config.pll_top_view_side_strip_short,
+                    )
+                    strip_x = col_offsets[index]
+                    strip_y = (
+                        sign * (grid_size / 2.0 + config.pll_top_view_side_strip_gap)
+                        + sign * (config.pll_top_view_side_strip_short / 2.0)
+                    )
+                else:
+                    strip = Rectangle(
+                        width=config.pll_top_view_side_strip_short,
+                        height=strip_long,
+                    )
+                    strip_x = (
+                        sign * (grid_size / 2.0 + config.pll_top_view_side_strip_gap)
+                        + sign * (config.pll_top_view_side_strip_short / 2.0)
+                    )
+                    strip_y = row_offsets[index]
+
+                strip.set_fill(
+                    color=face_color_map.get(face_color, config.pll_top_view_unknown_color),
+                    opacity=1.0,
+                )
+                strip.set_stroke(
+                    color=config.pll_top_view_grid_stroke_color,
+                    width=config.pll_top_view_side_strip_stroke_width,
+                )
+                strip.move_to(grid_center + RIGHT * strip_x + UP * strip_y)
+                strip.set_z_index(994)
+                side_strips.add(strip)
+
+        arrows = VGroup()
+        for arrow_data in (*pll_top_view_data.corner_arrows, *pll_top_view_data.edge_arrows):
+            start = grid_point(*arrow_data.start)
+            end = grid_point(*arrow_data.end)
+            if arrow_data.bidirectional:
+                arrow = DoubleArrow(
+                    start=start,
+                    end=end,
+                    buff=config.pll_top_view_arrow_buff,
+                    stroke_width=config.pll_top_view_arrow_stroke_width,
+                    tip_length=config.pll_top_view_arrow_tip_length,
+                )
+            else:
+                arrow = Arrow(
+                    start=start,
+                    end=end,
+                    buff=config.pll_top_view_arrow_buff,
+                    stroke_width=config.pll_top_view_arrow_stroke_width,
+                    tip_length=config.pll_top_view_arrow_tip_length,
+                )
+            arrow.set_color(config.pll_top_view_arrow_color)
+            arrow.set_z_index(995)
+            arrows.add(arrow)
+
+        scene.add_fixed_in_frame_mobjects(panel, grid_cells, grid_border, side_strips, arrows)
+        scene.add(panel, grid_cells, grid_border, side_strips, arrows)
+
+    @staticmethod
     def play(
         scene: ThreeDScene,
         cube: RubiksCube,
@@ -353,6 +521,8 @@ class MoveExecutor:
         formula_text: str | None = None,
         inverse_steps: list[list[str]] | None = None,
         oll_top_view_data: OLLTopViewData | None = None,
+        pll_top_view_data: PLLTopViewData | None = None,
+        cube_face_colors: Sequence[str] | None = None,
     ) -> None:
         if config.prepare_case_from_inverse and inverse_steps:
             inverse_flat = [move for step in inverse_steps for move in step]
@@ -361,6 +531,12 @@ class MoveExecutor:
         MoveExecutor._add_algorithm_name(scene, algorithm_name, config)
         MoveExecutor._add_formula_overlay(scene, formula_text, config)
         MoveExecutor._add_oll_top_view_overlay(scene, oll_top_view_data, config)
+        MoveExecutor._add_pll_top_view_overlay(
+            scene,
+            pll_top_view_data,
+            config,
+            cube_face_colors,
+        )
         scene.add(cube)
         scene.wait(config.pre_start_wait)
 
