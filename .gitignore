@@ -10,6 +10,7 @@ __pycache__/
 # Editor / OS
 .vscode/
 .DS_Store
+AGENTS.md
 
 # Render/media policy
 media/*
