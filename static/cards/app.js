@@ -2,16 +2,17 @@
   const GROUPS = ["F2L", "OLL", "PLL"];
 
   const state = {
-    category: "OLL",
+    category: "PLL",
     cases: [],
     activeCaseId: null,
     activeCase: null,
+    activeDisplayMode: "algorithm",
+    activeDisplayFormula: "",
     pollHandle: null,
   };
 
   const DOM = {
     catalog: document.getElementById("catalog-container"),
-    backdrop: document.getElementById("modal-backdrop"),
     mName: document.getElementById("m-name"),
     mProb: document.getElementById("m-prob"),
     mCaseCode: document.getElementById("m-case-code"),
@@ -19,9 +20,9 @@
     mQueueMsg: document.getElementById("m-queue-msg"),
     mStatusGroup: document.getElementById("m-status-group"),
     mAlgoList: document.getElementById("m-algo-list"),
+    activeAlgoDisplay: document.getElementById("active-algo-display"),
     mRenderDraftBtn: document.getElementById("m-render-draft-btn"),
     mRenderBtn: document.getElementById("m-render-btn"),
-    mClose: document.getElementById("m-close"),
     toast: document.getElementById("toast"),
   };
 
@@ -47,15 +48,43 @@
     return payload.data;
   }
 
+  async function apiDelete(url) {
+    const res = await fetch(url, { method: "DELETE" });
+    const payload = await res.json();
+    if (!res.ok || !payload.ok) {
+      throw new Error(payload.detail || payload.error?.message || "Request failed");
+    }
+    return payload.data;
+  }
+
   function showToast(message) {
     DOM.toast.textContent = message;
     DOM.toast.classList.add("show");
     setTimeout(() => DOM.toast.classList.remove("show"), 1800);
   }
 
-  function caseDisplayName(item) {
+  function tileTitle(item) {
+    return String(
+      item.tile_title ||
+        item.display_name ||
+        item.title ||
+        item.case_code ||
+        (item.case_number != null ? `${item.group} #${item.case_number}` : "Case")
+    );
+  }
+
+  function detailTitle(item) {
+    return String(
+      item.detail_title ||
+        item.title ||
+        item.display_name ||
+        (item.case_number != null ? `${item.group} #${item.case_number}` : item.case_code || "Case")
+    );
+  }
+
+  function caseShortLabel(item) {
     if (item.case_number != null) return `${item.group} #${item.case_number}`;
-    return item.title || item.case_code;
+    return item.case_code || "-";
   }
 
   function groupBySubgroup(items) {
@@ -72,68 +101,116 @@
     if (idx >= 0) state.cases[idx] = { ...state.cases[idx], ...updated };
   }
 
-  async function loadCatalog() {
-    const data = await apiGet(`/api/cases?group=${encodeURIComponent(state.category)}`);
-    state.cases = Array.isArray(data) ? data : [];
+  function setActiveTab(category) {
+    document.querySelectorAll(".nav-tab").forEach((tab) => {
+      tab.classList.toggle("active", String(tab.dataset.category || "").toUpperCase() === category);
+    });
+  }
 
-    if (state.activeCaseId != null && !state.cases.some((item) => item.id === state.activeCaseId)) {
-      state.activeCaseId = null;
-      state.activeCase = null;
+  function appendRecognizerPreview(container, item) {
+    if (item.recognizer_url) {
+      const img = document.createElement("img");
+      img.src = item.recognizer_url;
+      img.alt = `${item.case_code} recognizer`;
+      container.appendChild(img);
+      return;
+    }
+    container.textContent = "No image";
+    container.classList.add("text-[10px]", "text-gray-500");
+  }
+
+  function tokenizeFormula(formula) {
+    return String(formula || "")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+  }
+
+  function renderActiveAlgorithmDisplay(formula) {
+    DOM.activeAlgoDisplay.innerHTML = "";
+    const moves = tokenizeFormula(formula);
+    if (!moves.length) {
+      DOM.activeAlgoDisplay.innerHTML = '<div class="algo-placeholder">No algorithm selected</div>';
+      return;
     }
 
-    renderCatalog();
+    const first = moves.slice(0, 8);
+    const second = moves.slice(8);
+    const lines = [first];
+    if (second.length) lines.push(second);
+
+    lines.forEach((lineMoves) => {
+      const row = document.createElement("div");
+      row.className = "algo-line";
+      lineMoves.forEach((move) => {
+        const tile = document.createElement("span");
+        const inverse = move.includes("'");
+        tile.className = `move-tile ${inverse ? "inverse" : "base"}`;
+        tile.textContent = move;
+        row.appendChild(tile);
+      });
+      DOM.activeAlgoDisplay.appendChild(row);
+    });
+  }
+
+  function syncActiveAlgorithmSummary(formula, mode = "algorithm") {
+    // Summary line removed from layout; keep function for compatibility with previous flow.
+    void formula;
+    void mode;
+  }
+
+  function setActiveDisplayFormula(formula, mode = "algorithm") {
+    state.activeDisplayMode = mode;
+    state.activeDisplayFormula = String(formula || "").trim();
+    syncActiveAlgorithmSummary(state.activeDisplayFormula, state.activeDisplayMode);
+    renderActiveAlgorithmDisplay(state.activeDisplayFormula);
   }
 
   function renderCatalog() {
     DOM.catalog.innerHTML = "";
-    const grouped = groupBySubgroup(state.cases);
+    if (!state.cases.length) {
+      const empty = document.createElement("div");
+      empty.className = "text-sm text-gray-500 border border-gray-800 rounded-xl p-4 bg-gray-900/30";
+      empty.textContent = "No cases in this group.";
+      DOM.catalog.appendChild(empty);
+      return;
+    }
 
+    const grouped = groupBySubgroup(state.cases);
     Object.entries(grouped).forEach(([subgroup, cases]) => {
-      const title = document.createElement("h3");
+      const section = document.createElement("section");
+      section.className = "space-y-2";
+
+      const title = document.createElement("div");
       title.className = "subgroup-title";
       title.textContent = subgroup;
-      DOM.catalog.appendChild(title);
+      section.appendChild(title);
 
       const grid = document.createElement("div");
-      grid.className = "grid";
+      grid.className = "catalog-grid";
 
       cases.forEach((item) => {
-        const card = document.createElement("div");
-        card.className = `card status-${item.status || "NEW"}`;
+        const card = document.createElement("article");
+        card.className = "catalog-card";
         if (item.id === state.activeCaseId) card.classList.add("active");
 
-        const prob = item.probability_text || "n/a";
+        const status = String(item.status || "NEW");
         card.innerHTML = `
-          <div class="card-header">
-            <div class="preview-box"></div>
-            <div class="card-meta">
-              <div class="case-name">${caseDisplayName(item)}</div>
-              <div class="case-sub">${item.case_code}</div>
-              <div class="case-sub">P=${prob}</div>
-            </div>
-          </div>
-          <div class="card-algo">${item.active_formula || "(add algorithm)"}</div>
+          <div class="status-dot ${status}"></div>
+          <div class="catalog-preview mx-auto"></div>
+          <div class="tile-title">${tileTitle(item)}</div>
         `;
 
-        const preview = card.querySelector(".preview-box");
-        if (item.recognizer_url) {
-          const img = document.createElement("img");
-          img.src = item.recognizer_url;
-          img.alt = `${item.case_code} recognizer`;
-          preview.appendChild(img);
-        } else {
-          preview.textContent = "SVG";
-          preview.style.color = "#888";
-          preview.style.fontSize = "0.75rem";
-        }
-
+        const preview = card.querySelector(".catalog-preview");
+        appendRecognizerPreview(preview, item);
         card.addEventListener("click", () => {
-          void openCase(item.id);
+          void selectCase(item.id);
         });
         grid.appendChild(card);
       });
 
-      DOM.catalog.appendChild(grid);
+      section.appendChild(grid);
+      DOM.catalog.appendChild(section);
     });
   }
 
@@ -159,13 +236,40 @@
     delete videoEl.dataset.currentSrc;
   }
 
-  function updateModalState() {
-    const c = currentCase();
-    if (!c) return;
+  function setDetailsDisabled() {
+    DOM.mName.textContent = "Select Case";
+    DOM.mCaseCode.textContent = "-";
+    DOM.mProb.textContent = "Probability: n/a";
+    clearVideoSource(DOM.mVideo);
+    DOM.mQueueMsg.style.display = "flex";
+    DOM.mQueueMsg.textContent = "Select case";
+    DOM.mRenderDraftBtn.disabled = true;
+    DOM.mRenderBtn.disabled = true;
+    DOM.mRenderBtn.textContent = "Request HD Render";
+    DOM.mStatusGroup.querySelectorAll(".status-btn[data-status]").forEach((btn) => {
+      btn.classList.remove("active");
+      btn.disabled = true;
+    });
+    DOM.mAlgoList.innerHTML = '<div class="text-xs text-gray-500">Select case to manage algorithms.</div>';
+    setActiveDisplayFormula("", "algorithm");
+  }
 
-    DOM.mName.textContent = caseDisplayName(c);
+  function updateDetailsPaneState() {
+    const c = currentCase();
+    if (!c) {
+      setDetailsDisabled();
+      return;
+    }
+
+    DOM.mName.textContent = detailTitle(c);
     DOM.mProb.textContent = `Probability: ${c.probability_text || "n/a"}`;
-    DOM.mCaseCode.textContent = c.case_code || "";
+    DOM.mCaseCode.textContent = [caseShortLabel(c), c.subgroup_title].filter(Boolean).join(" · ");
+    const lockCustomPreview = state.activeDisplayMode === "custom" && isCustomFormulaInputFocused();
+    if (lockCustomPreview) {
+      syncActiveAlgorithmSummary(state.activeDisplayFormula || c.active_formula || "", "custom");
+    } else {
+      syncActiveAlgorithmSummary(c.active_formula || "", "algorithm");
+    }
 
     const draftArtifact = c.artifacts?.draft || null;
     const highArtifact = c.artifacts?.high || null;
@@ -174,17 +278,16 @@
 
     if (videoUrl) {
       setVideoSource(DOM.mVideo, videoUrl);
-      DOM.mVideo.style.display = "block";
       DOM.mQueueMsg.style.display = activeJob ? "flex" : "none";
       DOM.mQueueMsg.textContent = activeJob ? `Render queued (${activeJob.quality})...` : "";
     } else {
       clearVideoSource(DOM.mVideo);
-      DOM.mVideo.style.display = "none";
       DOM.mQueueMsg.style.display = "flex";
       DOM.mQueueMsg.textContent = activeJob ? `Render queued (${activeJob.quality})...` : "Video not rendered yet...";
     }
 
-    DOM.mStatusGroup.querySelectorAll(".btn[data-status]").forEach((btn) => {
+    DOM.mStatusGroup.querySelectorAll(".status-btn[data-status]").forEach((btn) => {
+      btn.disabled = false;
       btn.classList.toggle("active", btn.dataset.status === c.status);
     });
 
@@ -192,39 +295,79 @@
     DOM.mRenderBtn.disabled = Boolean(activeJob) || !draftArtifact || Boolean(highArtifact) || !c.active_algorithm_id;
     DOM.mRenderBtn.textContent = highArtifact ? "HD Ready" : "Request HD Render";
 
+    if (!lockCustomPreview) {
+      setActiveDisplayFormula(c.active_formula || "", "algorithm");
+    }
+
     renderAlgorithmsList(c);
   }
 
   function renderAlgorithmsList(c) {
+    const prevInput = DOM.mAlgoList.querySelector("#custom-formula-input");
+    const prevValue = prevInput ? String(prevInput.value || "") : "";
+    const prevFocused = prevInput ? document.activeElement === prevInput : false;
+    const prevSelectionStart = prevInput && prevInput.selectionStart != null ? prevInput.selectionStart : null;
+    const prevSelectionEnd = prevInput && prevInput.selectionEnd != null ? prevInput.selectionEnd : null;
+
     DOM.mAlgoList.innerHTML = "";
+    const canDelete = (c.algorithms || []).length > 1;
 
     (c.algorithms || []).forEach((algo) => {
+      const activeClass = algo.id === c.active_algorithm_id ? "bg-blue-500/10 border-blue-500/50" : "bg-gray-800/40 border-gray-700";
       const option = document.createElement("label");
-      option.className = "algo-option";
+      option.className = `algo-option p-2 rounded-lg border ${activeClass}`;
       const checked = algo.id === c.active_algorithm_id ? "checked" : "";
       option.innerHTML = `
-        <input type="radio" name="algo_sel" value="${algo.id}" ${checked}>
-        <code>${algo.formula || "(empty)"}</code>
+        <div class="algo-main">
+          <input type="radio" name="algo_sel" value="${algo.id}" ${checked} class="accent-blue-500">
+          <code class="mono text-xs text-slate-300">${algo.formula || "(empty)"}</code>
+        </div>
+        ${canDelete ? '<button class="px-2 py-1 text-[10px] font-bold rounded border border-red-400/50 bg-red-500/10 text-red-300 hover:bg-red-500/20" data-action="delete" type="button">Delete</button>' : ""}
       `;
       option.querySelector("input").addEventListener("change", async () => {
         try {
+          setActiveDisplayFormula(algo.formula || "", "algorithm");
           await activateAlgorithm(c.id, algo.id);
         } catch (error) {
           showToast(String(error.message || error));
         }
       });
+
+      const deleteBtn = option.querySelector("[data-action='delete']");
+      if (deleteBtn) {
+        deleteBtn.addEventListener("click", async (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          const confirmed = window.confirm("Delete this algorithm and its cached renders?");
+          if (!confirmed) return;
+          try {
+            await deleteAlgorithm(c.id, algo.id);
+          } catch (error) {
+            showToast(String(error.message || error));
+          }
+        });
+      }
       DOM.mAlgoList.appendChild(option);
     });
 
-    const customRow = document.createElement("div");
-    customRow.className = "algo-option custom-input";
-    customRow.innerHTML = `
-      <input type="text" placeholder="Or enter custom algorithm..." id="custom-formula-input">
-      <button class="btn" id="custom-formula-apply">Use</button>
+    const customWrap = document.createElement("div");
+    customWrap.className = "mt-4 pt-4 border-t border-gray-800 space-y-2";
+    customWrap.innerHTML = `
+      <input id="custom-formula-input" type="text" placeholder="Enter custom algorithm..." class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs mono focus:border-blue-500 outline-none">
+      <button id="custom-formula-apply" type="button" class="w-full bg-gray-800 hover:bg-gray-700 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider">Use</button>
     `;
 
-    const input = customRow.querySelector("#custom-formula-input");
-    const applyBtn = customRow.querySelector("#custom-formula-apply");
+    const input = customWrap.querySelector("#custom-formula-input");
+    const applyBtn = customWrap.querySelector("#custom-formula-apply");
+
+    input.value = prevValue;
+    if (prevFocused) {
+      input.focus();
+      if (prevSelectionStart != null && prevSelectionEnd != null) {
+        input.setSelectionRange(prevSelectionStart, prevSelectionEnd);
+      }
+    }
+
     const submitCustom = async () => {
       const formula = String(input.value || "").trim();
       if (!formula) {
@@ -232,14 +375,11 @@
         return;
       }
       try {
-        const updated = await apiPost(`/api/cases/${c.id}/custom`, {
-          formula,
-          activate: true,
-        });
+        const updated = await apiPost(`/api/cases/${c.id}/custom`, { formula, activate: true });
         state.activeCase = updated;
         patchCaseInState(updated);
         renderCatalog();
-        updateModalState();
+        updateDetailsPaneState();
       } catch (error) {
         showToast(String(error.message || error));
       }
@@ -248,6 +388,7 @@
     applyBtn.addEventListener("click", () => {
       void submitCustom();
     });
+
     input.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         event.preventDefault();
@@ -255,22 +396,36 @@
       }
     });
 
-    DOM.mAlgoList.appendChild(customRow);
+    input.addEventListener("input", () => {
+      const liveFormula = String(input.value || "");
+      setActiveDisplayFormula(liveFormula, "custom");
+    });
+
+    input.addEventListener("blur", () => {
+      const activeCase = currentCase();
+      if (!activeCase) return;
+      if (!String(input.value || "").trim()) {
+        setActiveDisplayFormula(activeCase.active_formula || "", "algorithm");
+      }
+    });
+
+    DOM.mAlgoList.appendChild(customWrap);
   }
 
-  async function openCase(caseId) {
+  function isCustomFormulaInputFocused() {
+    const input = DOM.mAlgoList.querySelector("#custom-formula-input");
+    return Boolean(input) && document.activeElement === input;
+  }
+
+  async function selectCase(caseId) {
     state.activeCaseId = caseId;
     const details = await apiGet(`/api/cases/${caseId}`);
     state.activeCase = details;
+    state.activeDisplayMode = "algorithm";
+    state.activeDisplayFormula = details.active_formula || "";
     patchCaseInState(details);
     renderCatalog();
-    updateModalState();
-    DOM.backdrop.style.display = "flex";
-  }
-
-  function closeModal() {
-    DOM.backdrop.style.display = "none";
-    clearVideoSource(DOM.mVideo);
+    updateDetailsPaneState();
   }
 
   async function activateAlgorithm(caseId, algorithmId) {
@@ -278,8 +433,17 @@
     state.activeCase = updated;
     patchCaseInState(updated);
     renderCatalog();
-    updateModalState();
+    updateDetailsPaneState();
     showToast("Active algorithm updated");
+  }
+
+  async function deleteAlgorithm(caseId, algorithmId) {
+    const payload = await apiDelete(`/api/cases/${caseId}/algorithms/${algorithmId}?purge_media=true`);
+    state.activeCase = payload.case;
+    patchCaseInState(payload.case);
+    renderCatalog();
+    updateDetailsPaneState();
+    showToast("Algorithm deleted");
   }
 
   async function updateProgress(status) {
@@ -293,12 +457,13 @@
     state.activeCase = updated;
     patchCaseInState(updated);
     renderCatalog();
-    updateModalState();
+    updateDetailsPaneState();
   }
 
   async function queueRender(quality) {
     const c = currentCase();
     if (!c) return;
+
     const response = await apiPost(`/api/cases/${c.id}/queue`, { quality });
     if (response.reused) showToast("Reused existing render");
     else showToast("Job added to queue");
@@ -307,12 +472,37 @@
     state.activeCase = updated;
     patchCaseInState(updated);
     renderCatalog();
-    updateModalState();
+    updateDetailsPaneState();
+  }
+
+  async function loadCatalog() {
+    const data = await apiGet(`/api/cases?group=${encodeURIComponent(state.category)}`);
+    state.cases = Array.isArray(data) ? data : [];
+
+    if (!state.cases.length) {
+      state.activeCaseId = null;
+      state.activeCase = null;
+      renderCatalog();
+      updateDetailsPaneState();
+      return;
+    }
+
+    if (state.activeCaseId == null || !state.cases.some((item) => item.id === state.activeCaseId)) {
+      await selectCase(state.cases[0].id);
+      return;
+    }
+
+    const updated = await apiGet(`/api/cases/${state.activeCaseId}`);
+    state.activeCase = updated;
+    patchCaseInState(updated);
+    renderCatalog();
+    updateDetailsPaneState();
   }
 
   async function pollQueue() {
     const c = currentCase();
     if (!c) return;
+    if (isCustomFormulaInputFocused()) return;
 
     try {
       const status = await apiGet(`/api/queue/status?case_id=${c.id}`);
@@ -324,7 +514,7 @@
       state.activeCase = updated;
       patchCaseInState(updated);
       renderCatalog();
-      updateModalState();
+      updateDetailsPaneState();
 
       if (justCompleted) {
         showToast("Render finished");
@@ -337,27 +527,19 @@
   function setupEventListeners() {
     document.querySelectorAll(".nav-tab").forEach((tab) => {
       tab.addEventListener("click", async (event) => {
-        const category = String(event.target.dataset.category || "").toUpperCase();
-        if (!GROUPS.includes(category)) return;
-
-        document.querySelectorAll(".nav-tab").forEach((item) => item.classList.remove("active"));
-        event.target.classList.add("active");
-
+        const category = String(event.currentTarget.dataset.category || "").toUpperCase();
+        if (!GROUPS.includes(category) || category === state.category) return;
         state.category = category;
         state.activeCaseId = null;
         state.activeCase = null;
+        setActiveTab(category);
         await loadCatalog();
       });
     });
 
-    DOM.mClose.addEventListener("click", closeModal);
-    DOM.backdrop.addEventListener("click", (event) => {
-      if (event.target === DOM.backdrop) closeModal();
-    });
-
-    DOM.mStatusGroup.querySelectorAll(".btn[data-status]").forEach((btn) => {
+    DOM.mStatusGroup.querySelectorAll(".status-btn[data-status]").forEach((btn) => {
       btn.addEventListener("click", async (event) => {
-        const status = String(event.target.dataset.status || "");
+        const status = String(event.currentTarget.dataset.status || "");
         if (!status) return;
         try {
           await updateProgress(status);
@@ -392,6 +574,7 @@
   }
 
   async function init() {
+    setActiveTab(state.category);
     setupEventListeners();
     await loadCatalog();
 

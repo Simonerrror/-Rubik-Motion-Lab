@@ -1,13 +1,23 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 import os
 from pathlib import Path
 from typing import Any
 
 from cubeanim.cards import repository
-from cubeanim.cards.db import DEFAULT_DB_ENV, connect, default_db_path, initialize_database, repo_root_from_file
+from cubeanim.cards.db import (
+    DEFAULT_DB_ENV,
+    connect,
+    default_db_path,
+    initialize_database,
+    reset_runtime_state,
+    repo_root_from_file,
+    runtime_dir,
+)
 from cubeanim.cards.models import RENDER_QUALITIES
+from cubeanim.cards.recognizer import ensure_recognizer_assets
 from cubeanim.render_service import RenderRequest, plan_formula_render, render_formula
 
 GROUPS = {"F2L", "OLL", "PLL"}
@@ -32,6 +42,11 @@ class CardsService:
         with connect(self.db_path) as conn:
             rows = repository.list_algorithms(conn, group=group)
             return [self._decorate_algorithm(row, conn) for row in rows]
+
+    def reset_runtime(self) -> dict[str, Any]:
+        path = reset_runtime_state(repo_root=self.repo_root, db_path=self.db_path)
+        self.db_path = path
+        return {"db_path": str(path)}
 
     def list_reference_sets(self, category: str) -> list[dict[str, Any]]:
         normalized = category.strip().upper()
@@ -58,6 +73,11 @@ class CardsService:
     def activate_case_algorithm(self, case_id: int, algorithm_id: int) -> dict[str, Any]:
         with connect(self.db_path) as conn:
             updated = repository.set_case_selected_algorithm(conn, case_id=case_id, algorithm_id=algorithm_id)
+            self._refresh_case_recognizer(conn, updated)
+            refreshed = repository.get_case(conn, case_id=case_id)
+            if refreshed is None:
+                raise KeyError(f"case id {case_id} not found")
+            updated = refreshed
             return self._decorate_case(updated, conn, include_jobs=True)
 
     def create_case_custom_algorithm(
@@ -78,7 +98,44 @@ class CardsService:
             row = repository.get_case(conn, case_id=case_id)
             if row is None:
                 raise KeyError(f"case id {case_id} not found")
+            self._refresh_case_recognizer(conn, row)
+            refreshed = repository.get_case(conn, case_id=case_id)
+            if refreshed is None:
+                raise KeyError(f"case id {case_id} not found")
+            row = refreshed
             return self._decorate_case(row, conn, include_jobs=True)
+
+    def delete_case_algorithm(
+        self,
+        case_id: int,
+        algorithm_id: int,
+        purge_media: bool = True,
+    ) -> dict[str, Any]:
+        removed_paths: list[str] = []
+        with connect(self.db_path) as conn:
+            deleted = repository.delete_case_algorithm(
+                conn,
+                case_id=case_id,
+                algorithm_id=algorithm_id,
+            )
+            removed_paths = list(deleted.get("deleted_output_paths", []))
+            row = repository.get_case(conn, case_id=case_id)
+            if row is None:
+                raise KeyError(f"case id {case_id} not found")
+            self._refresh_case_recognizer(conn, row)
+            refreshed = repository.get_case(conn, case_id=case_id)
+            if refreshed is None:
+                raise KeyError(f"case id {case_id} not found")
+            case_payload = self._decorate_case(refreshed, conn, include_jobs=True)
+
+        if purge_media:
+            self._purge_output_paths(removed_paths)
+
+        return {
+            "case": case_payload,
+            "deleted_algorithm_id": algorithm_id,
+            "deleted_output_paths": removed_paths,
+        }
 
     def get_algorithm(self, algorithm_id: int) -> dict[str, Any]:
         with connect(self.db_path) as conn:
@@ -102,6 +159,9 @@ class CardsService:
                 group=group,
                 case_code=case_code,
             )
+            case_row = repository.get_case(conn, case_id=int(created["case_id"]))
+            if case_row is not None:
+                self._refresh_case_recognizer(conn, case_row)
             return self._decorate_algorithm(created, conn)
 
     def set_progress(self, algorithm_id: int, status: str) -> dict[str, Any]:
@@ -358,6 +418,24 @@ class CardsService:
             "updated_at": artifact["updated_at"],
         }
 
+    def _refresh_case_recognizer(self, conn, case_row: dict[str, Any]) -> None:
+        case_id = int(case_row["id"])
+        category = str(case_row["group"])
+        case_code = str(case_row["case_code"])
+        formula = str(case_row.get("active_formula") or "")
+        assets = ensure_recognizer_assets(
+            runtime_dir(self.repo_root),
+            category=category,
+            case_code=case_code,
+            formula=formula,
+        )
+        repository.update_case_recognizer_paths(
+            conn,
+            case_id=case_id,
+            svg_rel_path=assets.svg_rel_path,
+            png_rel_path=assets.png_rel_path,
+        )
+
     def _decorate_case(
         self,
         row: dict[str, Any],
@@ -392,3 +470,38 @@ class CardsService:
         if include_jobs:
             payload["jobs"] = jobs
         return payload
+
+    def _purge_output_paths(self, output_paths: list[str]) -> None:
+        if not output_paths:
+            return
+        root = self.repo_root.resolve()
+        existing_rel_paths: set[str] = set()
+        for rel in output_paths:
+            candidate = (self.repo_root / rel).resolve()
+            if not str(candidate).startswith(str(root)):
+                continue
+            existing_rel_paths.add(rel)
+            if candidate.exists() and candidate.is_file():
+                candidate.unlink()
+
+        if not existing_rel_paths:
+            return
+
+        catalog_path = self.repo_root / "media" / "videos" / "render_catalog.json"
+        if not catalog_path.exists():
+            return
+        try:
+            catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        except Exception:
+            return
+        records = catalog.get("records")
+        if not isinstance(records, list):
+            return
+        filtered = [
+            record for record in records
+            if str(record.get("path") or "") not in existing_rel_paths
+        ]
+        if len(filtered) == len(records):
+            return
+        catalog["records"] = filtered
+        catalog_path.write_text(json.dumps(catalog, ensure_ascii=True, indent=2), encoding="utf-8")

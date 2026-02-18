@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
-from cubeanim.cards.db import connect, initialize_database
+from cubeanim.cards.db import connect, initialize_database, reset_runtime_state
 from cubeanim.cards.services import CardsService
 
 
@@ -61,6 +62,7 @@ def test_pll_formulas_seeded_from_pll_txt(tmp_path: Path) -> None:
     pll_by_case = {item["case_code"]: item for item in pll_items}
     assert pll_by_case["PLL_9"]["formula"] == "R U R' F' R U R' U' R' F R2 U' R'"
     assert pll_by_case["PLL_18"]["formula"] == "M2 U M2 U2 M2 U M2"
+    assert pll_by_case["PLL_21"]["formula"] == "M2 U M2 U M' U2 M2 U2 M' U2"
 
 
 def test_pll_recognizer_svg_contains_overlay_markers(tmp_path: Path) -> None:
@@ -68,8 +70,153 @@ def test_pll_recognizer_svg_contains_overlay_markers(tmp_path: Path) -> None:
     db_path = tmp_path / "cards.db"
     initialize_database(repo_root=repo_root, db_path=db_path)
 
-    svg_path = tmp_path / "recognizers" / "svg" / "pll_pll_9.svg"
-    assert svg_path.exists()
-    content = svg_path.read_text(encoding="utf-8")
-    assert "recognizer:v3 category=PLL case=PLL_9" in content
-    assert "marker-end=\"url(#arrowhead)\"" in content
+    svg_dir = tmp_path / "recognizers" / "svg"
+    matches = sorted(svg_dir.glob("pll_pll_9*.svg"))
+    assert matches
+    content = matches[0].read_text(encoding="utf-8")
+    assert "recognizer:v4 category=PLL case=PLL_9" in content
+    assert "<polygon points=" in content
+    assert "marker-end=\"url(#arrowhead)\"" not in content
+    assert "<text" not in content
+    assert "rx=\"10\"" not in content
+    assert content.count("<line ") >= 1
+
+    # Guard against malformed arrows leaving canvas bounds.
+    geom_values = [
+        float(value)
+        for value in re.findall(
+            r'(?:x|y|x1|y1|x2|y2|width|height)="([0-9]+(?:\.[0-9]+)?)"',
+            content,
+        )
+    ]
+    polygon_tokens = re.findall(r'points="([^"]+)"', content)
+    for token in polygon_tokens:
+        for pair in token.split():
+            px, py = pair.split(",")
+            geom_values.extend([float(px), float(py)])
+    assert geom_values
+    assert min(geom_values) >= 0.0
+    assert max(geom_values) <= 128.0
+
+
+def test_oll_recognizer_svg_is_minimal_top_card(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    db_path = tmp_path / "cards.db"
+    initialize_database(repo_root=repo_root, db_path=db_path)
+
+    svg_dir = tmp_path / "recognizers" / "svg"
+    matches = sorted(svg_dir.glob("oll_oll_26*.svg"))
+    assert matches
+    content = matches[0].read_text(encoding="utf-8")
+    assert "recognizer:v4 category=OLL case=OLL_26" in content
+    assert "<text" not in content
+    assert "rx=\"10\"" not in content
+
+
+def test_recognizer_path_changes_when_active_formula_changes(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    service = CardsService.create(repo_root=repo_root, db_path=tmp_path / "cards.db")
+
+    case = next(item for item in service.list_cases("OLL") if item["case_code"] == "OLL_26")
+    before_url = case["recognizer_url"]
+
+    updated = service.create_case_custom_algorithm(
+        case_id=int(case["id"]),
+        formula="R U R' U R U2 R'",
+        activate=True,
+    )
+    after_url = updated["recognizer_url"]
+    assert before_url != after_url
+
+
+def test_pll_recognizer_path_is_case_stable(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    service = CardsService.create(repo_root=repo_root, db_path=tmp_path / "cards.db")
+
+    case = next(item for item in service.list_cases("PLL") if item["case_code"] == "PLL_9")
+    before_url = case["recognizer_url"] or ""
+    assert before_url.endswith("/assets/recognizers/svg/pll_pll_9.svg")
+
+    updated = service.create_case_custom_algorithm(
+        case_id=int(case["id"]),
+        formula="R U R' U' R' F R2 U R' U' F'",
+        activate=True,
+    )
+    after_url = updated["recognizer_url"] or ""
+    assert after_url == before_url
+
+
+def test_pll_case_metadata_follows_pll_txt_names(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    service = CardsService.create(repo_root=repo_root, db_path=tmp_path / "cards.db")
+
+    case = next(item for item in service.list_cases("PLL") if item["case_code"] == "PLL_9")
+    assert case["display_name"] == "Jb-perm"
+    assert case["subgroup_title"] == "Adjacent Corner Swap"
+    assert case["probability_text"] == "1/18"
+
+
+def test_runtime_reset_rebuilds_database(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    db_path = tmp_path / "cards.db"
+    initialize_database(repo_root=repo_root, db_path=db_path)
+
+    with connect(db_path) as conn:
+        conn.execute("UPDATE cases SET title = 'BROKEN' WHERE case_code = 'PLL_9'")
+
+    reset_runtime_state(repo_root=repo_root, db_path=db_path)
+    with connect(db_path) as conn:
+        row = conn.execute("SELECT title FROM cases WHERE case_code = 'PLL_9'").fetchone()
+    assert row is not None
+    assert row["title"] == "Jb-perm"
+
+
+def test_pll_seed_cleans_legacy_noncustom_algorithms(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    db_path = tmp_path / "cards.db"
+    initialize_database(repo_root=repo_root, db_path=db_path)
+
+    with connect(db_path) as conn:
+        case_row = conn.execute(
+            "SELECT id FROM cases WHERE case_code = 'PLL_3'"
+        ).fetchone()
+        assert case_row is not None
+        case_id = int(case_row["id"])
+        now = "2026-02-18T00:00:00+00:00"
+        conn.execute(
+            """
+            INSERT INTO algorithms (case_id, name, formula, progress_status, is_custom, created_at, updated_at)
+            VALUES (?, 'PLL_3', 'R U R'' U''', 'NEW', 0, ?, ?)
+            """,
+            (case_id, now, now),
+        )
+        legacy_row = conn.execute(
+            "SELECT id FROM algorithms WHERE case_id = ? AND name = 'PLL_3'",
+            (case_id,),
+        ).fetchone()
+        assert legacy_row is not None
+        legacy_id = int(legacy_row["id"])
+        conn.execute(
+            "UPDATE cases SET selected_algorithm_id = ? WHERE id = ?",
+            (legacy_id, case_id),
+        )
+
+    initialize_database(repo_root=repo_root, db_path=db_path)
+
+    with connect(db_path) as conn:
+        count_noncustom = int(
+            conn.execute(
+                "SELECT COUNT(*) FROM algorithms WHERE case_id = (SELECT id FROM cases WHERE case_code = 'PLL_3') AND is_custom = 0"
+            ).fetchone()[0]
+        )
+        active = conn.execute(
+            """
+            SELECT a.name, a.formula
+            FROM cases c
+            JOIN algorithms a ON a.id = c.selected_algorithm_id
+            WHERE c.case_code = 'PLL_3'
+            """
+        ).fetchone()
+    assert count_noncustom == 1
+    assert active is not None
+    assert active["name"] == "F"

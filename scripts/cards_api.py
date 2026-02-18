@@ -159,6 +159,27 @@ def api_create_case_custom_algorithm(case_id: int, payload: CaseCustomAlgorithmR
     return {"ok": True, "data": item}
 
 
+@app.delete("/api/cases/{case_id}/algorithms/{algorithm_id}")
+def api_delete_case_algorithm(
+    case_id: int,
+    algorithm_id: int,
+    purge_media: bool = Query(default=True),
+) -> dict:
+    try:
+        item = service.delete_case_algorithm(
+            case_id=case_id,
+            algorithm_id=algorithm_id,
+            purge_media=purge_media,
+        )
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return {"ok": True, "data": item}
+
+
 @app.post("/api/cases/{case_id}/queue")
 def api_enqueue_case_render(case_id: int, payload: CaseQueueRequest) -> dict:
     try:
@@ -265,6 +286,15 @@ def api_get_recognizer(algorithm_id: int) -> dict:
 @app.get("/health")
 def health() -> dict:
     return {"ok": True}
+
+
+@app.post("/api/admin/reset-runtime")
+def api_admin_reset_runtime() -> dict:
+    try:
+        item = service.reset_runtime()
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return {"ok": True, "data": item}
 
 
 if __name__ == "__main__":

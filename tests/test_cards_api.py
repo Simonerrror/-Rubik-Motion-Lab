@@ -73,6 +73,7 @@ def test_api_cases_and_alternatives_flow(tmp_path: Path) -> None:
     cases_payload = cases_resp.json()
     assert cases_payload["ok"] is True
     assert cases_payload["data"]
+    assert "display_name" in cases_payload["data"][0]
 
     case_id = int(cases_payload["data"][0]["id"])
     detail_before = client.get(f"/api/cases/{case_id}")
@@ -112,6 +113,12 @@ def test_api_cases_and_alternatives_flow(tmp_path: Path) -> None:
     activate_payload = activate_resp.json()["data"]
     assert int(activate_payload["active_algorithm_id"]) == previous_active_id
 
+    delete_resp = client.delete(f"/api/cases/{case_id}/algorithms/{new_active_id}")
+    assert delete_resp.status_code == 200
+    delete_payload = delete_resp.json()["data"]
+    assert delete_payload["deleted_algorithm_id"] == new_active_id
+    assert delete_payload["case"]["active_algorithm_id"] != new_active_id
+
 
 def test_api_reference_sets(tmp_path: Path) -> None:
     client = _build_client(tmp_path)
@@ -123,3 +130,15 @@ def test_api_reference_sets(tmp_path: Path) -> None:
     assert payload["data"]
     assert payload["data"][0]["title"] == "Skip"
     assert any(item["title"] == "G-Perms" for item in payload["data"])
+
+
+def test_api_admin_reset_runtime(tmp_path: Path) -> None:
+    client = _build_client(tmp_path)
+    response = client.post("/api/admin/reset-runtime")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["ok"] is True
+    assert "db_path" in payload["data"]
+
+    pll_cases = client.get("/api/cases", params={"group": "PLL"}).json()["data"]
+    assert len(pll_cases) == 21

@@ -88,3 +88,21 @@ def test_center_relative_piece_identification_handles_global_y_rotation() -> Non
 
     assert base_corner_pair == rotated_corner_pair
     assert base_edge_pair == rotated_edge_pair
+
+
+def test_zperm_is_edges_only_with_adjacent_bidirectional_swaps() -> None:
+    state = _start_state_for_formula("M2 U M2 U M' U2 M2 U2 M' U2")
+    data = build_pll_top_view_data(state)
+
+    assert len(data.corner_arrows) == 0
+    assert len(data.edge_arrows) == 2
+    assert all(arrow.bidirectional for arrow in data.edge_arrows)
+
+    edge_pairs = {
+        frozenset((arrow.start, arrow.end))
+        for arrow in data.edge_arrows
+    }
+    assert edge_pairs == {
+        frozenset({(0, 1), (1, 0)}),
+        frozenset({(1, 2), (2, 1)}),
+    }
