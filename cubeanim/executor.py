@@ -37,7 +37,7 @@ class ExecutionConfig:
     double_turn_multiplier: float = 1.7
     inter_move_pause_ratio: float = 0.05
     end_wait: float = 1.0
-    pre_start_wait: float = 0.5
+    pre_start_wait: float = 0.9
     prepare_case_from_inverse: bool = True
     show_algorithm_name: bool = True
     name_font_size: int = 30

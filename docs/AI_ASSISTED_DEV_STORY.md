@@ -8,6 +8,7 @@ This project was built as an iterative AI-assisted engineering process.
 - Stabilization: parser/render/UI foundation hardened with tests.
 - Productization: behavior invariants, simultaneous move semantics, smooth motion.
 - Polish: visual palette alignment and storage ergonomics.
+- Cards phase: FastAPI + vanilla cards UI, case-centric PLL workflow, render queue worker, recognizers, and runtime consistency fixes.
 
 ## Commit Map
 
@@ -22,7 +23,7 @@ This project was built as an iterative AI-assisted engineering process.
 | `4ac62be` | motion quality | timing policy + easing + tests | smoother animations |
 | `a81c2f7` | visual polish | softened internal dark faces | cohesive palette |
 | `b464e4a` | storage contract | readable quality folders + compatibility | cleaner output structure |
-| `HEAD` | showcase/docs | branding + process documentation + curated demos | clear AI-assisted story for portfolio |
+| `HEAD` | cards productization | FastAPI cards stack, PLL caseflow, queue/reuse/worker stability, recognizer pipeline | end-to-end learning cards workflow with deterministic behavior |
 
 ## Why This Matters
 
@@ -32,3 +33,12 @@ The value is not only the final renderer, but the transparent engineering trail:
 - feedback -> targeted patch
 - tests -> confidence
 - polishing -> production readiness
+
+## Session Lessons (PLL Completion)
+
+- Keep two names in render flow:
+  - `storage/output_name` for filesystem/catalog dedupe.
+  - `display_name` for on-video overlay text.
+- Worker must not hold SQLite transaction while running Manim; claim and finalize in short DB transactions.
+- `render_artifacts` must be treated as valid only if referenced file exists.
+- Recognizer assets are easier to operate when grouped by category directories.

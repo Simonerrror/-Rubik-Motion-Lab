@@ -1,0 +1,22 @@
+{
+  "categories": [
+    {
+      "code": "F2L",
+      "title": "F2L",
+      "count": 10,
+      "prefix": "F2L_"
+    },
+    {
+      "code": "OLL",
+      "title": "OLL",
+      "count": 57,
+      "prefix": "OLL_"
+    },
+    {
+      "code": "PLL",
+      "title": "PLL",
+      "count": 21,
+      "prefix": "PLL_"
+    }
+  ]
+}

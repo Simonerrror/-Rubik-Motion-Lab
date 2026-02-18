@@ -45,6 +45,7 @@ QUALITY_TO_MANIM_FLAG = {
 class RenderRequest:
     formula: str
     name: str | None = None
+    display_name: str | None = None
     group: str | RenderGroup = RenderGroup.NO_GROUP
     quality: str = "draft"
     repeat: int = 1
@@ -294,7 +295,8 @@ def _build_manim_command(
 
     env = os.environ.copy()
     env["CUBEANIM_FORMULA"] = _normalize_formula(request.formula)
-    env["CUBEANIM_NAME"] = request.name.strip() if request.name else output_name
+    display_name = request.display_name.strip() if request.display_name else ""
+    env["CUBEANIM_NAME"] = display_name or output_name
     env["CUBEANIM_GROUP"] = group
     env["CUBEANIM_REPEAT"] = str(request.repeat)
 
@@ -334,7 +336,7 @@ def _upsert_record(
         "group": group,
         "quality": quality,
         "output_name": output_name,
-        "display_name": request.name.strip() if request.name else output_name,
+        "display_name": request.display_name.strip() if request.display_name else output_name,
         "formula": formula,
         "repeat": request.repeat,
         "path": str(final_path.relative_to(repo_root)),

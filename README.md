@@ -2,6 +2,12 @@
 
 AI-assisted renderer for Rubik's Cube algorithms built on Manim.
 
+## Current Status (2026-02-18)
+
+- Cards workflow is active on FastAPI + vanilla HTML/JS.
+- PLL flow is completed: grouped case catalog, active algorithm selection, custom algorithm support, draft/HD queue, and polling updates.
+- Top recognizers are generated and stored by group (`F2L` / `OLL` / `PLL`).
+
 ## What This Project Does
 
 Rubik Motion Lab turns cube formulas into polished animations with:
@@ -26,9 +32,9 @@ See `docs/AI_ASSISTED_DEV_STORY.md` for commit-level details.
 ## Install
 
 ```bash
-python3 -m venv .venv
+uv venv .venv
 source .venv/bin/activate
-python -m pip install -r requirements.txt
+uv pip install -r requirements.txt
 ```
 
 `cubeanim` applies a runtime compatibility patch for `manim_rubikscube` automatically.
@@ -36,15 +42,27 @@ python -m pip install -r requirements.txt
 ## Run GUI (Primary)
 
 ```bash
-source .venv/bin/activate
-python scripts/render_ui.py
+uv run python scripts/render_ui.py
 ```
 
 ## CLI (Optional)
 
 ```bash
-source .venv/bin/activate
-python scripts/render_algo.py --formula "R U R' U'" --name MyAlgo --group PLL --quality standard
+uv run python scripts/render_algo.py --formula "R U R' U'" --name MyAlgo --group PLL --quality standard
+```
+
+## Web Cards (FastAPI + HTML/JS)
+
+```bash
+uv run python scripts/cards_api.py
+```
+
+Open `http://127.0.0.1:8008/`.
+
+Run render worker in a second terminal:
+
+```bash
+uv run python scripts/cards_worker.py
 ```
 
 ## Render Contract
@@ -70,8 +88,7 @@ Use `high`/`final` only for final export.
 
 ```bash
 python3 -m py_compile cubist.py cubeanim/*.py scripts/render_algo.py scripts/render_ui.py
-source .venv/bin/activate
-python -m pytest -q
+PYTHONPATH=. uv run pytest -q
 ```
 
 ## Media Tracking Policy
