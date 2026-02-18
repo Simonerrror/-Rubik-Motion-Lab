@@ -111,3 +111,15 @@ def test_api_cases_and_alternatives_flow(tmp_path: Path) -> None:
     assert activate_resp.status_code == 200
     activate_payload = activate_resp.json()["data"]
     assert int(activate_payload["active_algorithm_id"]) == previous_active_id
+
+
+def test_api_reference_sets(tmp_path: Path) -> None:
+    client = _build_client(tmp_path)
+
+    response = client.get("/api/reference/sets", params={"category": "PLL"})
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["ok"] is True
+    assert payload["data"]
+    assert payload["data"][0]["title"] == "Skip"
+    assert any(item["title"] == "G-Perms" for item in payload["data"])

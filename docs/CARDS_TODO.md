@@ -63,3 +63,4 @@
 ## Remaining short plan
 - [ ] Manual browser smoke check of `index.html` against running API+worker to verify modal UX and queue transitions visually.
 - [ ] Optional pass for richer metadata for PLL/F2L (subgroups and probabilities) when reference sources are prepared.
+- [x] Add static reference tables for PLL sets/probabilities/DoD and expose via API.

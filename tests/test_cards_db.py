@@ -34,3 +34,20 @@ def test_progress_status_update_roundtrip(tmp_path: Path) -> None:
 
     updated = service.set_progress(algo_id, "LEARNED")
     assert updated["status"] == "LEARNED"
+
+
+def test_static_reference_tables_seeded(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    db_path = tmp_path / "cards.db"
+    initialize_database(repo_root=repo_root, db_path=db_path)
+
+    with connect(db_path) as conn:
+        set_count = int(
+            conn.execute(
+                "SELECT COUNT(*) FROM reference_case_sets WHERE category_code = 'PLL'"
+            ).fetchone()[0]
+        )
+        item_count = int(conn.execute("SELECT COUNT(*) FROM reference_case_stats").fetchone()[0])
+
+    assert set_count == 6
+    assert item_count == 14

@@ -145,6 +145,20 @@
     return (caseItem?.jobs || []).find((job) => job.status === "PENDING" || job.status === "RUNNING") || null;
   }
 
+  function setVideoSource(videoEl, src) {
+    const normalized = new URL(src, window.location.origin).href;
+    if (videoEl.dataset.currentSrc !== normalized) {
+      videoEl.src = src;
+      videoEl.dataset.currentSrc = normalized;
+    }
+  }
+
+  function clearVideoSource(videoEl) {
+    videoEl.pause();
+    videoEl.removeAttribute("src");
+    delete videoEl.dataset.currentSrc;
+  }
+
   function updateModalState() {
     const c = currentCase();
     if (!c) return;
@@ -159,13 +173,12 @@
     const videoUrl = highArtifact?.video_url || draftArtifact?.video_url || null;
 
     if (videoUrl) {
-      if (DOM.mVideo.src !== videoUrl) {
-        DOM.mVideo.src = videoUrl;
-      }
+      setVideoSource(DOM.mVideo, videoUrl);
       DOM.mVideo.style.display = "block";
       DOM.mQueueMsg.style.display = activeJob ? "flex" : "none";
       DOM.mQueueMsg.textContent = activeJob ? `Render queued (${activeJob.quality})...` : "";
     } else {
+      clearVideoSource(DOM.mVideo);
       DOM.mVideo.style.display = "none";
       DOM.mQueueMsg.style.display = "flex";
       DOM.mQueueMsg.textContent = activeJob ? `Render queued (${activeJob.quality})...` : "Video not rendered yet...";
@@ -257,8 +270,7 @@
 
   function closeModal() {
     DOM.backdrop.style.display = "none";
-    DOM.mVideo.pause();
-    DOM.mVideo.removeAttribute("src");
+    clearVideoSource(DOM.mVideo);
   }
 
   async function activateAlgorithm(caseId, algorithmId) {
