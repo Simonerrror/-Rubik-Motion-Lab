@@ -219,6 +219,63 @@ def list_case_algorithms(conn: sqlite3.Connection, case_id: int) -> list[dict[st
     return [_algorithm_row_payload(row) for row in rows]
 
 
+def list_reference_sets(conn: sqlite3.Connection, category: str) -> list[dict[str, Any]]:
+    rows = conn.execute(
+        """
+        SELECT
+            s.id AS set_id,
+            s.category_code,
+            s.set_code,
+            s.title AS set_title,
+            s.sort_order AS set_sort_order,
+            st.id AS stat_id,
+            st.case_name,
+            st.probability_fraction,
+            st.probability_percent_text,
+            st.probability_percent,
+            st.states_out_of_96_text,
+            st.recognition_dod,
+            st.sort_order AS stat_sort_order
+        FROM reference_case_sets s
+        LEFT JOIN reference_case_stats st ON st.set_id = s.id
+        WHERE s.category_code = ?
+        ORDER BY s.sort_order ASC, st.sort_order ASC
+        """,
+        (category,),
+    ).fetchall()
+
+    grouped: dict[int, dict[str, Any]] = {}
+    for row in rows:
+        set_id = int(row["set_id"])
+        payload = grouped.get(set_id)
+        if payload is None:
+            payload = {
+                "id": set_id,
+                "category": row["category_code"],
+                "set_code": row["set_code"],
+                "title": row["set_title"],
+                "sort_order": int(row["set_sort_order"]),
+                "items": [],
+            }
+            grouped[set_id] = payload
+
+        if row["stat_id"] is not None:
+            payload["items"].append(
+                {
+                    "id": int(row["stat_id"]),
+                    "case_name": row["case_name"],
+                    "probability_fraction": row["probability_fraction"],
+                    "probability_percent_text": row["probability_percent_text"],
+                    "probability_percent": row["probability_percent"],
+                    "states_out_of_96_text": row["states_out_of_96_text"],
+                    "recognition_dod": row["recognition_dod"],
+                    "sort_order": int(row["stat_sort_order"]),
+                }
+            )
+
+    return list(grouped.values())
+
+
 def get_case(conn: sqlite3.Connection, case_id: int) -> dict[str, Any] | None:
     row = conn.execute(
         """

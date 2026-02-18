@@ -103,6 +103,20 @@ def api_list_cases(group: str = Query(...)) -> dict:
     return {"ok": True, "data": items}
 
 
+@app.get("/api/reference/sets")
+def api_list_reference_sets(category: str = Query(...)) -> dict:
+    normalized = category.strip().upper()
+    if normalized not in {"F2L", "OLL", "PLL"}:
+        raise HTTPException(status_code=400, detail="Invalid category")
+    try:
+        items = service.list_reference_sets(category=normalized)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return {"ok": True, "data": items}
+
+
 @app.get("/api/cases/{case_id}")
 def api_get_case(case_id: int) -> dict:
     try:

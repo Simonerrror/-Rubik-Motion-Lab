@@ -66,7 +66,33 @@ CREATE TABLE IF NOT EXISTS render_jobs (
     FOREIGN KEY(algorithm_id) REFERENCES algorithms(id)
 );
 
+CREATE TABLE IF NOT EXISTS reference_case_sets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category_code TEXT NOT NULL,
+    set_code TEXT NOT NULL,
+    title TEXT NOT NULL,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    UNIQUE(category_code, set_code),
+    FOREIGN KEY(category_code) REFERENCES categories(code)
+);
+
+CREATE TABLE IF NOT EXISTS reference_case_stats (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    set_id INTEGER NOT NULL,
+    case_name TEXT NOT NULL,
+    probability_fraction TEXT NOT NULL,
+    probability_percent_text TEXT NOT NULL,
+    probability_percent REAL,
+    states_out_of_96_text TEXT NOT NULL,
+    recognition_dod TEXT NOT NULL,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    UNIQUE(set_id, case_name),
+    FOREIGN KEY(set_id) REFERENCES reference_case_sets(id)
+);
+
 CREATE INDEX IF NOT EXISTS idx_algorithms_case_id ON algorithms(case_id);
 CREATE INDEX IF NOT EXISTS idx_render_jobs_algorithm_quality ON render_jobs(algorithm_id, target_quality);
 CREATE INDEX IF NOT EXISTS idx_render_jobs_status ON render_jobs(status);
 CREATE INDEX IF NOT EXISTS idx_cases_group_subgroup_number ON cases(category_code, subgroup_title, case_number);
+CREATE INDEX IF NOT EXISTS idx_ref_sets_category_sort ON reference_case_sets(category_code, sort_order);
+CREATE INDEX IF NOT EXISTS idx_ref_stats_set_sort ON reference_case_stats(set_id, sort_order);

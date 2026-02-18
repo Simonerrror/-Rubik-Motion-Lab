@@ -38,6 +38,175 @@ _OLL_PROBABILITY_OVERRIDES: dict[int, str] = {
     57: "1/108",
 }
 
+_PLL_PROBABILITY_BY_NUMBER: dict[int, str] = {
+    1: "1/18",   # Aa
+    2: "1/18",   # Ab
+    3: "1/36",   # E
+    4: "1/18",   # F
+    5: "1/12",   # Ga
+    6: "1/12",   # Gb
+    7: "1/12",   # Gc
+    8: "1/12",   # Gd
+    9: "1/72",   # H
+    10: "1/18",  # Ja
+    11: "1/18",  # Jb
+    12: "1/72",  # Na
+    13: "1/72",  # Nb
+    14: "1/18",  # Ra
+    15: "1/18",  # Rb
+    16: "1/12",  # T
+    17: "1/18",  # Ua
+    18: "1/18",  # Ub
+    19: "1/18",  # V
+    20: "1/18",  # Y
+    21: "1/36",  # Z
+}
+
+_PLL_SUBGROUPS: dict[str, set[int]] = {
+    "Edges Only": {9, 17, 18, 21},
+    "Corners Only": {1, 2, 3},
+    "Adjacent Swap": {4, 10, 11, 14, 15, 16},
+    "Diagonal Swap": {12, 13, 19, 20},
+    "G-Perms": {5, 6, 7, 8},
+}
+
+_PLL_REFERENCE_SETS: list[dict[str, Any]] = [
+    {
+        "set_code": "skip",
+        "title": "Skip",
+        "items": [
+            {
+                "case_name": "PLL Skip",
+                "probability_fraction": "1/72",
+                "probability_percent_text": "1.39%",
+                "states_out_of_96_text": "1",
+                "recognition_dod": "Все элементы на своих местах.",
+            },
+        ],
+    },
+    {
+        "set_code": "edges_only",
+        "title": "Edges Only",
+        "items": [
+            {
+                "case_name": "Ua / Ub",
+                "probability_fraction": "1/18 (каждый)",
+                "probability_percent_text": "5.56%",
+                "states_out_of_96_text": "4 + 4",
+                "recognition_dod": "3 угла на местах, перестановка 3 ребер.",
+            },
+            {
+                "case_name": "H",
+                "probability_fraction": "1/72",
+                "probability_percent_text": "1.39%",
+                "states_out_of_96_text": "1",
+                "recognition_dod": "Взаимная перестановка противоположных ребер.",
+            },
+            {
+                "case_name": "Z",
+                "probability_fraction": "1/36",
+                "probability_percent_text": "2.78%",
+                "states_out_of_96_text": "2",
+                "recognition_dod": "Взаимная перестановка смежных ребер.",
+            },
+        ],
+    },
+    {
+        "set_code": "corners_only",
+        "title": "Corners Only",
+        "items": [
+            {
+                "case_name": "Aa / Ab",
+                "probability_fraction": "1/18 (каждый)",
+                "probability_percent_text": "5.56%",
+                "states_out_of_96_text": "4 + 4",
+                "recognition_dod": "3 ребра на местах, перестановка 3 углов.",
+            },
+            {
+                "case_name": "E",
+                "probability_fraction": "1/36",
+                "probability_percent_text": "2.78%",
+                "states_out_of_96_text": "2",
+                "recognition_dod": "Перестановка углов по диагонали (без блоков).",
+            },
+        ],
+    },
+    {
+        "set_code": "adjacent_swap",
+        "title": "Adjacent Swap",
+        "items": [
+            {
+                "case_name": "Ja / Jb",
+                "probability_fraction": "1/18 (каждый)",
+                "probability_percent_text": "5.56%",
+                "states_out_of_96_text": "4 + 4",
+                "recognition_dod": "Блок 1x1x3 («Полоска»).",
+            },
+            {
+                "case_name": "T",
+                "probability_fraction": "1/12",
+                "probability_percent_text": "8.33%",
+                "states_out_of_96_text": "8",
+                "recognition_dod": "Два блока 1x1x2 («Глазки» и «Бар»).",
+            },
+            {
+                "case_name": "Ra / Rb",
+                "probability_fraction": "1/18 (каждый)",
+                "probability_percent_text": "5.56%",
+                "states_out_of_96_text": "4 + 4",
+                "recognition_dod": "Блок 1x1x2 + «Фонари» (Headlights).",
+            },
+            {
+                "case_name": "F",
+                "probability_fraction": "1/18",
+                "probability_percent_text": "5.56%",
+                "states_out_of_96_text": "4",
+                "recognition_dod": "Один длинный блок 1x1x3 на одной стороне.",
+            },
+        ],
+    },
+    {
+        "set_code": "diagonal_swap",
+        "title": "Diagonal Swap",
+        "items": [
+            {
+                "case_name": "V",
+                "probability_fraction": "1/18",
+                "probability_percent_text": "5.56%",
+                "states_out_of_96_text": "4",
+                "recognition_dod": "Блок 2x2x1 («Квадрат»).",
+            },
+            {
+                "case_name": "Y",
+                "probability_fraction": "1/18",
+                "probability_percent_text": "5.56%",
+                "states_out_of_96_text": "4",
+                "recognition_dod": "Два блока 1x1x2 под углом 90°.",
+            },
+            {
+                "case_name": "Na / Nb",
+                "probability_fraction": "1/72 (каждый)",
+                "probability_percent_text": "1.39%",
+                "states_out_of_96_text": "1 + 1",
+                "recognition_dod": "Два блока 1x1x3 на противоположных сторонах.",
+            },
+        ],
+    },
+    {
+        "set_code": "g_perms",
+        "title": "G-Perms",
+        "items": [
+            {
+                "case_name": "Ga / Gb / Gc / Gd",
+                "probability_fraction": "1/12 (каждый)",
+                "probability_percent_text": "8.33%",
+                "states_out_of_96_text": "8 + 8 + 8 + 8",
+                "recognition_dod": "Блок 1x1x2 + «Фонари» на смежной грани.",
+            },
+        ],
+    },
+]
+
 
 def utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -129,6 +298,11 @@ def _resolve_case_metadata(category: str, case_code: str) -> dict[str, Any]:
         title = f"OLL {number}"
     elif category == "PLL" and number is not None:
         subgroup = "PLL Cases"
+        for title_candidate, numbers in _PLL_SUBGROUPS.items():
+            if number in numbers:
+                subgroup = title_candidate
+                break
+        probability = _PLL_PROBABILITY_BY_NUMBER.get(number)
         title = f"PLL {number}"
     elif category == "F2L" and number is not None:
         subgroup = "F2L Cases"
@@ -187,6 +361,7 @@ def seed_defaults(repo_root: Path | None = None, db_path: Path | None = None) ->
 
     with connect(path) as conn:
         _seed_categories(conn)
+        _seed_reference_probabilities(conn)
 
         for category, case_code in _iter_seed_cases(root):
             metadata = _resolve_case_metadata(category, case_code)
@@ -298,3 +473,97 @@ def _apply_schema_migrations(conn: sqlite3.Connection) -> None:
         conn.execute("ALTER TABLE cases ADD COLUMN probability_text TEXT")
     if not _column_exists(conn, "cases", "selected_algorithm_id"):
         conn.execute("ALTER TABLE cases ADD COLUMN selected_algorithm_id INTEGER")
+
+
+def _parse_percent_value(text: str) -> float | None:
+    normalized = text.strip().replace("%", "")
+    try:
+        return float(normalized)
+    except ValueError:
+        return None
+
+
+def _seed_reference_probabilities(conn: sqlite3.Connection) -> None:
+    for set_index, item in enumerate(_PLL_REFERENCE_SETS):
+        conn.execute(
+            """
+            INSERT OR IGNORE INTO reference_case_sets (
+                category_code,
+                set_code,
+                title,
+                sort_order
+            )
+            VALUES ('PLL', ?, ?, ?)
+            """,
+            (item["set_code"], item["title"], set_index),
+        )
+        conn.execute(
+            """
+            UPDATE reference_case_sets
+            SET title = ?, sort_order = ?
+            WHERE category_code = 'PLL' AND set_code = ?
+            """,
+            (item["title"], set_index, item["set_code"]),
+        )
+        set_row = conn.execute(
+            """
+            SELECT id
+            FROM reference_case_sets
+            WHERE category_code = 'PLL' AND set_code = ?
+            """,
+            (item["set_code"],),
+        ).fetchone()
+        if set_row is None:
+            raise RuntimeError(f"Could not resolve reference set: {item['set_code']}")
+        set_id = int(set_row["id"])
+
+        for case_index, case_item in enumerate(item["items"]):
+            probability_text = case_item["probability_percent_text"]
+            conn.execute(
+                """
+                INSERT OR IGNORE INTO reference_case_stats (
+                    set_id,
+                    case_name,
+                    probability_fraction,
+                    probability_percent_text,
+                    probability_percent,
+                    states_out_of_96_text,
+                    recognition_dod,
+                    sort_order
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    set_id,
+                    case_item["case_name"],
+                    case_item["probability_fraction"],
+                    probability_text,
+                    _parse_percent_value(probability_text),
+                    case_item["states_out_of_96_text"],
+                    case_item["recognition_dod"],
+                    case_index,
+                ),
+            )
+            conn.execute(
+                """
+                UPDATE reference_case_stats
+                SET
+                    probability_fraction = ?,
+                    probability_percent_text = ?,
+                    probability_percent = ?,
+                    states_out_of_96_text = ?,
+                    recognition_dod = ?,
+                    sort_order = ?
+                WHERE set_id = ? AND case_name = ?
+                """,
+                (
+                    case_item["probability_fraction"],
+                    probability_text,
+                    _parse_percent_value(probability_text),
+                    case_item["states_out_of_96_text"],
+                    case_item["recognition_dod"],
+                    case_index,
+                    set_id,
+                    case_item["case_name"],
+                ),
+            )

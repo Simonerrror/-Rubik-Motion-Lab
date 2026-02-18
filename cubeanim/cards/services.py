@@ -33,6 +33,13 @@ class CardsService:
             rows = repository.list_algorithms(conn, group=group)
             return [self._decorate_algorithm(row, conn) for row in rows]
 
+    def list_reference_sets(self, category: str) -> list[dict[str, Any]]:
+        normalized = category.strip().upper()
+        if normalized not in GROUPS:
+            raise ValueError(f"category must be one of {sorted(GROUPS)}")
+        with connect(self.db_path) as conn:
+            return repository.list_reference_sets(conn, category=normalized)
+
     def list_cases(self, group: str) -> list[dict[str, Any]]:
         normalized = group.strip().upper()
         if normalized not in GROUPS:
