@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rubik Motion Lab - Catalog</title>
+    <style>
+        :root {
+            --bg-main: #F4F4F5;
+            --bg-card: #FFFFFF;
+            --text-main: #1D2430;
+            --text-muted: #71717A;
+            --border: #E4E4E7;
+            --accent-new: #A1A1AA;
+            --accent-progress: #F59E0B;
+            --accent-learned: #10B981;
+            --primary: #2563EB;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Avenir Next', system-ui, sans-serif; }
+        body { background: var(--bg-main); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; }
+
+        header { background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; gap: 2rem; align-items: center; height: 60px; flex-shrink: 0; }
+        .nav-tab { padding: 0 1rem; height: 100%; display: flex; align-items: center; font-weight: 700; cursor: pointer; color: var(--text-muted); border-bottom: 2px solid transparent; }
+        .nav-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+        main { flex: 1; overflow-y: auto; padding: 2rem; }
+        .subgroup-title { margin: 2rem 0 1rem 0; font-size: 1.05rem; color: var(--text-muted); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.02em; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 0.9rem; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; display: flex; flex-direction: column; gap: 0.7rem; }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .card.active { box-shadow: 0 0 0 2px #1D2430; }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.8rem; }
+        .preview-box { width: 78px; height: 78px; background: #E4E4E7; border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .preview-box img { width: 100%; height: 100%; object-fit: contain; }
+        .card-meta { text-align: right; }
+        .case-name { font-weight: 700; font-size: 1rem; }
+        .case-sub { font-size: 0.83rem; color: var(--text-muted); margin-top: 0.2rem; }
+        .card-algo { font-family: Menlo, Monaco, Consolas, monospace; font-size: 0.92rem; font-weight: 600; background: var(--bg-main); padding: 0.5rem; border-radius: 6px; word-break: break-word; }
+
+        .status-NEW { border-left: 4px solid var(--accent-new); }
+        .status-IN_PROGRESS { border-left: 4px solid var(--accent-progress); }
+        .status-LEARNED { border-left: 4px solid var(--accent-learned); }
+
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 50; padding: 1.2rem; }
+        .modal { background: var(--bg-card); border-radius: 16px; width: 100%; max-width: 720px; max-height: 94vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        .modal-header { padding: 1.2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { padding: 1.2rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.2rem; }
+
+        .video-wrapper { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden; position: relative; }
+        .video-wrapper video { width: 100%; height: 100%; object-fit: cover; }
+        .queue-msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: white; background: rgba(0,0,0,0.8); font-weight: 700; text-align: center; padding: 1rem; }
+
+        .status-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .btn { padding: 0.55rem 0.9rem; border: 1px solid var(--border); background: var(--bg-main); border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn[data-status="NEW"].active { background: var(--accent-new); color: white; border-color: var(--accent-new); }
+        .btn[data-status="IN_PROGRESS"].active { background: var(--accent-progress); color: white; border-color: var(--accent-progress); }
+        .btn[data-status="LEARNED"].active { background: var(--accent-learned); color: white; border-color: var(--accent-learned); }
+
+        .algo-list { display: flex; flex-direction: column; gap: 0.5rem; }
+        .algo-option { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
+        .algo-option:hover { background: var(--bg-main); }
+        .algo-option input[type="radio"] { margin: 0; }
+        .algo-option code { font-family: Menlo, Monaco, Consolas, monospace; font-size: 0.9rem; }
+        .algo-option.custom-input { cursor: default; }
+        .algo-option.custom-input input[type="text"] { flex: 1; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px; font-family: Menlo, Monaco, Consolas, monospace; }
+
+        .actions { display: flex; gap: 0.6rem; }
+        .actions .btn { flex: 1; }
+        .btn-render { background: var(--primary); color: white; border-color: var(--primary); }
+        .btn-render:disabled { opacity: 0.5; cursor: not-allowed; }
+        .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; line-height: 1; }
+
+        .toast { position: fixed; right: 1rem; bottom: 1rem; background: #1D2430; color: #fff; padding: 0.8rem 1rem; border-radius: 6px; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 60; }
+        .toast.show { opacity: 1; }
+
+        @media (max-width: 900px) {
+            header { padding: 0 1rem; gap: 0.7rem; }
+            .nav-tab { padding: 0 0.4rem; }
+            main { padding: 1rem; }
+            .grid { grid-template-columns: 1fr; }
+            .modal { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="nav-tab" data-category="F2L">F2L</div>
+        <div class="nav-tab active" data-category="OLL">OLL</div>
+        <div class="nav-tab" data-category="PLL">PLL</div>
+    </header>
+
+    <main id="catalog-container"></main>
+
+    <div class="modal-backdrop" id="modal-backdrop">
+        <div class="modal">
+            <div class="modal-header">
+                <div>
+                    <h2 id="m-name">Case Name</h2>
+                    <div class="case-sub" id="m-prob">Probability</div>
+                    <div class="case-sub" id="m-case-code">Case</div>
+                </div>
+                <button class="close-btn" id="m-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="video-wrapper">
+                    <video id="m-video" controls autoplay loop muted></video>
+                    <div class="queue-msg" id="m-queue-msg">Video not rendered yet...</div>
+                </div>
+
+                <div>
+                    <div class="case-sub" style="margin-bottom: 0.5rem;">Learning Status:</div>
+                    <div class="status-group" id="m-status-group">
+                        <button class="btn" data-status="NEW">Не трогал</button>
+                        <button class="btn" data-status="IN_PROGRESS">В работе</button>
+                        <button class="btn" data-status="LEARNED">Выучил</button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="case-sub" style="margin-bottom: 0.5rem;">Selected Algorithm:</div>
+                    <div class="algo-list" id="m-algo-list"></div>
+                </div>
+
+                <div class="actions">
+                    <button class="btn btn-render" id="m-render-draft-btn">Generate Draft</button>
+                    <button class="btn btn-render" id="m-render-btn">Request HD Render</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <script src="/static/cards/app.js"></script>
+</body>
+</html>
