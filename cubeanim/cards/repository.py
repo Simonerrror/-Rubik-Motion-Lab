@@ -215,7 +215,7 @@ def list_case_algorithms(conn: sqlite3.Connection, case_id: int) -> list[dict[st
         FROM algorithms a
         JOIN cases c ON c.id = a.case_id
         WHERE a.case_id = ?
-        ORDER BY (a.id = c.selected_algorithm_id) DESC, a.is_custom ASC, a.id ASC
+        ORDER BY a.is_custom ASC, a.id ASC
         """,
         (case_id,),
     ).fetchall()
@@ -638,6 +638,55 @@ def get_render_artifact(
     }
 
 
+def find_case_render_artifact_by_formula(
+    conn: sqlite3.Connection,
+    case_id: int,
+    quality: str,
+    formula_norm: str,
+    exclude_algorithm_id: int | None = None,
+) -> dict[str, Any] | None:
+    params: list[Any] = [case_id, quality, formula_norm]
+    exclude_sql = ""
+    if exclude_algorithm_id is not None:
+        exclude_sql = "AND a.id != ?"
+        params.append(exclude_algorithm_id)
+
+    row = conn.execute(
+        f"""
+        SELECT
+            ra.id,
+            ra.algorithm_id,
+            ra.quality,
+            ra.output_name,
+            ra.output_path,
+            ra.formula_norm,
+            ra.repeat,
+            ra.updated_at
+        FROM render_artifacts ra
+        JOIN algorithms a ON a.id = ra.algorithm_id
+        WHERE a.case_id = ?
+          AND ra.quality = ?
+          AND ra.formula_norm = ?
+          {exclude_sql}
+        ORDER BY a.is_custom ASC, ra.updated_at DESC, ra.id DESC
+        LIMIT 1
+        """,
+        params,
+    ).fetchone()
+    if row is None:
+        return None
+    return {
+        "id": int(row["id"]),
+        "algorithm_id": int(row["algorithm_id"]),
+        "quality": row["quality"],
+        "output_name": row["output_name"],
+        "output_path": row["output_path"],
+        "formula_norm": row["formula_norm"],
+        "repeat": int(row["repeat"]),
+        "updated_at": row["updated_at"],
+    }
+
+
 def upsert_render_artifact(
     conn: sqlite3.Connection,
     algorithm_id: int,
@@ -804,7 +853,13 @@ def claim_next_pending_job(conn: sqlite3.Connection) -> dict[str, Any] | None:
         SELECT id
         FROM render_jobs
         WHERE status = 'PENDING'
-        ORDER BY id ASC
+        ORDER BY
+            CASE target_quality
+                WHEN 'draft' THEN 0
+                WHEN 'high' THEN 1
+                ELSE 2
+            END ASC,
+            id ASC
         LIMIT 1
         """
     ).fetchone()

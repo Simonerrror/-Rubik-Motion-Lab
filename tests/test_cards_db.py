@@ -5,6 +5,7 @@ from pathlib import Path
 
 from cubeanim.cards.db import connect, initialize_database, reset_runtime_state
 from cubeanim.cards.services import CardsService
+from cubeanim.pll import balance_pll_formula_rotations
 
 
 def test_initialize_database_is_idempotent(tmp_path: Path) -> None:
@@ -65,12 +66,24 @@ def test_pll_formulas_seeded_from_pll_txt(tmp_path: Path) -> None:
     assert pll_by_case["PLL_21"]["formula"] == "M2 U M2 U M' U2 M2 U2 M' U2"
 
 
+def test_seeded_pll_formulas_are_rotation_balanced(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    service = CardsService.create(repo_root=repo_root, db_path=tmp_path / "cards.db")
+
+    pll_items = service.list_algorithms(group="PLL")
+    for item in pll_items:
+        if item.get("is_custom"):
+            continue
+        formula = str(item["formula"] or "")
+        assert balance_pll_formula_rotations(formula) == formula
+
+
 def test_pll_recognizer_svg_contains_overlay_markers(tmp_path: Path) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     db_path = tmp_path / "cards.db"
     initialize_database(repo_root=repo_root, db_path=db_path)
 
-    svg_dir = tmp_path / "recognizers" / "svg"
+    svg_dir = tmp_path / "recognizers" / "pll" / "svg"
     matches = sorted(svg_dir.glob("pll_pll_9*.svg"))
     assert matches
     content = matches[0].read_text(encoding="utf-8")
@@ -104,7 +117,7 @@ def test_oll_recognizer_svg_is_minimal_top_card(tmp_path: Path) -> None:
     db_path = tmp_path / "cards.db"
     initialize_database(repo_root=repo_root, db_path=db_path)
 
-    svg_dir = tmp_path / "recognizers" / "svg"
+    svg_dir = tmp_path / "recognizers" / "oll" / "svg"
     matches = sorted(svg_dir.glob("oll_oll_26*.svg"))
     assert matches
     content = matches[0].read_text(encoding="utf-8")
@@ -135,7 +148,7 @@ def test_pll_recognizer_path_is_case_stable(tmp_path: Path) -> None:
 
     case = next(item for item in service.list_cases("PLL") if item["case_code"] == "PLL_9")
     before_url = case["recognizer_url"] or ""
-    assert before_url.endswith("/assets/recognizers/svg/pll_pll_9.svg")
+    assert before_url.endswith("/assets/recognizers/pll/svg/pll_pll_9.svg")
 
     updated = service.create_case_custom_algorithm(
         case_id=int(case["id"]),

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import csv
 import hashlib
-from collections import deque
 from functools import lru_cache
 from dataclasses import dataclass
 from pathlib import Path
@@ -10,8 +9,13 @@ from pathlib import Path
 from cubeanim.formula import FormulaConverter
 from cubeanim.oll import OLLTopViewData, build_oll_top_view_data, validate_oll_f2l_start_state
 from cubeanim.palette import CONTRAST_SAFE_CUBE_COLORS, FACE_ORDER
-from cubeanim.pll import PLLTopViewData, build_pll_top_view_data, validate_pll_start_state
-from cubeanim.state import solved_state_string, state_string_from_moves
+from cubeanim.pll import (
+    PLLTopViewData,
+    balance_pll_formula_rotations,
+    build_pll_top_view_data,
+    resolve_valid_pll_start_state,
+)
+from cubeanim.state import state_string_from_moves
 
 
 @dataclass(frozen=True)
@@ -75,8 +79,7 @@ def _pll_data_from_formula(formula: str) -> PLLTopViewData:
     move_steps = FormulaConverter.convert_steps(formula, repeat=1)
     inverse_steps = FormulaConverter.invert_steps(move_steps)
     inverse_flat = [move for step in inverse_steps for move in step]
-    start_state = _resolve_pll_start_state(inverse_flat)
-    validate_pll_start_state(start_state)
+    start_state = resolve_valid_pll_start_state(inverse_flat)
     return build_pll_top_view_data(start_state)
 
 
@@ -178,41 +181,6 @@ def _pll_presets_by_case(repo_root: str) -> dict[str, str]:
     return presets
 
 
-@lru_cache(maxsize=1)
-def _pll_orientation_corrections() -> tuple[tuple[str, ...], ...]:
-    rotations = ("x", "x'", "y", "y'", "z", "z'")
-    queue: deque[tuple[str, ...]] = deque([tuple()])
-    seen_states = {state_string_from_moves([])}
-    sequences: list[tuple[str, ...]] = [tuple()]
-
-    while queue and len(seen_states) < 24:
-        current = queue.popleft()
-        for move in rotations:
-            candidate = (*current, move)
-            signature = state_string_from_moves(list(candidate))
-            if signature in seen_states:
-                continue
-            seen_states.add(signature)
-            sequences.append(candidate)
-            queue.append(candidate)
-            if len(seen_states) >= 24:
-                break
-
-    sequences.sort(key=len)
-    return tuple(sequences)
-
-
-def _resolve_pll_start_state(inverse_moves: list[str]) -> str:
-    for correction in _pll_orientation_corrections():
-        state = state_string_from_moves(inverse_moves + list(correction))
-        try:
-            validate_pll_start_state(state)
-            return state
-        except Exception:
-            continue
-    return state_string_from_moves(inverse_moves)
-
-
 def _resolve_formula_for_recognizer(
     runtime_dir: Path,
     category: str,
@@ -227,36 +195,7 @@ def _resolve_formula_for_recognizer(
     repo_root = str(runtime_dir.resolve().parents[2])
     preset = _pll_presets_by_case(repo_root).get(case_code)
     resolved = _norm_formula(preset or normalized)
-    return _balance_cube_rotations_for_pll(resolved)
-
-
-def _is_rotation_move(move: str) -> bool:
-    base = move[:-1] if move.endswith(("'", "2")) else move
-    return base in {"x", "y", "z"}
-
-
-def _rotation_correction(moves: list[str]) -> tuple[str, ...]:
-    if not moves:
-        return tuple()
-    target = solved_state_string()
-    for candidate in _pll_orientation_corrections():
-        signature = state_string_from_moves(moves + list(candidate))
-        if signature == target:
-            return candidate
-    return tuple()
-
-
-def _balance_cube_rotations_for_pll(formula: str) -> str:
-    normalized = _norm_formula(formula)
-    if not normalized:
-        return normalized
-    steps = FormulaConverter.convert_steps(normalized, repeat=1)
-    flat = [move for step in steps for move in step]
-    rotation_moves = [move for move in flat if _is_rotation_move(move)]
-    correction = _rotation_correction(rotation_moves)
-    if not correction:
-        return normalized
-    return _norm_formula(f"{normalized} {' '.join(correction)}")
+    return balance_pll_formula_rotations(resolved)
 
 
 def _base_svg_lines(version: str, category: str, case_code: str) -> list[str]:
@@ -503,8 +442,9 @@ def ensure_recognizer_assets(
     case_code: str,
     formula: str | None = None,
 ) -> RecognizerPaths:
-    svg_dir = runtime_dir / "recognizers" / "svg"
-    png_dir = runtime_dir / "recognizers" / "png"
+    category_dir = category.strip().lower() or "misc"
+    svg_dir = runtime_dir / "recognizers" / category_dir / "svg"
+    png_dir = runtime_dir / "recognizers" / category_dir / "png"
     svg_dir.mkdir(parents=True, exist_ok=True)
     png_dir.mkdir(parents=True, exist_ok=True)
 
@@ -529,9 +469,9 @@ def ensure_recognizer_assets(
     png_path = png_dir / png_name
     png_rel: str | None = None
     if png_path.exists() or _render_png_from_svg(svg_content, png_path):
-        png_rel = f"recognizers/png/{png_name}"
+        png_rel = f"recognizers/{category_dir}/png/{png_name}"
 
     return RecognizerPaths(
-        svg_rel_path=f"recognizers/svg/{svg_name}",
+        svg_rel_path=f"recognizers/{category_dir}/svg/{svg_name}",
         png_rel_path=png_rel,
     )

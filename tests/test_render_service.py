@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from cubeanim.render_service import RenderRequest, plan_formula_render
+from cubeanim.render_service import RenderRequest, _build_manim_command, plan_formula_render
 
 
 def test_plan_render_for_new_name(tmp_path: Path) -> None:
@@ -91,3 +91,26 @@ def test_quality_alias_standard_maps_to_readable_path(tmp_path: Path) -> None:
     plan = plan_formula_render(request=request, repo_root=tmp_path)
     assert plan.action == "render"
     assert "/PLL/standard/" in str(plan.final_path)
+
+
+def test_build_command_uses_display_name_for_overlay(tmp_path: Path) -> None:
+    manim_file = tmp_path / "cubist.py"
+    manim_file.write_text("from manim import *\n", encoding="utf-8")
+
+    request = RenderRequest(
+        formula="R U",
+        name="pll_pll_9_hash",
+        display_name="Jb-perm",
+        group="PLL",
+        quality="draft",
+        manim_file=str(manim_file),
+    )
+
+    cmd, env = _build_manim_command(
+        request=request,
+        repo_root=tmp_path,
+        output_name="pll_pll_9_hash",
+        media_dir=tmp_path / "media_tmp",
+    )
+    assert cmd
+    assert env["CUBEANIM_NAME"] == "Jb-perm"
