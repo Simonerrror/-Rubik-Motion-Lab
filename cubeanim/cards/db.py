@@ -3,7 +3,9 @@ from __future__ import annotations
 import csv
 import sqlite3
 import json
+import shutil
 from contextlib import contextmanager
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterator, Any
@@ -37,38 +39,6 @@ _OLL_PROBABILITY_OVERRIDES: dict[int, str] = {
     55: "1/108",
     56: "1/108",
     57: "1/108",
-}
-
-_PLL_PROBABILITY_BY_NUMBER: dict[int, str] = {
-    1: "1/18",   # Aa
-    2: "1/18",   # Ab
-    3: "1/36",   # E
-    4: "1/18",   # F
-    5: "1/12",   # Ga
-    6: "1/12",   # Gb
-    7: "1/12",   # Gc
-    8: "1/12",   # Gd
-    9: "1/72",   # H
-    10: "1/18",  # Ja
-    11: "1/18",  # Jb
-    12: "1/72",  # Na
-    13: "1/72",  # Nb
-    14: "1/18",  # Ra
-    15: "1/18",  # Rb
-    16: "1/12",  # T
-    17: "1/18",  # Ua
-    18: "1/18",  # Ub
-    19: "1/18",  # V
-    20: "1/18",  # Y
-    21: "1/36",  # Z
-}
-
-_PLL_SUBGROUPS: dict[str, set[int]] = {
-    "Edges Only": {9, 17, 18, 21},
-    "Corners Only": {1, 2, 3},
-    "Adjacent Swap": {4, 10, 11, 14, 15, 16},
-    "Diagonal Swap": {12, 13, 19, 20},
-    "G-Perms": {5, 6, 7, 8},
 }
 
 _PLL_REFERENCE_SETS: list[dict[str, Any]] = [
@@ -208,6 +178,19 @@ _PLL_REFERENCE_SETS: list[dict[str, Any]] = [
     },
 ]
 
+_PLL_REQUIRED_HEADER = ("№", "Название", "Алгоритм", "Группа", "Вероятность")
+
+
+@dataclass(frozen=True)
+class PLLSeedCase:
+    case_code: str
+    case_number: int
+    case_title: str
+    algorithm_name: str
+    formula: str
+    subgroup_title: str
+    probability_text: str
+
 
 def utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -289,7 +272,10 @@ def _extract_case_number(case_code: str) -> int | None:
     return None
 
 
-def _resolve_case_metadata(category: str, case_code: str) -> dict[str, Any]:
+def _resolve_case_metadata(
+    category: str,
+    case_code: str,
+) -> dict[str, Any]:
     number = _extract_case_number(case_code)
     subgroup: str | None = None
     probability: str | None = None
@@ -302,14 +288,6 @@ def _resolve_case_metadata(category: str, case_code: str) -> dict[str, Any]:
                 break
         probability = _OLL_PROBABILITY_OVERRIDES.get(number, "1/54")
         title = f"OLL {number}"
-    elif category == "PLL" and number is not None:
-        subgroup = "PLL Cases"
-        for title_candidate, numbers in _PLL_SUBGROUPS.items():
-            if number in numbers:
-                subgroup = title_candidate
-                break
-        probability = _PLL_PROBABILITY_BY_NUMBER.get(number)
-        title = f"PLL {number}"
     elif category == "F2L" and number is not None:
         subgroup = "F2L Cases"
         title = f"F2L {number}"
@@ -325,12 +303,14 @@ def _resolve_case_metadata(category: str, case_code: str) -> dict[str, Any]:
     }
 
 
-def _iter_seed_cases(root: Path | None = None) -> Iterator[tuple[str, str]]:
+def _iter_seed_cases(root: Path | None = None, include_pll: bool = True) -> Iterator[tuple[str, str]]:
     path = seed_cases_path(root)
     if path.exists():
         payload = json.loads(path.read_text(encoding="utf-8"))
         for item in payload.get("categories", []):
             code = str(item["code"])
+            if code == "PLL" and not include_pll:
+                continue
             prefix = str(item.get("prefix", f"{code}_"))
             count = int(item["count"])
             for idx in range(1, count + 1):
@@ -344,8 +324,9 @@ def _iter_seed_cases(root: Path | None = None) -> Iterator[tuple[str, str]]:
     for idx in range(1, 58):
         yield "OLL", f"OLL_{idx}"
 
-    for idx in range(1, 22):
-        yield "PLL", f"PLL_{idx}"
+    if include_pll:
+        for idx in range(1, 22):
+            yield "PLL", f"PLL_{idx}"
 
 
 _KNOWN_FORMULAS = {
@@ -353,36 +334,151 @@ _KNOWN_FORMULAS = {
     "OLL_1": "R U2 R2 F R F' U2 R' F R F'",
     "OLL_27": "R U R' U R U2 R'",
     "OLL_26": "R U2 R' U' R U' R'",
-    "PLL_1": "M2 U M U2 M' U M2",
-    "PLL_2": "M2 U' M U2 M' U' M2",
-    "PLL_3": "R' U R' d' R' F' R2 U' R' U R' F R F",
 }
 
 
-def _load_pll_algorithms(root: Path | None = None) -> dict[str, dict[str, str]]:
+def _pll_display_name(name: str) -> str:
+    clean = name.strip()
+    if not clean:
+        raise ValueError("PLL row has empty name")
+    lowered = clean.lower()
+    if lowered.endswith("-perm") or lowered.endswith(" perm"):
+        return clean
+    return f"{clean}-perm"
+
+
+def _pll_probability_fraction(raw_probability: str) -> str:
+    clean = raw_probability.strip()
+    if not clean:
+        raise ValueError("PLL row has empty probability")
+    return clean.split(maxsplit=1)[0]
+
+
+def _norm_formula(formula: str) -> str:
+    return " ".join(formula.split())
+
+
+def _parse_pll_seed_row(row: list[str], row_number: int) -> PLLSeedCase:
+    if len(row) < 5:
+        raise ValueError(f"pll.txt row {row_number}: expected 5 columns, got {len(row)}")
+
+    raw_index = row[0].strip()
+    if not raw_index.isdigit():
+        raise ValueError(f"pll.txt row {row_number}: invalid case number '{raw_index}'")
+
+    case_number = int(raw_index)
+    raw_name = row[1].strip()
+    formula = " ".join(row[2].split())
+    subgroup = row[3].strip()
+    probability = _pll_probability_fraction(row[4])
+    if not formula:
+        raise ValueError(f"pll.txt row {row_number}: empty formula")
+    if not subgroup:
+        raise ValueError(f"pll.txt row {row_number}: empty group")
+
+    return PLLSeedCase(
+        case_code=f"PLL_{case_number}",
+        case_number=case_number,
+        case_title=_pll_display_name(raw_name),
+        algorithm_name=raw_name,
+        formula=formula,
+        subgroup_title=subgroup,
+        probability_text=probability,
+    )
+
+
+def _load_pll_seed_cases(root: Path | None = None) -> dict[str, PLLSeedCase]:
     path = pll_algorithms_path(root)
     if not path.exists():
-        return {}
+        raise FileNotFoundError(f"Required PLL source not found: {path}")
 
-    rows = csv.reader(path.read_text(encoding="utf-8-sig").splitlines())
-    mapping: dict[str, dict[str, str]] = {}
+    rows = list(csv.reader(path.read_text(encoding="utf-8-sig").splitlines()))
+    if not rows:
+        raise ValueError("pll.txt is empty")
+
+    header = tuple(cell.strip() for cell in rows[0][:5])
+    if header != _PLL_REQUIRED_HEADER:
+        raise ValueError(
+            "pll.txt header mismatch. "
+            f"Expected {list(_PLL_REQUIRED_HEADER)}, got {list(header)}"
+        )
+
+    mapping: dict[str, PLLSeedCase] = {}
+    for index, row in enumerate(rows[1:], start=2):
+        if not row or not "".join(row).strip():
+            continue
+        parsed = _parse_pll_seed_row(row=row, row_number=index)
+        if parsed.case_code in mapping:
+            raise ValueError(f"pll.txt duplicate case number for {parsed.case_code}")
+        mapping[parsed.case_code] = parsed
+
+    if not mapping:
+        raise ValueError("pll.txt does not contain data rows")
+    return mapping
+
+
+def _cleanup_algorithm_dependencies(conn: sqlite3.Connection, algorithm_id: int) -> None:
+    conn.execute("DELETE FROM render_jobs WHERE algorithm_id = ?", (algorithm_id,))
+    conn.execute("DELETE FROM render_artifacts WHERE algorithm_id = ?", (algorithm_id,))
+
+
+def _cleanup_stale_noncustom_pll_algorithms(
+    conn: sqlite3.Connection,
+    case_id: int,
+    canonical_name: str,
+) -> int | None:
+    rows = conn.execute(
+        """
+        SELECT id, name
+        FROM algorithms
+        WHERE case_id = ? AND is_custom = 0
+        ORDER BY id ASC
+        """,
+        (case_id,),
+    ).fetchall()
+    if not rows:
+        return None
+
+    canonical_id: int | None = None
+    for row in rows:
+        if str(row["name"]) == canonical_name:
+            canonical_id = int(row["id"])
+            break
+    if canonical_id is None:
+        canonical_id = int(rows[0]["id"])
 
     for row in rows:
-        if len(row) < 3:
+        algorithm_id = int(row["id"])
+        if algorithm_id == canonical_id:
             continue
-        raw_index = row[0].strip()
-        if raw_index in {"", "№"}:
-            continue
-        if not raw_index.isdigit():
-            continue
+        conn.execute(
+            """
+            UPDATE cases
+            SET selected_algorithm_id = ?
+            WHERE id = ? AND selected_algorithm_id = ?
+            """,
+            (canonical_id, case_id, algorithm_id),
+        )
+        _cleanup_algorithm_dependencies(conn, algorithm_id)
+        conn.execute("DELETE FROM algorithms WHERE id = ?", (algorithm_id,))
 
-        case_code = f"PLL_{int(raw_index)}"
-        mapping[case_code] = {
-            "name": row[1].strip(),
-            "formula": " ".join(row[2].split()),
-        }
+    return canonical_id
 
-    return mapping
+
+def _cleanup_stale_artifacts_for_formula(
+    conn: sqlite3.Connection,
+    algorithm_id: int,
+    formula: str,
+) -> None:
+    formula_norm = _norm_formula(formula)
+    conn.execute(
+        """
+        DELETE FROM render_artifacts
+        WHERE algorithm_id = ?
+          AND formula_norm != ?
+        """,
+        (algorithm_id, formula_norm),
+    )
 
 
 def seed_defaults(repo_root: Path | None = None, db_path: Path | None = None) -> None:
@@ -390,18 +486,16 @@ def seed_defaults(repo_root: Path | None = None, db_path: Path | None = None) ->
     path = db_path or default_db_path(root)
     run_dir = path.parent if db_path is not None else runtime_dir(root)
     run_dir.mkdir(parents=True, exist_ok=True)
-    pll_algorithms = _load_pll_algorithms(root)
+    pll_cases = _load_pll_seed_cases(root)
     known_formulas = dict(_KNOWN_FORMULAS)
-    for case_code, payload in pll_algorithms.items():
-        formula = payload.get("formula", "").strip()
-        if formula:
-            known_formulas[case_code] = formula
+    for case_code, payload in pll_cases.items():
+        known_formulas[case_code] = payload.formula
 
     with connect(path) as conn:
         _seed_categories(conn)
         _seed_reference_probabilities(conn)
 
-        for category, case_code in _iter_seed_cases(root):
+        for category, case_code in _iter_seed_cases(root, include_pll=False):
             metadata = _resolve_case_metadata(category, case_code)
             formula_for_case = known_formulas.get(case_code, "")
             recognizer = ensure_recognizer_assets(
@@ -461,12 +555,72 @@ def seed_defaults(repo_root: Path | None = None, db_path: Path | None = None) ->
                 ),
             )
 
+        for pll_case in sorted(pll_cases.values(), key=lambda item: item.case_number):
+            recognizer = ensure_recognizer_assets(
+                run_dir,
+                "PLL",
+                pll_case.case_code,
+                formula=pll_case.formula,
+            )
+            conn.execute(
+                """
+                INSERT OR IGNORE INTO cases (
+                    category_code,
+                    case_code,
+                    title,
+                    subgroup_title,
+                    case_number,
+                    probability_text,
+                    orientation_front,
+                    orientation_auf,
+                    recognizer_svg_path,
+                    recognizer_png_path
+                )
+                VALUES ('PLL', ?, ?, ?, ?, ?, 'F', 0, ?, ?)
+                """,
+                (
+                    pll_case.case_code,
+                    pll_case.case_title,
+                    pll_case.subgroup_title,
+                    pll_case.case_number,
+                    pll_case.probability_text,
+                    recognizer.svg_rel_path,
+                    recognizer.png_rel_path,
+                ),
+            )
+            conn.execute(
+                """
+                UPDATE cases
+                SET
+                    title = ?,
+                    subgroup_title = ?,
+                    case_number = ?,
+                    probability_text = ?,
+                    recognizer_svg_path = ?,
+                    recognizer_png_path = COALESCE(?, recognizer_png_path)
+                WHERE category_code = 'PLL' AND case_code = ?
+                """,
+                (
+                    pll_case.case_title,
+                    pll_case.subgroup_title,
+                    pll_case.case_number,
+                    pll_case.probability_text,
+                    recognizer.svg_rel_path,
+                    recognizer.png_rel_path,
+                    pll_case.case_code,
+                ),
+            )
+
         now = utc_now_iso()
-        rows = conn.execute("SELECT id, case_code FROM cases").fetchall()
+        rows = conn.execute("SELECT id, case_code, category_code FROM cases").fetchall()
         for row in rows:
             case_id = int(row["id"])
             case_code = str(row["case_code"])
+            category_code = str(row["category_code"])
             formula = known_formulas.get(case_code, "")
+            default_algorithm_name = case_code
+            if category_code == "PLL" and case_code in pll_cases:
+                default_algorithm_name = pll_cases[case_code].algorithm_name
             conn.execute(
                 """
                 INSERT OR IGNORE INTO algorithms (
@@ -480,7 +634,7 @@ def seed_defaults(repo_root: Path | None = None, db_path: Path | None = None) ->
                 )
                 VALUES (?, ?, ?, 'NEW', 0, ?, ?)
                 """,
-                (case_id, case_code, formula, now, now),
+                (case_id, default_algorithm_name, formula, now, now),
             )
             conn.execute(
                 """
@@ -488,8 +642,15 @@ def seed_defaults(repo_root: Path | None = None, db_path: Path | None = None) ->
                 SET formula = ?, updated_at = ?
                 WHERE case_id = ? AND name = ? AND is_custom = 0
                 """,
-                (formula, now, case_id, case_code),
+                (formula, now, case_id, default_algorithm_name),
             )
+            canonical_noncustom_id: int | None = None
+            if category_code == "PLL" and case_code in pll_cases:
+                canonical_noncustom_id = _cleanup_stale_noncustom_pll_algorithms(
+                    conn,
+                    case_id=case_id,
+                    canonical_name=default_algorithm_name,
+                )
             default_algo = conn.execute(
                 """
                 SELECT id
@@ -501,14 +662,72 @@ def seed_defaults(repo_root: Path | None = None, db_path: Path | None = None) ->
                 (case_id,),
             ).fetchone()
             if default_algo is not None:
+                default_algo_id = int(default_algo["id"])
+                if canonical_noncustom_id is not None:
+                    default_algo_id = canonical_noncustom_id
                 conn.execute(
                     """
                     UPDATE cases
                     SET selected_algorithm_id = COALESCE(selected_algorithm_id, ?)
                     WHERE id = ?
                     """,
-                    (int(default_algo["id"]), case_id),
+                    (default_algo_id, case_id),
                 )
+                _cleanup_stale_artifacts_for_formula(
+                    conn,
+                    algorithm_id=default_algo_id,
+                    formula=formula,
+                )
+            active = conn.execute(
+                """
+                SELECT
+                    c.category_code,
+                    c.case_code,
+                    a.formula
+                FROM cases c
+                LEFT JOIN algorithms a ON a.id = COALESCE(
+                    c.selected_algorithm_id,
+                    (
+                        SELECT aa.id
+                        FROM algorithms aa
+                        WHERE aa.case_id = c.id
+                        ORDER BY aa.is_custom ASC, aa.id ASC
+                        LIMIT 1
+                    )
+                )
+                WHERE c.id = ?
+                """,
+                (case_id,),
+            ).fetchone()
+            if active is not None:
+                active_formula = str(active["formula"] or "")
+                recognizer = ensure_recognizer_assets(
+                    run_dir,
+                    str(active["category_code"]),
+                    str(active["case_code"]),
+                    formula=active_formula,
+                )
+                conn.execute(
+                    """
+                    UPDATE cases
+                    SET
+                        recognizer_svg_path = ?,
+                        recognizer_png_path = COALESCE(?, recognizer_png_path)
+                    WHERE id = ?
+                    """,
+                    (recognizer.svg_rel_path, recognizer.png_rel_path, case_id),
+                )
+
+
+def reset_runtime_state(repo_root: Path | None = None, db_path: Path | None = None) -> Path:
+    root = repo_root or repo_root_from_file()
+    path = db_path or default_db_path(root)
+    recognizer_dir = path.parent / "recognizers"
+    if path.exists():
+        path.unlink()
+    if recognizer_dir.exists():
+        shutil.rmtree(recognizer_dir)
+    return initialize_database(repo_root=root, db_path=path)
 
 
 def _column_exists(conn: sqlite3.Connection, table_name: str, column_name: str) -> bool:

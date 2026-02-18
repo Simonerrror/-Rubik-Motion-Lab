@@ -32,6 +32,7 @@ def _algorithm_row_payload(row: sqlite3.Row) -> dict[str, Any]:
         payload["case_id"] = int(row["case_id"])
     if "case_title" in row.keys():
         payload["case_title"] = row["case_title"]
+        payload["display_name"] = row["case_title"]
     if "subgroup_title" in row.keys():
         payload["subgroup_title"] = row["subgroup_title"]
     if "case_number" in row.keys():
@@ -51,6 +52,7 @@ def _case_payload(row: sqlite3.Row) -> dict[str, Any]:
         "group": row["category_code"],
         "case_code": row["case_code"],
         "title": row["title"],
+        "display_name": row["title"],
         "subgroup_title": row["subgroup_title"] or f"{row['category_code']} Cases",
         "case_number": row["case_number"],
         "probability_text": row["probability_text"],
@@ -208,11 +210,12 @@ def list_case_algorithms(conn: sqlite3.Connection, case_id: int) -> list[dict[st
             c.case_number,
             c.probability_text,
             c.recognizer_svg_path,
-            c.recognizer_png_path
+            c.recognizer_png_path,
+            c.selected_algorithm_id
         FROM algorithms a
         JOIN cases c ON c.id = a.case_id
         WHERE a.case_id = ?
-        ORDER BY a.id ASC
+        ORDER BY (a.id = c.selected_algorithm_id) DESC, a.is_custom ASC, a.id ASC
         """,
         (case_id,),
     ).fetchall()
@@ -378,6 +381,24 @@ def set_case_selected_algorithm(conn: sqlite3.Connection, case_id: int, algorith
     return updated
 
 
+def update_case_recognizer_paths(
+    conn: sqlite3.Connection,
+    case_id: int,
+    svg_rel_path: str,
+    png_rel_path: str | None,
+) -> None:
+    conn.execute(
+        """
+        UPDATE cases
+        SET
+            recognizer_svg_path = ?,
+            recognizer_png_path = COALESCE(?, recognizer_png_path)
+        WHERE id = ?
+        """,
+        (svg_rel_path, png_rel_path, case_id),
+    )
+
+
 def create_custom_algorithm_for_case(
     conn: sqlite3.Connection,
     case_id: int,
@@ -475,6 +496,93 @@ def create_custom_algorithm(
         (algorithm_id, case_id),
     )
     return get_algorithm(conn, algorithm_id) or {}
+
+
+def delete_case_algorithm(
+    conn: sqlite3.Connection,
+    case_id: int,
+    algorithm_id: int,
+) -> dict[str, Any]:
+    row = conn.execute(
+        """
+        SELECT a.id, a.case_id
+        FROM algorithms a
+        WHERE a.id = ? AND a.case_id = ?
+        """,
+        (algorithm_id, case_id),
+    ).fetchone()
+    if row is None:
+        raise KeyError("algorithm does not belong to case")
+
+    count_row = conn.execute(
+        "SELECT COUNT(*) AS n FROM algorithms WHERE case_id = ?",
+        (case_id,),
+    ).fetchone()
+    total_algorithms = int(count_row["n"]) if count_row is not None else 0
+    if total_algorithms <= 1:
+        raise ValueError("Cannot delete last algorithm for case")
+
+    case_row = conn.execute(
+        "SELECT selected_algorithm_id FROM cases WHERE id = ?",
+        (case_id,),
+    ).fetchone()
+    if case_row is None:
+        raise KeyError(f"case id {case_id} not found")
+
+    fallback = conn.execute(
+        """
+        SELECT id
+        FROM algorithms
+        WHERE case_id = ? AND id != ?
+        ORDER BY is_custom ASC, id ASC
+        LIMIT 1
+        """,
+        (case_id, algorithm_id),
+    ).fetchone()
+    if fallback is None:
+        raise RuntimeError("Could not resolve fallback algorithm")
+    fallback_id = int(fallback["id"])
+
+    artifact_rows = conn.execute(
+        """
+        SELECT output_path
+        FROM render_artifacts
+        WHERE algorithm_id = ? AND output_path IS NOT NULL
+        """,
+        (algorithm_id,),
+    ).fetchall()
+    job_rows = conn.execute(
+        """
+        SELECT output_path
+        FROM render_jobs
+        WHERE algorithm_id = ? AND output_path IS NOT NULL
+        """,
+        (algorithm_id,),
+    ).fetchall()
+    output_paths = sorted(
+        {
+            str(path_row["output_path"])
+            for path_row in [*artifact_rows, *job_rows]
+            if path_row["output_path"]
+        }
+    )
+
+    if case_row["selected_algorithm_id"] is not None and int(case_row["selected_algorithm_id"]) == algorithm_id:
+        conn.execute(
+            "UPDATE cases SET selected_algorithm_id = ? WHERE id = ?",
+            (fallback_id, case_id),
+        )
+
+    conn.execute("DELETE FROM render_jobs WHERE algorithm_id = ?", (algorithm_id,))
+    conn.execute("DELETE FROM render_artifacts WHERE algorithm_id = ?", (algorithm_id,))
+    conn.execute("DELETE FROM algorithms WHERE id = ?", (algorithm_id,))
+
+    return {
+        "case_id": case_id,
+        "deleted_algorithm_id": algorithm_id,
+        "selected_algorithm_id": fallback_id,
+        "deleted_output_paths": output_paths,
+    }
 
 
 def set_progress_status(conn: sqlite3.Connection, algorithm_id: int, status: str) -> None:

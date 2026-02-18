@@ -10,6 +10,8 @@
 - Recognizer asset generation wired for OLL/PLL/F2L placeholders.
 - Vanilla frontend bridge added in `static/cards/app.js` and connected from `index.html`.
 - Test coverage added for DB/API/queue/worker; current suite is green on local setup.
+- PLL source-of-truth moved to `pll.txt` with strict parsing and seeded case metadata (name/group/probability/formula).
+- Runtime reset flow added for local dev: full DB+recognizer rebuild endpoint (`POST /api/admin/reset-runtime`).
 
 ## Updated Product Direction (from `index2.html` + latest feedback)
 - `ALL` category is removed from primary UX. Entry point is grouped by selected set (`F2L`, `OLL`, `PLL`).
@@ -62,5 +64,6 @@
 
 ## Remaining short plan
 - [ ] Manual browser smoke check of `index.html` against running API+worker to verify modal UX and queue transitions visually.
-- [ ] Optional pass for richer metadata for PLL/F2L (subgroups and probabilities) when reference sources are prepared.
+- [ ] Final recognizer polish pass for PLL top-card visual proportions on mobile and desktop.
+- [ ] Mobile spacing pass for PLL cards in `index.html` after real-device smoke check.
 - [x] Add static reference tables for PLL sets/probabilities/DoD and expose via API.
