@@ -7,6 +7,8 @@ import pytest
 pytest.importorskip("fastapi")
 from fastapi.testclient import TestClient
 
+from cubeanim.cards import repository
+from cubeanim.cards.db import connect
 from cubeanim.cards.services import CardsService
 import scripts.cards_api as cards_api
 
@@ -130,6 +132,89 @@ def test_api_reference_sets(tmp_path: Path) -> None:
     assert payload["data"]
     assert payload["data"][0]["title"] == "Skip"
     assert any(item["title"] == "G-Perms" for item in payload["data"])
+
+
+def test_api_activate_does_not_reorder_algorithms(tmp_path: Path) -> None:
+    client = _build_client(tmp_path)
+
+    cases_resp = client.get("/api/cases", params={"group": "PLL"})
+    assert cases_resp.status_code == 200
+    case_id = int(cases_resp.json()["data"][0]["id"])
+
+    before_detail = client.get(f"/api/cases/{case_id}")
+    assert before_detail.status_code == 200
+    default_algo_id = int(before_detail.json()["data"]["active_algorithm_id"])
+
+    custom_resp = client.post(
+        f"/api/cases/{case_id}/custom",
+        json={"formula": "R U R' U'", "activate": True},
+    )
+    assert custom_resp.status_code == 200
+    custom_payload = custom_resp.json()["data"]
+    order_with_custom_active = [int(item["id"]) for item in custom_payload["algorithms"]]
+    custom_algo_id = int(custom_payload["active_algorithm_id"])
+    assert custom_algo_id != default_algo_id
+
+    activate_resp = client.post(
+        f"/api/cases/{case_id}/activate",
+        json={"algorithm_id": default_algo_id},
+    )
+    assert activate_resp.status_code == 200
+    activate_payload = activate_resp.json()["data"]
+    order_with_default_active = [int(item["id"]) for item in activate_payload["algorithms"]]
+
+    assert order_with_default_active == order_with_custom_active
+    assert int(activate_payload["active_algorithm_id"]) == default_algo_id
+
+
+def test_api_ignores_stale_artifact_paths(tmp_path: Path) -> None:
+    client = _build_client(tmp_path)
+
+    case_id = int(client.get("/api/cases", params={"group": "PLL"}).json()["data"][0]["id"])
+    detail = client.get(f"/api/cases/{case_id}").json()["data"]
+    algorithm_id = int(detail["active_algorithm_id"])
+    formula_norm = " ".join(str(detail["active_formula"]).split())
+
+    with connect(cards_api.service.db_path) as conn:
+        repository.upsert_render_artifact(
+            conn,
+            algorithm_id=algorithm_id,
+            quality="high",
+            output_name="stale_high",
+            output_path="media/videos/PLL/high/stale_high.mp4",
+            formula_norm=formula_norm,
+            repeat=1,
+        )
+
+    refreshed = client.get(f"/api/cases/{case_id}").json()["data"]
+    assert refreshed["artifacts"]["high"] is None
+
+
+def test_api_high_queue_rejects_stale_draft_artifact(tmp_path: Path) -> None:
+    client = _build_client(tmp_path)
+
+    case_id = int(client.get("/api/cases", params={"group": "PLL"}).json()["data"][0]["id"])
+    detail = client.get(f"/api/cases/{case_id}").json()["data"]
+    algorithm_id = int(detail["active_algorithm_id"])
+    formula_norm = " ".join(str(detail["active_formula"]).split())
+
+    with connect(cards_api.service.db_path) as conn:
+        repository.upsert_render_artifact(
+            conn,
+            algorithm_id=algorithm_id,
+            quality="draft",
+            output_name="stale_draft",
+            output_path="media/videos/PLL/draft/stale_draft.mp4",
+            formula_norm=formula_norm,
+            repeat=1,
+        )
+
+    response = client.post(
+        f"/api/cases/{case_id}/queue",
+        json={"quality": "high"},
+    )
+    assert response.status_code == 400
+    assert "draft artifact" in response.json()["detail"].lower()
 
 
 def test_api_admin_reset_runtime(tmp_path: Path) -> None:

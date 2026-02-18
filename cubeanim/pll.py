@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from collections import deque
 from dataclasses import dataclass
+from functools import lru_cache
 
-from cubeanim.state import state_slots_metadata
+from cubeanim.formula import FormulaConverter
+from cubeanim.state import state_slots_metadata, state_string_from_moves
 
 _VALID_FACE_COLORS = set("URFDLB")
 _SIDE_FACES = ("F", "R", "B", "L")
@@ -118,6 +121,73 @@ def validate_pll_start_state(state: str) -> None:
                 f"at (x={x}, y={y}, z={z}) is {facelet.color} "
                 f"(expected {centers[facelet.face]})"
             )
+
+
+@lru_cache(maxsize=1)
+def _pll_orientation_corrections() -> tuple[tuple[str, ...], ...]:
+    rotations = ("x", "x'", "y", "y'", "z", "z'")
+    queue: deque[tuple[str, ...]] = deque([tuple()])
+    seen_states = {state_string_from_moves([])}
+    sequences: list[tuple[str, ...]] = [tuple()]
+
+    while queue and len(seen_states) < 24:
+        current = queue.popleft()
+        for move in rotations:
+            candidate = (*current, move)
+            signature = state_string_from_moves(list(candidate))
+            if signature in seen_states:
+                continue
+            seen_states.add(signature)
+            sequences.append(candidate)
+            queue.append(candidate)
+            if len(seen_states) >= 24:
+                break
+
+    sequences.sort(key=len)
+    return tuple(sequences)
+
+
+def resolve_valid_pll_start_state(inverse_moves: list[str]) -> str:
+    for correction in _pll_orientation_corrections():
+        state = state_string_from_moves(inverse_moves + list(correction))
+        try:
+            validate_pll_start_state(state)
+            return state
+        except ValueError:
+            continue
+    for correction in _pll_orientation_corrections():
+        state = state_string_from_moves(list(correction) + inverse_moves)
+        try:
+            validate_pll_start_state(state)
+            return state
+        except ValueError:
+            continue
+    return state_string_from_moves(inverse_moves)
+
+
+def _is_rotation_move(move: str) -> bool:
+    base = move[:-1] if move.endswith(("'", "2")) else move
+    return base in {"x", "y", "z"}
+
+
+def balance_pll_formula_rotations(formula: str) -> str:
+    normalized = " ".join(formula.split())
+    if not normalized:
+        return normalized
+
+    steps = FormulaConverter.convert_steps(normalized, repeat=1)
+    flat = [move for step in steps for move in step]
+    rotation_moves = [move for move in flat if _is_rotation_move(move)]
+    if not rotation_moves:
+        return normalized
+
+    for correction in _pll_orientation_corrections():
+        signature = state_string_from_moves(rotation_moves + list(correction))
+        if signature == state_string_from_moves([]):
+            if not correction:
+                return normalized
+            return " ".join([normalized, *correction])
+    return normalized
 
 
 def _position_to_grid(position: tuple[int, int, int]) -> tuple[int, int]:

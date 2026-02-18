@@ -6,6 +6,7 @@
     cases: [],
     activeCaseId: null,
     activeCase: null,
+    localPendingByCase: new Map(),
     activeDisplayMode: "algorithm",
     activeDisplayFormula: "",
     pollHandle: null,
@@ -194,7 +195,7 @@
         card.className = "catalog-card";
         if (item.id === state.activeCaseId) card.classList.add("active");
 
-        const status = String(item.status || "NEW");
+        const status = isCaseQueued(item) ? "QUEUED" : String(item.status || "NEW");
         card.innerHTML = `
           <div class="status-dot ${status}"></div>
           <div class="catalog-preview mx-auto"></div>
@@ -218,8 +219,33 @@
     return state.activeCase;
   }
 
-  function getActiveJob(caseItem) {
+  function getServerActiveJob(caseItem) {
     return (caseItem?.jobs || []).find((job) => job.status === "PENDING" || job.status === "RUNNING") || null;
+  }
+
+  function getLocalPendingJob(caseItem) {
+    if (!caseItem?.id) return null;
+    const quality = state.localPendingByCase.get(caseItem.id);
+    if (!quality) return null;
+    return {
+      id: null,
+      quality,
+      status: "PENDING",
+      local: true,
+    };
+  }
+
+  function getActiveJob(caseItem) {
+    return getServerActiveJob(caseItem) || getLocalPendingJob(caseItem);
+  }
+
+  function isCaseQueued(item) {
+    if (!item?.id) return false;
+    if (state.localPendingByCase.has(item.id)) return true;
+    if (state.activeCase && state.activeCase.id === item.id) {
+      return Boolean(getServerActiveJob(state.activeCase));
+    }
+    return false;
   }
 
   function setVideoSource(videoEl, src) {
@@ -244,8 +270,11 @@
     DOM.mQueueMsg.style.display = "flex";
     DOM.mQueueMsg.textContent = "Select case";
     DOM.mRenderDraftBtn.disabled = true;
+    DOM.mRenderDraftBtn.textContent = "Generate Draft";
+    DOM.mRenderDraftBtn.classList.remove("render-busy");
     DOM.mRenderBtn.disabled = true;
     DOM.mRenderBtn.textContent = "Request HD Render";
+    DOM.mRenderBtn.classList.remove("render-busy");
     DOM.mStatusGroup.querySelectorAll(".status-btn[data-status]").forEach((btn) => {
       btn.classList.remove("active");
       btn.disabled = true;
@@ -273,7 +302,11 @@
 
     const draftArtifact = c.artifacts?.draft || null;
     const highArtifact = c.artifacts?.high || null;
-    const activeJob = getActiveJob(c);
+    const serverActiveJob = getServerActiveJob(c);
+    if (serverActiveJob && c.id != null) {
+      state.localPendingByCase.delete(c.id);
+    }
+    const activeJob = serverActiveJob || getLocalPendingJob(c);
     const videoUrl = highArtifact?.video_url || draftArtifact?.video_url || null;
 
     if (videoUrl) {
@@ -293,7 +326,24 @@
 
     DOM.mRenderDraftBtn.disabled = Boolean(activeJob) || !c.active_algorithm_id;
     DOM.mRenderBtn.disabled = Boolean(activeJob) || !draftArtifact || Boolean(highArtifact) || !c.active_algorithm_id;
-    DOM.mRenderBtn.textContent = highArtifact ? "HD Ready" : "Request HD Render";
+    DOM.mRenderDraftBtn.classList.remove("render-busy");
+    DOM.mRenderBtn.classList.remove("render-busy");
+
+    if (activeJob?.quality === "draft") {
+      DOM.mRenderDraftBtn.textContent = "Draft Queued...";
+      DOM.mRenderDraftBtn.classList.add("render-busy");
+    } else {
+      DOM.mRenderDraftBtn.textContent = "Generate Draft";
+    }
+
+    if (highArtifact) {
+      DOM.mRenderBtn.textContent = "HD Ready";
+    } else if (activeJob?.quality === "high") {
+      DOM.mRenderBtn.textContent = "HD Queued...";
+      DOM.mRenderBtn.classList.add("render-busy");
+    } else {
+      DOM.mRenderBtn.textContent = "Request HD Render";
+    }
 
     if (!lockCustomPreview) {
       setActiveDisplayFormula(c.active_formula || "", "algorithm");
@@ -464,15 +514,33 @@
     const c = currentCase();
     if (!c) return;
 
-    const response = await apiPost(`/api/cases/${c.id}/queue`, { quality });
-    if (response.reused) showToast("Reused existing render");
-    else showToast("Job added to queue");
-
-    const updated = await apiGet(`/api/cases/${c.id}`);
-    state.activeCase = updated;
-    patchCaseInState(updated);
+    state.localPendingByCase.set(c.id, quality);
     renderCatalog();
     updateDetailsPaneState();
+
+    try {
+      const response = await apiPost(`/api/cases/${c.id}/queue`, { quality });
+      if (response.reused || response.job?.status === "DONE") {
+        state.localPendingByCase.delete(c.id);
+        showToast("Reused existing render");
+      } else {
+        showToast("Job added to queue");
+      }
+
+      const updated = await apiGet(`/api/cases/${c.id}`);
+      state.activeCase = updated;
+      patchCaseInState(updated);
+      if (!getServerActiveJob(updated) && response.job?.status === "DONE") {
+        state.localPendingByCase.delete(updated.id);
+      }
+      renderCatalog();
+      updateDetailsPaneState();
+    } catch (error) {
+      state.localPendingByCase.delete(c.id);
+      renderCatalog();
+      updateDetailsPaneState();
+      throw error;
+    }
   }
 
   async function loadCatalog() {

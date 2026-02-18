@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import hashlib
 import json
+import re
 from dataclasses import dataclass
 import os
 from pathlib import Path
@@ -216,22 +218,45 @@ class CardsService:
             }
 
     def process_next_job(self) -> dict[str, Any] | None:
+        job_id: int | None = None
+        algorithm_id: int | None = None
+        quality = ""
+        formula_norm = ""
+        request: RenderRequest | None = None
+        allow_rerender = False
         with connect(self.db_path) as conn:
             job = repository.claim_next_pending_job(conn)
             if job is None:
                 return None
 
+            job_id = int(job["id"])
             algorithm_id = int(job["algorithm_id"])
             quality = str(job["quality"])
             algorithm = repository.get_algorithm(conn, algorithm_id)
             if algorithm is None:
-                return repository.mark_job_failed(conn, job["id"], "Algorithm not found")
+                return repository.mark_job_failed(conn, job_id, "Algorithm not found")
 
             formula = str(algorithm["formula"]).strip()
             if not formula:
-                return repository.mark_job_failed(conn, job["id"], "Algorithm formula is empty")
+                return repository.mark_job_failed(conn, job_id, "Algorithm formula is empty")
 
             try:
+                formula_norm = self._normalize_formula(formula)
+                reused_shared = self._reuse_case_formula_artifact(
+                    conn,
+                    algorithm=algorithm,
+                    quality=quality,
+                    formula_norm=formula_norm,
+                )
+                if reused_shared is not None:
+                    return repository.mark_job_done(
+                        conn,
+                        job_id=job_id,
+                        plan_action="reuse_case_formula_artifact",
+                        output_name=reused_shared["output_name"],
+                        output_path=reused_shared["output_path"],
+                    )
+
                 request = self._build_request(algorithm=algorithm, quality=quality)
                 plan = plan_formula_render(request=request, repo_root=self.repo_root)
 
@@ -247,41 +272,52 @@ class CardsService:
                         quality=quality,
                         output_name=plan.output_name,
                         output_path=rel_output_path,
-                        formula_norm=self._normalize_formula(formula),
+                        formula_norm=formula_norm,
                         repeat=1,
                     )
                     return repository.mark_job_done(
                         conn,
-                        job_id=job["id"],
+                        job_id=job_id,
                         plan_action="reuse_existing",
                         output_name=plan.output_name,
                         output_path=rel_output_path,
                     )
 
-                result = render_formula(
-                    request=request,
-                    repo_root=self.repo_root,
-                    allow_rerender=(plan.action == "confirm_rerender"),
-                )
-                rel_output_path = str(result.final_path.relative_to(self.repo_root))
-                repository.upsert_render_artifact(
-                    conn,
-                    algorithm_id=algorithm_id,
-                    quality=quality,
-                    output_name=result.output_name,
-                    output_path=rel_output_path,
-                    formula_norm=self._normalize_formula(formula),
-                    repeat=1,
-                )
-                return repository.mark_job_done(
-                    conn,
-                    job_id=job["id"],
-                    plan_action=result.action,
-                    output_name=result.output_name,
-                    output_path=rel_output_path,
-                )
+                allow_rerender = plan.action == "confirm_rerender"
             except Exception as exc:
-                return repository.mark_job_failed(conn, job_id=job["id"], error_message=str(exc))
+                return repository.mark_job_failed(conn, job_id=job_id, error_message=str(exc))
+
+        if request is None or job_id is None or algorithm_id is None:
+            return None
+
+        try:
+            result = render_formula(
+                request=request,
+                repo_root=self.repo_root,
+                allow_rerender=allow_rerender,
+            )
+        except Exception as exc:
+            with connect(self.db_path) as conn:
+                return repository.mark_job_failed(conn, job_id=job_id, error_message=str(exc))
+
+        rel_output_path = str(result.final_path.relative_to(self.repo_root))
+        with connect(self.db_path) as conn:
+            repository.upsert_render_artifact(
+                conn,
+                algorithm_id=algorithm_id,
+                quality=quality,
+                output_name=result.output_name,
+                output_path=rel_output_path,
+                formula_norm=formula_norm,
+                repeat=1,
+            )
+            return repository.mark_job_done(
+                conn,
+                job_id=job_id,
+                plan_action=result.action,
+                output_name=result.output_name,
+                output_path=rel_output_path,
+            )
 
     def _enqueue_render_for_algorithm(
         self,
@@ -296,11 +332,19 @@ class CardsService:
         formula = str(algorithm["formula"]).strip()
         if not formula:
             raise ValueError("Selected algorithm has empty formula. Add or edit formula first.")
+        formula_norm = self._normalize_formula(formula)
 
         if quality == "high":
             draft_artifact = repository.get_render_artifact(conn, algorithm_id, "draft")
-            if draft_artifact is None:
-                raise ValueError("HD render requires existing draft artifact")
+            if not self._is_existing_artifact(draft_artifact):
+                shared_draft = self._reuse_case_formula_artifact(
+                    conn,
+                    algorithm=algorithm,
+                    quality="draft",
+                    formula_norm=formula_norm,
+                )
+                if shared_draft is None:
+                    raise ValueError("HD render requires existing draft artifact")
 
         active = repository.get_active_job(conn, algorithm_id=algorithm_id, quality=quality)
         if active is not None:
@@ -313,7 +357,7 @@ class CardsService:
         cached_artifact = repository.get_render_artifact(conn, algorithm_id, quality)
         if (
             cached_artifact is not None
-            and cached_artifact.get("formula_norm") == self._normalize_formula(formula)
+            and cached_artifact.get("formula_norm") == formula_norm
             and (self.repo_root / str(cached_artifact["output_path"])).exists()
         ):
             done_job = repository.insert_render_job(
@@ -331,6 +375,28 @@ class CardsService:
                 "message": "Existing artifact reused",
             }
 
+        reused_shared = self._reuse_case_formula_artifact(
+            conn,
+            algorithm=algorithm,
+            quality=quality,
+            formula_norm=formula_norm,
+        )
+        if reused_shared is not None:
+            done_job = repository.insert_render_job(
+                conn,
+                algorithm_id=algorithm_id,
+                quality=quality,
+                status="DONE",
+                plan_action="reuse_case_formula_artifact",
+                output_name=str(reused_shared["output_name"]),
+                output_path=str(reused_shared["output_path"]),
+            )
+            return {
+                "job": done_job,
+                "reused": True,
+                "message": "Existing case artifact reused",
+            }
+
         request = self._build_request(algorithm=algorithm, quality=quality)
         plan = plan_formula_render(request=request, repo_root=self.repo_root)
 
@@ -342,7 +408,7 @@ class CardsService:
                 quality=quality,
                 output_name=plan.output_name,
                 output_path=rel_output_path,
-                formula_norm=self._normalize_formula(formula),
+                formula_norm=formula_norm,
                 repeat=1,
             )
             done_job = repository.insert_render_job(
@@ -373,18 +439,69 @@ class CardsService:
         }
 
     def _build_request(self, algorithm: dict[str, Any], quality: str) -> RenderRequest:
+        formula_norm = self._normalize_formula(str(algorithm["formula"]))
+        case_code = str(algorithm.get("case_code") or "case")
+        group = str(algorithm["group"])
+        case_slug = re.sub(r"[^a-z0-9]+", "_", case_code.lower()).strip("_") or "case"
+        formula_hash = hashlib.sha1(formula_norm.encode("utf-8")).hexdigest()[:12]
+        storage_name = f"{group.lower()}_{case_slug}_{formula_hash}"
+        display_name = (
+            str(algorithm.get("case_title") or "").strip()
+            or str(algorithm.get("display_name") or "").strip()
+            or str(algorithm.get("name") or "").strip()
+            or case_code
+        )
         return RenderRequest(
-            formula=str(algorithm["formula"]),
-            name=str(algorithm["name"]),
-            group=str(algorithm["group"]),
+            formula=formula_norm,
+            name=storage_name,
+            display_name=display_name,
+            group=group,
             quality=quality,
             repeat=1,
             play=False,
         )
 
+    def _reuse_case_formula_artifact(
+        self,
+        conn,
+        algorithm: dict[str, Any],
+        quality: str,
+        formula_norm: str,
+    ) -> dict[str, Any] | None:
+        shared = repository.find_case_render_artifact_by_formula(
+            conn,
+            case_id=int(algorithm["case_id"]),
+            quality=quality,
+            formula_norm=formula_norm,
+            exclude_algorithm_id=int(algorithm["id"]),
+        )
+        if shared is None:
+            return None
+        output_path = str(shared["output_path"])
+        if not (self.repo_root / output_path).exists():
+            return None
+        repository.upsert_render_artifact(
+            conn,
+            algorithm_id=int(algorithm["id"]),
+            quality=quality,
+            output_name=str(shared["output_name"]),
+            output_path=output_path,
+            formula_norm=formula_norm,
+            repeat=int(shared.get("repeat", 1)),
+        )
+        return shared
+
     @staticmethod
     def _normalize_formula(formula: str) -> str:
         return " ".join(formula.split())
+
+    def _is_existing_artifact(self, artifact: dict[str, Any] | None) -> bool:
+        if artifact is None:
+            return False
+        output_path = str(artifact.get("output_path") or "").strip()
+        if not output_path:
+            return False
+        return (self.repo_root / output_path).exists()
 
     def _decorate_algorithm(
         self,
@@ -408,7 +525,7 @@ class CardsService:
         return payload
 
     def _artifact_payload(self, artifact: dict[str, Any] | None) -> dict[str, Any] | None:
-        if artifact is None:
+        if not self._is_existing_artifact(artifact):
             return None
         return {
             "quality": artifact["quality"],
