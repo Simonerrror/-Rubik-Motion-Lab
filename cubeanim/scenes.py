@@ -9,7 +9,13 @@ from cubeanim.executor import ExecutionConfig, MoveExecutor
 from cubeanim.formula import FormulaConverter
 from cubeanim.models import AlgorithmPreset, RenderGroup
 from cubeanim.oll import OLLTopViewData, build_oll_top_view_data, validate_oll_f2l_start_state
-from cubeanim.pll import PLLTopViewData, build_pll_top_view_data, validate_pll_start_state
+from cubeanim.pll import (
+    PLLTopViewData,
+    balance_pll_formula_rotations,
+    build_pll_top_view_data,
+    resolve_valid_pll_start_state,
+    validate_pll_start_state,
+)
 from cubeanim.presets import get_preset
 from cubeanim.setup import CubeVisualConfig, SceneSetup
 from cubeanim.state import state_string_from_moves
@@ -75,7 +81,10 @@ class BaseAlgorithmScene(ThreeDScene):
         preset = self.resolve_algorithm()
         execution_config = self._resolve_execution_config()
         cube = SceneSetup.apply(self, self.VISUAL_CONFIG)
-        move_steps = FormulaConverter.convert_steps(preset.formula, repeat=preset.repeat)
+        formula_for_scene = preset.formula
+        if preset.group == RenderGroup.PLL:
+            formula_for_scene = balance_pll_formula_rotations(formula_for_scene)
+        move_steps = FormulaConverter.convert_steps(formula_for_scene, repeat=preset.repeat)
         inverse_steps = FormulaConverter.invert_steps(move_steps)
         oll_top_view_data: OLLTopViewData | None = None
         pll_top_view_data: PLLTopViewData | None = None
@@ -87,11 +96,15 @@ class BaseAlgorithmScene(ThreeDScene):
             oll_top_view_data = build_oll_top_view_data(start_state)
         elif preset.group == RenderGroup.PLL:
             inverse_flat = [move for step in inverse_steps for move in step]
-            start_state = state_string_from_moves(inverse_flat)
-            validate_pll_start_state(start_state)
-            pll_top_view_data = build_pll_top_view_data(start_state)
+            start_state = resolve_valid_pll_start_state(inverse_flat)
+            try:
+                validate_pll_start_state(start_state)
+                pll_top_view_data = build_pll_top_view_data(start_state)
+            except ValueError:
+                # Keep video rendering resilient even if PLL top overlay cannot be derived.
+                pll_top_view_data = None
 
-        display_formula = normalize_formula_text(preset.formula)
+        display_formula = normalize_formula_text(formula_for_scene)
         if preset.repeat > 1:
             display_formula = f"({display_formula})^{preset.repeat}"
         MoveExecutor.play(

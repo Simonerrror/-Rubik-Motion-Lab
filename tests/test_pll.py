@@ -3,13 +3,14 @@ from __future__ import annotations
 import pytest
 
 from cubeanim.formula import FormulaConverter
-from cubeanim.pll import build_pll_top_view_data, validate_pll_start_state
+from cubeanim.pll import build_pll_top_view_data, resolve_valid_pll_start_state, validate_pll_start_state
 from cubeanim.state import solved_state_string, state_string_from_moves
 
 
 def _inverse_moves_for_formula(formula: str) -> list[str]:
-    moves = FormulaConverter.convert(formula)
-    return FormulaConverter.invert_moves(moves)
+    steps = FormulaConverter.convert_steps(formula, repeat=1)
+    inverse_steps = FormulaConverter.invert_steps(steps)
+    return [move for step in inverse_steps for move in step]
 
 
 def _start_state_for_formula(formula: str) -> str:
@@ -88,3 +89,28 @@ def test_center_relative_piece_identification_handles_global_y_rotation() -> Non
 
     assert base_corner_pair == rotated_corner_pair
     assert base_edge_pair == rotated_edge_pair
+
+
+def test_zperm_is_edges_only_with_adjacent_bidirectional_swaps() -> None:
+    state = _start_state_for_formula("M2 U M2 U M' U2 M2 U2 M' U2")
+    data = build_pll_top_view_data(state)
+
+    assert len(data.corner_arrows) == 0
+    assert len(data.edge_arrows) == 2
+    assert all(arrow.bidirectional for arrow in data.edge_arrows)
+
+    edge_pairs = {
+        frozenset((arrow.start, arrow.end))
+        for arrow in data.edge_arrows
+    }
+    assert edge_pairs == {
+        frozenset({(0, 1), (1, 0)}),
+        frozenset({(1, 2), (2, 1)}),
+    }
+
+
+def test_resolve_valid_pll_start_state_handles_global_rotation_formulas() -> None:
+    # Ab contains cube rotation and should still resolve to a valid PLL start state.
+    inverse = _inverse_moves_for_formula("x' L2 D2 L U L' D2 L U' L")
+    resolved_state = resolve_valid_pll_start_state(inverse)
+    validate_pll_start_state(resolved_state)

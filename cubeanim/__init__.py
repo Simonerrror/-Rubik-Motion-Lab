@@ -16,6 +16,7 @@ def _patch_manim_rubikscube_square() -> None:
 _patch_manim_rubikscube_square()
 
 from cubeanim.animations import CubeMoveExtended
+from cubeanim.cards import CardsService
 from cubeanim.executor import ExecutionConfig, MoveExecutor
 from cubeanim.formula import FormulaConverter, FormulaSyntaxError
 from cubeanim.models import AlgorithmPreset, RenderGroup
@@ -31,6 +32,7 @@ __all__ = [
     "AlgorithmPreset",
     "BaseAlgorithmScene",
     "CubeMoveExtended",
+    "CardsService",
     "CubeVisualConfig",
     "CONTRAST_SAFE_CUBE_COLORS",
     "ExecutionConfig",
