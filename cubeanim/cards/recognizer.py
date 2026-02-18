@@ -56,11 +56,6 @@ def _norm_formula(formula: str) -> str:
     return " ".join(formula.split())
 
 
-def _formula_hash(formula: str) -> str:
-    normalized = _norm_formula(formula)
-    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()[:10]
-
-
 def _face_color_map() -> dict[str, str]:
     return dict(zip(FACE_ORDER, CONTRAST_SAFE_CUBE_COLORS, strict=True))
 
@@ -181,6 +176,28 @@ def _pll_presets_by_case(repo_root: str) -> dict[str, str]:
     return presets
 
 
+@lru_cache(maxsize=4)
+def _oll_presets_by_case(repo_root: str) -> dict[str, str]:
+    path = Path(repo_root) / "oll.txt"
+    if not path.exists():
+        return {}
+    rows = list(csv.reader(path.read_text(encoding="utf-8-sig").splitlines()))
+    if not rows:
+        return {}
+    presets: dict[str, str] = {}
+    for row in rows[1:]:
+        if len(row) < 3:
+            continue
+        raw_index = str(row[0]).strip()
+        if not raw_index.isdigit():
+            continue
+        formula = _norm_formula(str(row[2]))
+        if not formula:
+            continue
+        presets[f"OLL_{int(raw_index)}"] = formula
+    return presets
+
+
 def _resolve_formula_for_recognizer(
     runtime_dir: Path,
     category: str,
@@ -188,14 +205,17 @@ def _resolve_formula_for_recognizer(
     formula: str | None,
 ) -> str:
     normalized = _norm_formula(formula or "")
-    if category != "PLL":
-        return normalized
-
-    # PLL top cards are canonical per case: never depend on currently selected/custom formula.
     repo_root = str(runtime_dir.resolve().parents[2])
-    preset = _pll_presets_by_case(repo_root).get(case_code)
-    resolved = _norm_formula(preset or normalized)
-    return balance_pll_formula_rotations(resolved)
+    if category == "PLL":
+        # PLL top cards are canonical per case: never depend on currently selected/custom formula.
+        preset = _pll_presets_by_case(repo_root).get(case_code)
+        resolved = _norm_formula(preset or normalized)
+        return balance_pll_formula_rotations(resolved)
+    if category == "OLL":
+        # OLL top cards are canonical per case as well.
+        preset = _oll_presets_by_case(repo_root).get(case_code)
+        return _norm_formula(preset or normalized)
+    return normalized
 
 
 def _base_svg_lines(version: str, category: str, case_code: str) -> list[str]:
@@ -455,9 +475,6 @@ def ensure_recognizer_assets(
         formula=formula,
     )
     slug = _slug(category, case_code)
-    # OLL keeps formula-hash behavior; PLL stays stable by case_code.
-    if category == "OLL" and normalized_formula:
-        slug = f"{slug}_{_formula_hash(normalized_formula)}"
     svg_name = f"{slug}.svg"
     png_name = f"{slug}.png"
 
