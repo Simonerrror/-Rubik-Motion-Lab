@@ -47,6 +47,22 @@ source .venv/bin/activate
 python scripts/render_algo.py --formula "R U R' U'" --name MyAlgo --group PLL --quality standard
 ```
 
+## Web Cards (FastAPI + HTML/JS)
+
+```bash
+source .venv/bin/activate
+python scripts/cards_api.py
+```
+
+Open `http://127.0.0.1:8008/`.
+
+Run render worker in a second terminal:
+
+```bash
+source .venv/bin/activate
+python scripts/cards_worker.py
+```
+
 ## Render Contract
 
 - Output path: `media/videos/<GROUP>/<QUALITY>/<NAME>.mp4`
