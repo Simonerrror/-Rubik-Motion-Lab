@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import sqlite3
 import json
 from contextlib import contextmanager
@@ -235,6 +236,11 @@ def seed_cases_path(repo_root: Path | None = None) -> Path:
     return root / "data" / "cards" / "seed_cases.json"
 
 
+def pll_algorithms_path(repo_root: Path | None = None) -> Path:
+    root = repo_root or repo_root_from_file()
+    return root / "pll.txt"
+
+
 @contextmanager
 def connect(db_path: Path) -> Iterator[sqlite3.Connection]:
     db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -353,11 +359,43 @@ _KNOWN_FORMULAS = {
 }
 
 
+def _load_pll_algorithms(root: Path | None = None) -> dict[str, dict[str, str]]:
+    path = pll_algorithms_path(root)
+    if not path.exists():
+        return {}
+
+    rows = csv.reader(path.read_text(encoding="utf-8-sig").splitlines())
+    mapping: dict[str, dict[str, str]] = {}
+
+    for row in rows:
+        if len(row) < 3:
+            continue
+        raw_index = row[0].strip()
+        if raw_index in {"", "№"}:
+            continue
+        if not raw_index.isdigit():
+            continue
+
+        case_code = f"PLL_{int(raw_index)}"
+        mapping[case_code] = {
+            "name": row[1].strip(),
+            "formula": " ".join(row[2].split()),
+        }
+
+    return mapping
+
+
 def seed_defaults(repo_root: Path | None = None, db_path: Path | None = None) -> None:
     root = repo_root or repo_root_from_file()
     path = db_path or default_db_path(root)
     run_dir = path.parent if db_path is not None else runtime_dir(root)
     run_dir.mkdir(parents=True, exist_ok=True)
+    pll_algorithms = _load_pll_algorithms(root)
+    known_formulas = dict(_KNOWN_FORMULAS)
+    for case_code, payload in pll_algorithms.items():
+        formula = payload.get("formula", "").strip()
+        if formula:
+            known_formulas[case_code] = formula
 
     with connect(path) as conn:
         _seed_categories(conn)
@@ -365,7 +403,13 @@ def seed_defaults(repo_root: Path | None = None, db_path: Path | None = None) ->
 
         for category, case_code in _iter_seed_cases(root):
             metadata = _resolve_case_metadata(category, case_code)
-            recognizer = ensure_recognizer_assets(run_dir, category, case_code)
+            formula_for_case = known_formulas.get(case_code, "")
+            recognizer = ensure_recognizer_assets(
+                run_dir,
+                category,
+                case_code,
+                formula=formula_for_case,
+            )
             conn.execute(
                 """
                 INSERT OR IGNORE INTO cases (
@@ -422,7 +466,7 @@ def seed_defaults(repo_root: Path | None = None, db_path: Path | None = None) ->
         for row in rows:
             case_id = int(row["id"])
             case_code = str(row["case_code"])
-            formula = _KNOWN_FORMULAS.get(case_code, "")
+            formula = known_formulas.get(case_code, "")
             conn.execute(
                 """
                 INSERT OR IGNORE INTO algorithms (
@@ -437,6 +481,14 @@ def seed_defaults(repo_root: Path | None = None, db_path: Path | None = None) ->
                 VALUES (?, ?, ?, 'NEW', 0, ?, ?)
                 """,
                 (case_id, case_code, formula, now, now),
+            )
+            conn.execute(
+                """
+                UPDATE algorithms
+                SET formula = ?, updated_at = ?
+                WHERE case_id = ? AND name = ? AND is_custom = 0
+                """,
+                (formula, now, case_id, case_code),
             )
             default_algo = conn.execute(
                 """

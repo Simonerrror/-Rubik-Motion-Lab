@@ -16,7 +16,7 @@ def _norm_formula(formula: str) -> str:
 
 
 def _algorithm_row_payload(row: sqlite3.Row) -> dict[str, Any]:
-    recognizer_rel = row["recognizer_png_path"] or row["recognizer_svg_path"]
+    recognizer_rel = row["recognizer_svg_path"] or row["recognizer_png_path"]
     recognizer_url = f"/assets/{recognizer_rel}" if recognizer_rel else None
 
     payload: dict[str, Any] = {
@@ -44,7 +44,7 @@ def _algorithm_row_payload(row: sqlite3.Row) -> dict[str, Any]:
 
 
 def _case_payload(row: sqlite3.Row) -> dict[str, Any]:
-    recognizer_rel = row["recognizer_png_path"] or row["recognizer_svg_path"]
+    recognizer_rel = row["recognizer_svg_path"] or row["recognizer_png_path"]
     recognizer_url = f"/assets/{recognizer_rel}" if recognizer_rel else None
     return {
         "id": int(row["id"]),
