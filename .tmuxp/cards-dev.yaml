@@ -1,0 +1,14 @@
+session_name: manim-tests-cards
+start_directory: .
+windows:
+  - window_name: cards
+    layout: even-horizontal
+    panes:
+      - shell_command:
+          - clear
+          - echo "[cards_api]"
+          - uv run python scripts/cards_api.py
+      - shell_command:
+          - clear
+          - echo "[cards_worker]"
+          - uv run python scripts/cards_worker.py
