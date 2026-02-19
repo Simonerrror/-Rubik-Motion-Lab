@@ -12,6 +12,9 @@
 - Test coverage added for DB/API/queue/worker; current suite is green on local setup.
 - PLL source-of-truth moved to `pll.txt` with strict parsing and seeded case metadata (name/group/probability/formula).
 - Runtime reset flow added for local dev: full DB+recognizer rebuild endpoint (`POST /api/admin/reset-runtime`).
+- OLL source-of-truth moved to strict `oll.txt` (57/57 complete, fail-fast validation).
+- OLL case metadata/title/probability/subgroup now seeded from `oll.txt` with canonical `OLL #N` titles.
+- OLL recognizers are canonical per case and stable by URL (no hash drift on custom/activate).
 
 ## Updated Product Direction (from `index2.html` + latest feedback)
 - `ALL` category is removed from primary UX. Entry point is grouped by selected set (`F2L`, `OLL`, `PLL`).
@@ -61,6 +64,7 @@
 - [x] Update/add tests for new case endpoints and activation/custom flow.
 - [x] Re-run unit/API/worker tests.
 - [ ] Smoke-check run: API + worker + manual UI flow (select case -> draft -> HD -> polling update).
+- [x] OLL parity checks: all 57 OLL cases seeded with non-empty active formulas.
 
 ## Remaining short plan
 - [ ] Manual browser smoke check of `index.html` against running API+worker to verify modal UX and queue transitions visually.

@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import sqlite3
 import json
+import re
 import shutil
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -14,32 +15,6 @@ from cubeanim.cards.recognizer import ensure_recognizer_assets
 
 DEFAULT_DB_ENV = "CUBEANIM_CARDS_DB"
 
-
-_OLL_SUBGROUPS: dict[str, set[int]] = {
-    "All Edges Oriented Correctly": {21, 22, 23, 24, 25, 26, 27},
-    "No Edges Oriented Correctly": {1, 2, 3, 4, 17, 18, 19, 20},
-    "T-Shapes": {33, 45},
-    "Squares": {5, 6},
-    "C-Shapes": {34, 46},
-    "W-Shapes": {36, 38},
-    "Corners Correct, Edges Flipped": {28, 57},
-    "P-Shapes": {31, 32, 43, 44},
-    "I-Shapes": {51, 52, 55, 56},
-    "Fish Shapes": {9, 10, 35, 37},
-    "Knight Move Shapes": {13, 14, 15, 16},
-    "Awkward Shapes": {29, 30, 41, 42},
-    "L-Shapes": {47, 48, 49, 50, 53, 54},
-    "Lightning Bolts": {7, 8, 11, 12, 39, 40},
-}
-
-_OLL_PROBABILITY_OVERRIDES: dict[int, str] = {
-    1: "1/108",
-    20: "1/216",
-    21: "1/108",
-    55: "1/108",
-    56: "1/108",
-    57: "1/108",
-}
 
 _PLL_REFERENCE_SETS: list[dict[str, Any]] = [
     {
@@ -179,6 +154,19 @@ _PLL_REFERENCE_SETS: list[dict[str, Any]] = [
 ]
 
 _PLL_REQUIRED_HEADER = ("№", "Название", "Алгоритм", "Группа", "Вероятность")
+_OLL_REQUIRED_HEADER = ("№", "Название", "Алгоритм", "Группа", "Вероятность")
+_OLL_EXPECTED_CASES = 57
+_FRACTION_PATTERN = re.compile(r"^\d+/\d+$")
+
+
+@dataclass(frozen=True)
+class OLLSeedCase:
+    case_code: str
+    case_number: int
+    case_title: str
+    formula: str
+    subgroup_title: str
+    probability_text: str
 
 
 @dataclass(frozen=True)
@@ -217,6 +205,11 @@ def schema_path(repo_root: Path | None = None) -> Path:
 def seed_cases_path(repo_root: Path | None = None) -> Path:
     root = repo_root or repo_root_from_file()
     return root / "data" / "cards" / "seed_cases.json"
+
+
+def oll_algorithms_path(repo_root: Path | None = None) -> Path:
+    root = repo_root or repo_root_from_file()
+    return root / "oll.txt"
 
 
 def pll_algorithms_path(repo_root: Path | None = None) -> Path:
@@ -282,15 +275,7 @@ def _resolve_case_metadata(
     subgroup: str | None = None
     probability: str | None = None
 
-    if category == "OLL" and number is not None:
-        subgroup = "OLL Cases"
-        for title, numbers in _OLL_SUBGROUPS.items():
-            if number in numbers:
-                subgroup = title
-                break
-        probability = _OLL_PROBABILITY_OVERRIDES.get(number, "1/54")
-        title = f"OLL {number}"
-    elif category == "F2L" and number is not None:
+    if category == "F2L" and number is not None:
         subgroup = "F2L Cases"
         title = f"F2L {number}"
     else:
@@ -333,10 +318,88 @@ def _iter_seed_cases(root: Path | None = None, include_pll: bool = True) -> Iter
 
 _KNOWN_FORMULAS = {
     "F2L_1": "R U R' U'",
-    "OLL_1": "R U2 R2 F R F' U2 R' F R F'",
-    "OLL_27": "R U R' U R U2 R'",
-    "OLL_26": "R U2 R' U' R U' R'",
 }
+
+
+def _fraction_from_probability(raw_probability: str, source: str, row_number: int) -> str:
+    clean = raw_probability.strip()
+    if not clean:
+        raise ValueError(f"{source} row {row_number}: empty probability")
+    fraction = clean.split(maxsplit=1)[0]
+    if not _FRACTION_PATTERN.fullmatch(fraction):
+        raise ValueError(
+            f"{source} row {row_number}: probability must start with fraction X/Y, got '{raw_probability}'"
+        )
+    return fraction
+
+
+def _parse_oll_seed_row(row: list[str], row_number: int) -> OLLSeedCase:
+    if len(row) < 5:
+        raise ValueError(f"oll.txt row {row_number}: expected 5 columns, got {len(row)}")
+
+    raw_index = row[0].strip()
+    if not raw_index.isdigit():
+        raise ValueError(f"oll.txt row {row_number}: invalid case number '{raw_index}'")
+
+    case_number = int(raw_index)
+    raw_name = row[1].strip()
+    if not raw_name:
+        raise ValueError(f"oll.txt row {row_number}: empty name")
+
+    formula = _norm_formula(str(row[2]))
+    if not formula:
+        raise ValueError(f"oll.txt row {row_number}: empty formula")
+
+    subgroup = row[3].strip()
+    if not subgroup:
+        raise ValueError(f"oll.txt row {row_number}: empty group")
+
+    probability = _fraction_from_probability(row[4], source="oll.txt", row_number=row_number)
+    return OLLSeedCase(
+        case_code=f"OLL_{case_number}",
+        case_number=case_number,
+        case_title=f"OLL #{case_number}",
+        formula=formula,
+        subgroup_title=subgroup,
+        probability_text=probability,
+    )
+
+
+def _load_oll_seed_cases(root: Path | None = None) -> dict[str, OLLSeedCase]:
+    path = oll_algorithms_path(root)
+    if not path.exists():
+        raise FileNotFoundError(f"Required OLL source not found: {path}")
+
+    rows = list(csv.reader(path.read_text(encoding="utf-8-sig").splitlines()))
+    if not rows:
+        raise ValueError("oll.txt is empty")
+
+    header = tuple(cell.strip() for cell in rows[0][:5])
+    if header != _OLL_REQUIRED_HEADER:
+        raise ValueError(
+            "oll.txt header mismatch. "
+            f"Expected {list(_OLL_REQUIRED_HEADER)}, got {list(header)}"
+        )
+
+    mapping: dict[str, OLLSeedCase] = {}
+    for index, row in enumerate(rows[1:], start=2):
+        if not row or not "".join(row).strip():
+            continue
+        parsed = _parse_oll_seed_row(row=row, row_number=index)
+        if parsed.case_code in mapping:
+            raise ValueError(f"oll.txt duplicate case number for {parsed.case_code}")
+        mapping[parsed.case_code] = parsed
+
+    expected_codes = {f"OLL_{number}" for number in range(1, _OLL_EXPECTED_CASES + 1)}
+    found_codes = set(mapping.keys())
+    missing = sorted(expected_codes - found_codes, key=lambda item: int(item.split("_")[1]))
+    extra = sorted(found_codes - expected_codes, key=lambda item: int(item.split("_")[1]))
+    if missing or extra:
+        raise ValueError(
+            "oll.txt must provide complete OLL_1..OLL_57 set. "
+            f"Missing: {missing or 'none'}; Extra: {extra or 'none'}"
+        )
+    return mapping
 
 
 def _pll_display_name(name: str) -> str:
@@ -349,11 +412,8 @@ def _pll_display_name(name: str) -> str:
     return f"{clean}-perm"
 
 
-def _pll_probability_fraction(raw_probability: str) -> str:
-    clean = raw_probability.strip()
-    if not clean:
-        raise ValueError("PLL row has empty probability")
-    return clean.split(maxsplit=1)[0]
+def _pll_probability_fraction(raw_probability: str, row_number: int) -> str:
+    return _fraction_from_probability(raw_probability, source="pll.txt", row_number=row_number)
 
 
 def _norm_formula(formula: str) -> str:
@@ -372,7 +432,7 @@ def _parse_pll_seed_row(row: list[str], row_number: int) -> PLLSeedCase:
     raw_name = row[1].strip()
     formula = " ".join(row[2].split())
     subgroup = row[3].strip()
-    probability = _pll_probability_fraction(row[4])
+    probability = _pll_probability_fraction(row[4], row_number=row_number)
     if not formula:
         raise ValueError(f"pll.txt row {row_number}: empty formula")
     if not subgroup:
@@ -488,8 +548,11 @@ def seed_defaults(repo_root: Path | None = None, db_path: Path | None = None) ->
     path = db_path or default_db_path(root)
     run_dir = path.parent if db_path is not None else runtime_dir(root)
     run_dir.mkdir(parents=True, exist_ok=True)
+    oll_cases = _load_oll_seed_cases(root)
     pll_cases = _load_pll_seed_cases(root)
     known_formulas = dict(_KNOWN_FORMULAS)
+    for case_code, payload in oll_cases.items():
+        known_formulas[case_code] = payload.formula
     for case_code, payload in pll_cases.items():
         known_formulas[case_code] = payload.formula
 
@@ -498,8 +561,22 @@ def seed_defaults(repo_root: Path | None = None, db_path: Path | None = None) ->
         _seed_reference_probabilities(conn)
 
         for category, case_code in _iter_seed_cases(root, include_pll=False):
-            metadata = _resolve_case_metadata(category, case_code)
-            formula_for_case = known_formulas.get(case_code, "")
+            if category == "OLL":
+                if case_code not in oll_cases:
+                    raise ValueError(
+                        f"seed_cases declares {case_code}, but oll.txt does not provide it"
+                    )
+                oll_case = oll_cases[case_code]
+                metadata = {
+                    "title": oll_case.case_title,
+                    "subgroup_title": oll_case.subgroup_title,
+                    "case_number": oll_case.case_number,
+                    "probability_text": oll_case.probability_text,
+                }
+                formula_for_case = oll_case.formula
+            else:
+                metadata = _resolve_case_metadata(category, case_code)
+                formula_for_case = known_formulas.get(case_code, "")
             recognizer = ensure_recognizer_assets(
                 run_dir,
                 category,
@@ -620,6 +697,8 @@ def seed_defaults(repo_root: Path | None = None, db_path: Path | None = None) ->
             case_code = str(row["case_code"])
             category_code = str(row["category_code"])
             formula = known_formulas.get(case_code, "")
+            if category_code == "OLL" and not formula:
+                raise ValueError(f"OLL case {case_code} has empty canonical formula")
             default_algorithm_name = case_code
             if category_code == "PLL" and case_code in pll_cases:
                 default_algorithm_name = pll_cases[case_code].algorithm_name

@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from cubeanim.cards.db import connect, initialize_database, reset_runtime_state
+from cubeanim.cards.db import _load_oll_seed_cases, connect, initialize_database, reset_runtime_state
 from cubeanim.cards.services import CardsService
 from cubeanim.pll import balance_pll_formula_rotations
 
@@ -66,6 +66,35 @@ def test_pll_formulas_seeded_from_pll_txt(tmp_path: Path) -> None:
     assert pll_by_case["PLL_21"]["formula"] == "M2 U M2 U M' U2 M2 U2 M' U2"
 
 
+def test_oll_seed_source_is_complete_and_strict() -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    oll_cases = _load_oll_seed_cases(repo_root)
+    assert len(oll_cases) == 57
+
+    for index in range(1, 58):
+        case_code = f"OLL_{index}"
+        assert case_code in oll_cases
+        item = oll_cases[case_code]
+        assert item.case_title == f"OLL #{index}"
+        assert item.formula
+        assert re.fullmatch(r"\d+/\d+", item.probability_text)
+        assert item.subgroup_title
+
+
+def test_oll_formulas_seeded_from_oll_txt(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    service = CardsService.create(repo_root=repo_root, db_path=tmp_path / "cards.db")
+
+    oll_items = service.list_algorithms(group="OLL")
+    assert len(oll_items) == 57
+    assert all(str(item["formula"]).strip() for item in oll_items if not item.get("is_custom"))
+
+    oll_by_case = {item["case_code"]: item for item in oll_items}
+    assert oll_by_case["OLL_26"]["formula"] == "R U2 R' U' R U' R'"
+    assert oll_by_case["OLL_27"]["formula"] == "R U R' U R U2 R'"
+    assert oll_by_case["OLL_57"]["formula"] == "(R U R' U') M' (U R U' r')"
+
+
 def test_seeded_pll_formulas_are_rotation_balanced(tmp_path: Path) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     service = CardsService.create(repo_root=repo_root, db_path=tmp_path / "cards.db")
@@ -126,20 +155,21 @@ def test_oll_recognizer_svg_is_minimal_top_card(tmp_path: Path) -> None:
     assert "rx=\"10\"" not in content
 
 
-def test_recognizer_path_changes_when_active_formula_changes(tmp_path: Path) -> None:
+def test_oll_recognizer_path_is_case_stable(tmp_path: Path) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     service = CardsService.create(repo_root=repo_root, db_path=tmp_path / "cards.db")
 
     case = next(item for item in service.list_cases("OLL") if item["case_code"] == "OLL_26")
-    before_url = case["recognizer_url"]
+    before_url = case["recognizer_url"] or ""
+    assert before_url.endswith("/assets/recognizers/oll/svg/oll_oll_26.svg")
 
     updated = service.create_case_custom_algorithm(
         case_id=int(case["id"]),
         formula="R U R' U R U2 R'",
         activate=True,
     )
-    after_url = updated["recognizer_url"]
-    assert before_url != after_url
+    after_url = updated["recognizer_url"] or ""
+    assert before_url == after_url
 
 
 def test_pll_recognizer_path_is_case_stable(tmp_path: Path) -> None:
@@ -167,6 +197,16 @@ def test_pll_case_metadata_follows_pll_txt_names(tmp_path: Path) -> None:
     assert case["display_name"] == "Jb-perm"
     assert case["subgroup_title"] == "Adjacent Corner Swap"
     assert case["probability_text"] == "1/18"
+
+
+def test_oll_case_metadata_follows_oll_txt(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    service = CardsService.create(repo_root=repo_root, db_path=tmp_path / "cards.db")
+
+    case = next(item for item in service.list_cases("OLL") if item["case_code"] == "OLL_26")
+    assert case["display_name"] == "OLL #26"
+    assert case["subgroup_title"] == "Cross (Antisune)"
+    assert case["probability_text"] == "1/54"
 
 
 def test_runtime_reset_rebuilds_database(tmp_path: Path) -> None:
