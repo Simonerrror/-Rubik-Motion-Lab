@@ -22,6 +22,37 @@
         }
         .nav-tab:hover { color: #e2e8f0; }
         .nav-tab.active { color: #3b82f6; border-color: #3b82f6; }
+        .sort-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.42rem;
+            color: #94a3b8;
+            font-size: 0.66rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            user-select: none;
+            cursor: pointer;
+        }
+        .sort-toggle input {
+            width: 0.85rem;
+            height: 0.85rem;
+            accent-color: #3b82f6;
+            cursor: pointer;
+        }
+        .sidebar-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            min-height: 3.2rem;
+        }
+        .sidebar-tabs {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            flex-wrap: nowrap;
+        }
 
         .subgroup-title {
             color: #6b7280;
@@ -208,10 +239,16 @@
     <div class="h-full min-h-0 flex flex-col lg:flex-row">
         <aside class="w-full lg:w-[28%] border-b lg:border-b-0 lg:border-r border-gray-800 bg-[#0d121f] flex flex-col min-h-0">
             <div class="border-b border-gray-800 bg-[#0f172a] px-3 shrink-0">
-                <div class="flex gap-5">
-                    <button class="nav-tab" data-category="F2L">F2L</button>
-                    <button class="nav-tab" data-category="OLL">OLL</button>
-                    <button class="nav-tab active" data-category="PLL">PLL</button>
+                <div class="sidebar-topbar">
+                    <div class="sidebar-tabs">
+                        <button class="nav-tab" data-category="F2L">F2L</button>
+                        <button class="nav-tab" data-category="OLL">OLL</button>
+                        <button class="nav-tab active" data-category="PLL">PLL</button>
+                    </div>
+                    <label class="sort-toggle">
+                        <input id="sort-progress-toggle" type="checkbox">
+                        <span>Progress Sort</span>
+                    </label>
                 </div>
             </div>
             <div id="catalog-container" class="space-y-5 p-3 flex-1 min-h-0 overflow-y-auto"></div>

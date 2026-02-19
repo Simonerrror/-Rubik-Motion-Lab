@@ -1,5 +1,36 @@
 (() => {
   const GROUPS = ["F2L", "OLL", "PLL"];
+  const PROGRESS_SORT_STORAGE_KEY = "cards_progress_sort_by_group_v1";
+  const STATUS_SORT_RANK = {
+    IN_PROGRESS: 0,
+    NEW: 1,
+    LEARNED: 2,
+  };
+
+  function loadProgressSortMap() {
+    const defaults = { F2L: false, OLL: false, PLL: false };
+    try {
+      const raw = localStorage.getItem(PROGRESS_SORT_STORAGE_KEY);
+      if (!raw) return defaults;
+      const parsed = JSON.parse(raw);
+      GROUPS.forEach((group) => {
+        if (Object.prototype.hasOwnProperty.call(parsed || {}, group)) {
+          defaults[group] = Boolean(parsed[group]);
+        }
+      });
+    } catch (error) {
+      console.warn(error);
+    }
+    return defaults;
+  }
+
+  function saveProgressSortMap(map) {
+    try {
+      localStorage.setItem(PROGRESS_SORT_STORAGE_KEY, JSON.stringify(map));
+    } catch (error) {
+      console.warn(error);
+    }
+  }
 
   const state = {
     category: "PLL",
@@ -10,10 +41,12 @@
     activeDisplayMode: "algorithm",
     activeDisplayFormula: "",
     pollHandle: null,
+    progressSortByGroup: loadProgressSortMap(),
   };
 
   const DOM = {
     catalog: document.getElementById("catalog-container"),
+    sortProgressToggle: document.getElementById("sort-progress-toggle"),
     mName: document.getElementById("m-name"),
     mProb: document.getElementById("m-prob"),
     mCaseCode: document.getElementById("m-case-code"),
@@ -106,6 +139,35 @@
     document.querySelectorAll(".nav-tab").forEach((tab) => {
       tab.classList.toggle("active", String(tab.dataset.category || "").toUpperCase() === category);
     });
+    syncProgressSortToggle();
+  }
+
+  function syncProgressSortToggle() {
+    if (!DOM.sortProgressToggle) return;
+    DOM.sortProgressToggle.checked = Boolean(state.progressSortByGroup[state.category]);
+  }
+
+  function caseSortRank(item) {
+    const status = String(item?.status || "NEW");
+    return STATUS_SORT_RANK[status] ?? 1;
+  }
+
+  function sortCasesForCatalog(cases) {
+    const sorted = [...cases];
+    if (!state.progressSortByGroup[state.category]) return sorted;
+    sorted.sort((a, b) => {
+      const rankDiff = caseSortRank(a) - caseSortRank(b);
+      if (rankDiff !== 0) return rankDiff;
+
+      const aNum = Number.isFinite(Number(a.case_number)) ? Number(a.case_number) : Number.MAX_SAFE_INTEGER;
+      const bNum = Number.isFinite(Number(b.case_number)) ? Number(b.case_number) : Number.MAX_SAFE_INTEGER;
+      if (aNum !== bNum) return aNum - bNum;
+
+      const codeA = String(a.case_code || "");
+      const codeB = String(b.case_code || "");
+      return codeA.localeCompare(codeB);
+    });
+    return sorted;
   }
 
   function appendRecognizerPreview(container, item) {
@@ -167,6 +229,26 @@
     renderActiveAlgorithmDisplay(state.activeDisplayFormula);
   }
 
+  function appendCatalogCard(grid, item) {
+    const card = document.createElement("article");
+    card.className = "catalog-card";
+    if (item.id === state.activeCaseId) card.classList.add("active");
+
+    const status = isCaseQueued(item) ? "QUEUED" : String(item.status || "NEW");
+    card.innerHTML = `
+      <div class="status-dot ${status}"></div>
+      <div class="catalog-preview mx-auto"></div>
+      <div class="tile-title">${tileTitle(item)}</div>
+    `;
+
+    const preview = card.querySelector(".catalog-preview");
+    appendRecognizerPreview(preview, item);
+    card.addEventListener("click", () => {
+      void selectCase(item.id);
+    });
+    grid.appendChild(card);
+  }
+
   function renderCatalog() {
     DOM.catalog.innerHTML = "";
     if (!state.cases.length) {
@@ -174,6 +256,16 @@
       empty.className = "text-sm text-gray-500 border border-gray-800 rounded-xl p-4 bg-gray-900/30";
       empty.textContent = "No cases in this group.";
       DOM.catalog.appendChild(empty);
+      return;
+    }
+
+    if (state.progressSortByGroup[state.category]) {
+      const grid = document.createElement("div");
+      grid.className = "catalog-grid";
+      sortCasesForCatalog(state.cases).forEach((item) => {
+        appendCatalogCard(grid, item);
+      });
+      DOM.catalog.appendChild(grid);
       return;
     }
 
@@ -190,24 +282,8 @@
       const grid = document.createElement("div");
       grid.className = "catalog-grid";
 
-      cases.forEach((item) => {
-        const card = document.createElement("article");
-        card.className = "catalog-card";
-        if (item.id === state.activeCaseId) card.classList.add("active");
-
-        const status = isCaseQueued(item) ? "QUEUED" : String(item.status || "NEW");
-        card.innerHTML = `
-          <div class="status-dot ${status}"></div>
-          <div class="catalog-preview mx-auto"></div>
-          <div class="tile-title">${tileTitle(item)}</div>
-        `;
-
-        const preview = card.querySelector(".catalog-preview");
-        appendRecognizerPreview(preview, item);
-        card.addEventListener("click", () => {
-          void selectCase(item.id);
-        });
-        grid.appendChild(card);
+      sortCasesForCatalog(cases).forEach((item) => {
+        appendCatalogCard(grid, item);
       });
 
       section.appendChild(grid);
@@ -593,6 +669,15 @@
   }
 
   function setupEventListeners() {
+    if (DOM.sortProgressToggle) {
+      DOM.sortProgressToggle.addEventListener("change", (event) => {
+        const enabled = Boolean(event.currentTarget.checked);
+        state.progressSortByGroup[state.category] = enabled;
+        saveProgressSortMap(state.progressSortByGroup);
+        renderCatalog();
+      });
+    }
+
     document.querySelectorAll(".nav-tab").forEach((tab) => {
       tab.addEventListener("click", async (event) => {
         const category = String(event.currentTarget.dataset.category || "").toUpperCase();
@@ -644,6 +729,7 @@
   async function init() {
     setActiveTab(state.category);
     setupEventListeners();
+    syncProgressSortToggle();
     await loadCatalog();
 
     if (state.pollHandle) clearInterval(state.pollHandle);
