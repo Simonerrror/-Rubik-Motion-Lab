@@ -65,6 +65,46 @@ Run render worker in a second terminal:
 uv run python scripts/cards_worker.py
 ```
 
+## Persistent Dev Sessions (No Copy-Paste Between Worktrees)
+
+Use `tmux` + `just` to keep core processes alive and re-attach instantly per worktree:
+
+```bash
+just dev
+```
+
+- creates (or reuses) a worktree-specific tmux session
+- starts `cards_api` and `cards_worker`
+- re-attaches on the next run instead of relaunching everything
+
+Useful commands:
+
+```bash
+just dev-ls
+just dev-stop
+just test
+just render "R U R' U'" my_algo PLL draft
+```
+
+Run all worktrees from one place:
+
+```bash
+just dev-all
+just dev-all-ls
+just dev-all-stop
+```
+
+- `dev-all` starts detached sessions for every git worktree
+- ports are assigned sequentially from `8008` (`8008`, `8009`, `8010`, ...)
+- if present, shared interpreter `./.venv/bin/python` is reused for all worktrees
+- override base port with `CUBEANIM_CARDS_BASE_PORT=8100 just dev-all`
+
+Optional `tmuxp` preset:
+
+```bash
+just dev-tmuxp
+```
+
 ## Render Contract
 
 - Output path: `media/videos/<GROUP>/<QUALITY>/<NAME>.mp4`

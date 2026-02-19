@@ -300,4 +300,11 @@ def api_admin_reset_runtime() -> dict:
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("scripts.cards_api:app", host="127.0.0.1", port=8008, reload=True)
+    host = os.environ.get("CUBEANIM_CARDS_HOST", "127.0.0.1").strip() or "127.0.0.1"
+    raw_port = os.environ.get("CUBEANIM_CARDS_PORT", "8008").strip() or "8008"
+    try:
+        port = int(raw_port)
+    except ValueError as exc:
+        raise SystemExit(f"Invalid CUBEANIM_CARDS_PORT: {raw_port}") from exc
+
+    uvicorn.run("scripts.cards_api:app", host=host, port=port, reload=True)
