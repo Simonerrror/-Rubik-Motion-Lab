@@ -76,6 +76,7 @@ def test_api_cases_and_alternatives_flow(tmp_path: Path) -> None:
     assert cases_payload["ok"] is True
     assert cases_payload["data"]
     assert "display_name" in cases_payload["data"][0]
+    assert all(str(item.get("active_formula") or "").strip() for item in cases_payload["data"])
 
     case_id = int(cases_payload["data"][0]["id"])
     detail_before = client.get(f"/api/cases/{case_id}")
@@ -167,6 +168,33 @@ def test_api_activate_does_not_reorder_algorithms(tmp_path: Path) -> None:
     assert int(activate_payload["active_algorithm_id"]) == default_algo_id
 
 
+def test_api_oll_recognizer_url_is_stable_on_custom_and_activate(tmp_path: Path) -> None:
+    client = _build_client(tmp_path)
+
+    cases = client.get("/api/cases", params={"group": "OLL"}).json()["data"]
+    target = next(item for item in cases if item["case_code"] == "OLL_26")
+    case_id = int(target["id"])
+
+    before = client.get(f"/api/cases/{case_id}").json()["data"]
+    baseline_url = str(before["recognizer_url"] or "")
+    previous_active_id = int(before["active_algorithm_id"])
+    assert baseline_url.endswith("/assets/recognizers/oll/svg/oll_oll_26.svg")
+
+    custom_resp = client.post(
+        f"/api/cases/{case_id}/custom",
+        json={"formula": "R U R' U R U2 R'", "activate": True},
+    )
+    assert custom_resp.status_code == 200
+    assert str(custom_resp.json()["data"]["recognizer_url"] or "") == baseline_url
+
+    activate_resp = client.post(
+        f"/api/cases/{case_id}/activate",
+        json={"algorithm_id": previous_active_id},
+    )
+    assert activate_resp.status_code == 200
+    assert str(activate_resp.json()["data"]["recognizer_url"] or "") == baseline_url
+
+
 def test_api_ignores_stale_artifact_paths(tmp_path: Path) -> None:
     client = _build_client(tmp_path)
 
@@ -227,3 +255,6 @@ def test_api_admin_reset_runtime(tmp_path: Path) -> None:
 
     pll_cases = client.get("/api/cases", params={"group": "PLL"}).json()["data"]
     assert len(pll_cases) == 21
+    oll_cases = client.get("/api/cases", params={"group": "OLL"}).json()["data"]
+    assert len(oll_cases) == 57
+    assert all(str(item.get("active_formula") or "").strip() for item in oll_cases)

@@ -6,6 +6,7 @@ AI-assisted renderer for Rubik's Cube algorithms built on Manim.
 
 - Cards workflow is active on FastAPI + vanilla HTML/JS.
 - PLL flow is completed: grouped case catalog, active algorithm selection, custom algorithm support, draft/HD queue, and polling updates.
+- OLL parity is completed: strict `oll.txt` source-of-truth (57/57), canonical algorithm seed, and stable per-case recognizer cards.
 - Top recognizers are generated and stored by group (`F2L` / `OLL` / `PLL`).
 
 ## What This Project Does
