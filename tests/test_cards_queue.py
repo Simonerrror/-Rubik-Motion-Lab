@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+import threading
+import time
 
 from cubeanim.cards.db import connect
 from cubeanim.cards import repository
@@ -150,3 +152,56 @@ def test_enqueue_reuses_same_case_formula_artifact(tmp_path: Path) -> None:
     assert queued["job"]["status"] == "DONE"
     assert queued["job"]["plan_action"] == "reuse_case_formula_artifact"
     assert queued["job"]["output_name"] == "F"
+
+
+def test_three_workers_drain_thirty_jobs_without_duplicate_claims(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    db_path = tmp_path / "cards.db"
+    service = CardsService.create(repo_root=repo_root, db_path=db_path)
+    target = next(item for item in service.list_algorithms(group="PLL") if item["formula"])
+    algorithm_id = int(target["id"])
+
+    with connect(db_path) as conn:
+        for _ in range(30):
+            repository.insert_render_job(conn, algorithm_id=algorithm_id, quality="draft", status="PENDING")
+
+    lock = threading.Lock()
+    claimed_ids: list[int] = []
+    processed_by_worker = {1: 0, 2: 0, 3: 0}
+
+    def run_worker(worker_id: int) -> None:
+        while True:
+            with connect(db_path) as conn:
+                job = repository.claim_next_pending_job(conn)
+                if job is None:
+                    return
+                job_id = int(job["id"])
+                repository.mark_job_done(
+                    conn,
+                    job_id=job_id,
+                    plan_action="test_complete",
+                    output_name=f"job_{job_id}",
+                    output_path=f"media/videos/PLL/draft/job_{job_id}.mp4",
+                )
+            with lock:
+                claimed_ids.append(job_id)
+                processed_by_worker[worker_id] += 1
+            time.sleep(0.005)
+
+    threads = [threading.Thread(target=run_worker, args=(idx,), daemon=True) for idx in (1, 2, 3)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=10.0)
+
+    with connect(db_path) as conn:
+        pending = int(conn.execute("SELECT COUNT(*) FROM render_jobs WHERE status = 'PENDING'").fetchone()[0])
+        running = int(conn.execute("SELECT COUNT(*) FROM render_jobs WHERE status = 'RUNNING'").fetchone()[0])
+        done = int(conn.execute("SELECT COUNT(*) FROM render_jobs WHERE status = 'DONE'").fetchone()[0])
+
+    assert len(claimed_ids) == 30
+    assert len(set(claimed_ids)) == 30
+    assert pending == 0
+    assert running == 0
+    assert done == 30
+    assert all(processed_by_worker[idx] > 0 for idx in (1, 2, 3))

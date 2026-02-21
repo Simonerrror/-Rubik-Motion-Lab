@@ -9,7 +9,7 @@ fi
 repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd -P)"
 cmd="${1:-up}"
 base_port="${CUBEANIM_CARDS_BASE_PORT:-8008}"
-controller_script="$repo_root/scripts/dev_tmux.sh"
+controller_script="$repo_root/scripts/dev/dev_tmux.sh"
 shared_python_bin="${CUBEANIM_PYTHON_BIN:-}"
 
 if ! [[ "$base_port" =~ ^[0-9]+$ ]]; then

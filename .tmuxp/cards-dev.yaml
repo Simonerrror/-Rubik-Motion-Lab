@@ -7,8 +7,8 @@ windows:
       - shell_command:
           - clear
           - echo "[cards_api]"
-          - uv run python scripts/cards_api.py
+          - uv run python scripts/app/cards_api.py
       - shell_command:
           - clear
           - echo "[cards_worker]"
-          - uv run python scripts/cards_worker.py
+          - uv run python scripts/app/cards_worker.py

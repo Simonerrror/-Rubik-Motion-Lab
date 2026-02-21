@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import csv
 import hashlib
+import sqlite3
 from functools import lru_cache
 from dataclasses import dataclass
 from pathlib import Path
@@ -154,47 +154,53 @@ def _arrow_svg(start: tuple[int, int], end: tuple[int, int], bidirectional: bool
     return "".join(parts)
 
 
-@lru_cache(maxsize=4)
-def _pll_presets_by_case(repo_root: str) -> dict[str, str]:
-    path = Path(repo_root) / "pll.txt"
-    if not path.exists():
+def _canonical_presets_by_case(runtime_dir: Path, category: str) -> dict[str, str]:
+    db_path = runtime_dir / "cards.db"
+    if not db_path.exists():
         return {}
-    rows = list(csv.reader(path.read_text(encoding="utf-8-sig").splitlines()))
-    if not rows:
+    try:
+        mtime_ns = db_path.stat().st_mtime_ns
+    except OSError:
         return {}
-    presets: dict[str, str] = {}
-    for row in rows[1:]:
-        if len(row) < 3:
-            continue
-        raw_index = str(row[0]).strip()
-        if not raw_index.isdigit():
-            continue
-        formula = _norm_formula(str(row[2]))
-        if not formula:
-            continue
-        presets[f"PLL_{int(raw_index)}"] = formula
-    return presets
+    return _canonical_presets_by_case_cached(str(db_path), mtime_ns, category)
 
 
-@lru_cache(maxsize=4)
-def _oll_presets_by_case(repo_root: str) -> dict[str, str]:
-    path = Path(repo_root) / "oll.txt"
-    if not path.exists():
-        return {}
-    rows = list(csv.reader(path.read_text(encoding="utf-8-sig").splitlines()))
-    if not rows:
-        return {}
+@lru_cache(maxsize=16)
+def _canonical_presets_by_case_cached(db_path: str, _mtime_ns: int, category: str) -> dict[str, str]:
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    try:
+        rows = conn.execute(
+            """
+            SELECT
+                cc.case_code,
+                ca.formula
+            FROM canonical_cases cc
+            LEFT JOIN canonical_algorithms ca ON ca.id = (
+                SELECT cca.id
+                FROM canonical_algorithms cca
+                WHERE cca.canonical_case_id = cc.id
+                ORDER BY cca.is_primary DESC, cca.sort_order ASC, cca.id ASC
+                LIMIT 1
+            )
+            WHERE cc.category_code = ?
+            """,
+            (category,),
+        ).fetchall()
+    finally:
+        conn.close()
+
     presets: dict[str, str] = {}
-    for row in rows[1:]:
-        if len(row) < 3:
+    for row in rows:
+        case_code = str(row["case_code"] or "").strip()
+        if not case_code:
             continue
-        raw_index = str(row[0]).strip()
-        if not raw_index.isdigit():
-            continue
-        formula = _norm_formula(str(row[2]))
+        formula = _norm_formula(str(row["formula"] or ""))
         if not formula:
             continue
-        presets[f"OLL_{int(raw_index)}"] = formula
+        if category == "PLL":
+            formula = balance_pll_formula_rotations(formula)
+        presets[case_code] = formula
     return presets
 
 
@@ -205,15 +211,14 @@ def _resolve_formula_for_recognizer(
     formula: str | None,
 ) -> str:
     normalized = _norm_formula(formula or "")
-    repo_root = str(runtime_dir.resolve().parents[2])
     if category == "PLL":
         # PLL top cards are canonical per case: never depend on currently selected/custom formula.
-        preset = _pll_presets_by_case(repo_root).get(case_code)
+        preset = _canonical_presets_by_case(runtime_dir, category).get(case_code)
         resolved = _norm_formula(preset or normalized)
         return balance_pll_formula_rotations(resolved)
     if category == "OLL":
         # OLL top cards are canonical per case as well.
-        preset = _oll_presets_by_case(repo_root).get(case_code)
+        preset = _canonical_presets_by_case(runtime_dir, category).get(case_code)
         return _norm_formula(preset or normalized)
     return normalized
 

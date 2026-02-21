@@ -16,7 +16,6 @@ from cubeanim.cards.db import (
     initialize_database,
     reset_runtime_state,
     repo_root_from_file,
-    runtime_dir,
 )
 from cubeanim.cards.models import RENDER_QUALITIES
 from cubeanim.cards.recognizer import ensure_recognizer_assets
@@ -72,6 +71,13 @@ class CardsService:
                 raise KeyError(f"case id {case_id} not found")
             return self._decorate_case(row, conn, include_jobs=True)
 
+    def list_alternatives(self, case_id: int) -> list[dict[str, Any]]:
+        with connect(self.db_path) as conn:
+            case_row = repository.get_case(conn, case_id=case_id)
+            if case_row is None:
+                raise KeyError(f"case id {case_id} not found")
+            return repository.list_case_alternatives(conn, case_id=case_id)
+
     def activate_case_algorithm(self, case_id: int, algorithm_id: int) -> dict[str, Any]:
         with connect(self.db_path) as conn:
             updated = repository.set_case_selected_algorithm(conn, case_id=case_id, algorithm_id=algorithm_id)
@@ -81,6 +87,9 @@ class CardsService:
                 raise KeyError(f"case id {case_id} not found")
             updated = refreshed
             return self._decorate_case(updated, conn, include_jobs=True)
+
+    def activate_alternative(self, case_id: int, algorithm_id: int) -> dict[str, Any]:
+        return self.activate_case_algorithm(case_id=case_id, algorithm_id=algorithm_id)
 
     def create_case_custom_algorithm(
         self,
@@ -106,6 +115,20 @@ class CardsService:
                 raise KeyError(f"case id {case_id} not found")
             row = refreshed
             return self._decorate_case(row, conn, include_jobs=True)
+
+    def create_alternative(
+        self,
+        case_id: int,
+        formula: str,
+        name: str | None = None,
+        activate: bool = True,
+    ) -> dict[str, Any]:
+        return self.create_case_custom_algorithm(
+            case_id=case_id,
+            formula=formula,
+            name=name,
+            activate=activate,
+        )
 
     def delete_case_algorithm(
         self,
@@ -138,6 +161,18 @@ class CardsService:
             "deleted_algorithm_id": algorithm_id,
             "deleted_output_paths": removed_paths,
         }
+
+    def delete_alternative(
+        self,
+        case_id: int,
+        algorithm_id: int,
+        purge_media: bool = True,
+    ) -> dict[str, Any]:
+        return self.delete_case_algorithm(
+            case_id=case_id,
+            algorithm_id=algorithm_id,
+            purge_media=purge_media,
+        )
 
     def get_algorithm(self, algorithm_id: int) -> dict[str, Any]:
         with connect(self.db_path) as conn:
@@ -174,6 +209,20 @@ class CardsService:
                 raise KeyError(f"algorithm id {algorithm_id} not found")
             return self._decorate_algorithm(row, conn)
 
+    def set_case_progress(self, case_id: int, status: str) -> dict[str, Any]:
+        with connect(self.db_path) as conn:
+            case_row = repository.get_case(conn, case_id=case_id)
+            if case_row is None:
+                raise KeyError(f"case id {case_id} not found")
+            algorithm_id = case_row.get("active_algorithm_id")
+            if algorithm_id is None:
+                raise ValueError("Case has no active algorithm")
+            repository.set_progress_status(conn, algorithm_id=int(algorithm_id), status=status)
+            refreshed = repository.get_case(conn, case_id=case_id)
+            if refreshed is None:
+                raise KeyError(f"case id {case_id} not found")
+            return self._decorate_case(refreshed, conn, include_jobs=True)
+
     def enqueue_render(self, algorithm_id: int, quality: str) -> dict[str, Any]:
         if quality not in RENDER_QUALITIES:
             raise ValueError(f"quality must be one of {sorted(RENDER_QUALITIES)}")
@@ -192,6 +241,9 @@ class CardsService:
             if algorithm_id is None:
                 raise ValueError("Case has no active algorithm")
             return self._enqueue_render_for_algorithm(conn, algorithm_id=int(algorithm_id), quality=quality)
+
+    def queue_case_render(self, case_id: int, quality: str) -> dict[str, Any]:
+        return self.enqueue_case_render(case_id=case_id, quality=quality)
 
     def queue_status(self, algorithm_id: int | None = None, case_id: int | None = None) -> dict[str, Any]:
         with connect(self.db_path) as conn:
@@ -212,12 +264,15 @@ class CardsService:
                 "algorithm_id": algorithm_id,
                 "jobs": jobs,
                 "artifacts": {
-                    "draft": self._artifact_payload(draft_art),
-                    "high": self._artifact_payload(high_art),
+                    "draft": self._artifact_payload(conn, draft_art),
+                    "high": self._artifact_payload(conn, high_art),
                 },
             }
 
-    def process_next_job(self) -> dict[str, Any] | None:
+    def case_queue_status(self, case_id: int) -> dict[str, Any]:
+        return self.queue_status(case_id=case_id)
+
+    def process_next_job(self, manim_threads: int | None = None) -> dict[str, Any] | None:
         job_id: int | None = None
         algorithm_id: int | None = None
         quality = ""
@@ -257,7 +312,11 @@ class CardsService:
                         output_path=reused_shared["output_path"],
                     )
 
-                request = self._build_request(algorithm=algorithm, quality=quality)
+                request = self._build_request(
+                    algorithm=algorithm,
+                    quality=quality,
+                    manim_threads=manim_threads,
+                )
                 plan = plan_formula_render(request=request, repo_root=self.repo_root)
 
                 if (
@@ -337,6 +396,8 @@ class CardsService:
         if quality == "high":
             draft_artifact = repository.get_render_artifact(conn, algorithm_id, "draft")
             if not self._is_existing_artifact(draft_artifact):
+                if draft_artifact is not None:
+                    repository.delete_render_artifact(conn, int(draft_artifact["id"]))
                 shared_draft = self._reuse_case_formula_artifact(
                     conn,
                     algorithm=algorithm,
@@ -355,6 +416,9 @@ class CardsService:
             }
 
         cached_artifact = repository.get_render_artifact(conn, algorithm_id, quality)
+        if cached_artifact is not None and not self._is_existing_artifact(cached_artifact):
+            repository.delete_render_artifact(conn, int(cached_artifact["id"]))
+            cached_artifact = None
         if (
             cached_artifact is not None
             and cached_artifact.get("formula_norm") == formula_norm
@@ -438,7 +502,12 @@ class CardsService:
             "message": "Job queued",
         }
 
-    def _build_request(self, algorithm: dict[str, Any], quality: str) -> RenderRequest:
+    def _build_request(
+        self,
+        algorithm: dict[str, Any],
+        quality: str,
+        manim_threads: int | None = None,
+    ) -> RenderRequest:
         formula_norm = self._normalize_formula(str(algorithm["formula"]))
         case_code = str(algorithm.get("case_code") or "case")
         group = str(algorithm["group"])
@@ -459,6 +528,7 @@ class CardsService:
             quality=quality,
             repeat=1,
             play=False,
+            manim_threads=manim_threads,
         )
 
     def _reuse_case_formula_artifact(
@@ -479,6 +549,7 @@ class CardsService:
             return None
         output_path = str(shared["output_path"])
         if not (self.repo_root / output_path).exists():
+            repository.delete_render_artifact(conn, int(shared["id"]))
             return None
         repository.upsert_render_artifact(
             conn,
@@ -516,15 +587,18 @@ class CardsService:
         payload = {
             **row,
             "artifacts": {
-                "draft": self._artifact_payload(draft),
-                "high": self._artifact_payload(high),
+                "draft": self._artifact_payload(conn, draft),
+                "high": self._artifact_payload(conn, high),
             },
         }
         if include_jobs:
             payload["jobs"] = repository.list_latest_jobs_for_algorithm(conn, algorithm_id)
         return payload
 
-    def _artifact_payload(self, artifact: dict[str, Any] | None) -> dict[str, Any] | None:
+    def _artifact_payload(self, conn, artifact: dict[str, Any] | None) -> dict[str, Any] | None:
+        if artifact is not None and not self._is_existing_artifact(artifact):
+            repository.delete_render_artifact(conn, int(artifact["id"]))
+            return None
         if not self._is_existing_artifact(artifact):
             return None
         return {
@@ -541,7 +615,7 @@ class CardsService:
         case_code = str(case_row["case_code"])
         formula = str(case_row.get("active_formula") or "")
         assets = ensure_recognizer_assets(
-            runtime_dir(self.repo_root),
+            self.db_path.parent,
             category=category,
             case_code=case_code,
             formula=formula,
@@ -566,8 +640,8 @@ class CardsService:
             draft = repository.get_render_artifact(conn, int(algorithm_id), "draft")
             high = repository.get_render_artifact(conn, int(algorithm_id), "high")
             artifacts = {
-                "draft": self._artifact_payload(draft),
-                "high": self._artifact_payload(high),
+                "draft": self._artifact_payload(conn, draft),
+                "high": self._artifact_payload(conn, high),
             }
             if include_jobs:
                 jobs = repository.list_latest_jobs_for_algorithm(conn, int(algorithm_id))

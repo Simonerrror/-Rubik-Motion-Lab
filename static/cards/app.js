@@ -6,6 +6,7 @@
     NEW: 1,
     LEARNED: 2,
   };
+  const RECOGNIZER_CACHE_BUSTER = `r${Date.now()}`;
 
   function loadProgressSortMap() {
     const defaults = { F2L: false, OLL: false, PLL: false };
@@ -84,6 +85,19 @@
 
   async function apiDelete(url) {
     const res = await fetch(url, { method: "DELETE" });
+    const payload = await res.json();
+    if (!res.ok || !payload.ok) {
+      throw new Error(payload.detail || payload.error?.message || "Request failed");
+    }
+    return payload.data;
+  }
+
+  async function apiPatch(url, body) {
+    const res = await fetch(url, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
     const payload = await res.json();
     if (!res.ok || !payload.ok) {
       throw new Error(payload.detail || payload.error?.message || "Request failed");
@@ -173,7 +187,8 @@
   function appendRecognizerPreview(container, item) {
     if (item.recognizer_url) {
       const img = document.createElement("img");
-      img.src = item.recognizer_url;
+      const sep = item.recognizer_url.includes("?") ? "&" : "?";
+      img.src = `${item.recognizer_url}${sep}v=${RECOGNIZER_CACHE_BUSTER}`;
       img.alt = `${item.case_code} recognizer`;
       container.appendChild(img);
       return;
@@ -315,6 +330,10 @@
     return getServerActiveJob(caseItem) || getLocalPendingJob(caseItem);
   }
 
+  function getLatestFailedJob(caseItem) {
+    return (caseItem?.jobs || []).find((job) => job.status === "FAILED") || null;
+  }
+
   function isCaseQueued(item) {
     if (!item?.id) return false;
     if (state.localPendingByCase.has(item.id)) return true;
@@ -383,6 +402,7 @@
       state.localPendingByCase.delete(c.id);
     }
     const activeJob = serverActiveJob || getLocalPendingJob(c);
+    const latestFailedJob = getLatestFailedJob(c);
     const videoUrl = highArtifact?.video_url || draftArtifact?.video_url || null;
 
     if (videoUrl) {
@@ -392,7 +412,13 @@
     } else {
       clearVideoSource(DOM.mVideo);
       DOM.mQueueMsg.style.display = "flex";
-      DOM.mQueueMsg.textContent = activeJob ? `Render queued (${activeJob.quality})...` : "Video not rendered yet...";
+      if (activeJob) {
+        DOM.mQueueMsg.textContent = `Render queued (${activeJob.quality})...`;
+      } else if (latestFailedJob) {
+        DOM.mQueueMsg.textContent = "Render failed. Check worker logs and retry.";
+      } else {
+        DOM.mQueueMsg.textContent = "Video not rendered yet...";
+      }
     }
 
     DOM.mStatusGroup.querySelectorAll(".status-btn[data-status]").forEach((btn) => {
@@ -501,7 +527,7 @@
         return;
       }
       try {
-        const updated = await apiPost(`/api/cases/${c.id}/custom`, { formula, activate: true });
+        const updated = await apiPost(`/api/cases/${c.id}/alternatives`, { formula, activate: true });
         state.activeCase = updated;
         patchCaseInState(updated);
         renderCatalog();
@@ -555,7 +581,7 @@
   }
 
   async function activateAlgorithm(caseId, algorithmId) {
-    const updated = await apiPost(`/api/cases/${caseId}/activate`, { algorithm_id: algorithmId });
+    const updated = await apiPost(`/api/cases/${caseId}/active-algorithm`, { algorithm_id: algorithmId });
     state.activeCase = updated;
     patchCaseInState(updated);
     renderCatalog();
@@ -564,7 +590,7 @@
   }
 
   async function deleteAlgorithm(caseId, algorithmId) {
-    const payload = await apiDelete(`/api/cases/${caseId}/algorithms/${algorithmId}?purge_media=true`);
+    const payload = await apiDelete(`/api/cases/${caseId}/alternatives/${algorithmId}?purge_media=true`);
     state.activeCase = payload.case;
     patchCaseInState(payload.case);
     renderCatalog();
@@ -575,10 +601,7 @@
   async function updateProgress(status) {
     const c = currentCase();
     if (!c || !c.active_algorithm_id) return;
-    await apiPost("/api/progress", {
-      algorithm_id: c.active_algorithm_id,
-      status,
-    });
+    await apiPatch(`/api/cases/${c.id}/progress`, { status });
     const updated = await apiGet(`/api/cases/${c.id}`);
     state.activeCase = updated;
     patchCaseInState(updated);
@@ -595,7 +618,7 @@
     updateDetailsPaneState();
 
     try {
-      const response = await apiPost(`/api/cases/${c.id}/queue`, { quality });
+      const response = await apiPost(`/api/cases/${c.id}/renders`, { quality });
       if (response.reused || response.job?.status === "DONE") {
         state.localPendingByCase.delete(c.id);
         showToast("Reused existing render");
@@ -649,7 +672,7 @@
     if (isCustomFormulaInputFocused()) return;
 
     try {
-      const status = await apiGet(`/api/queue/status?case_id=${c.id}`);
+      const status = await apiGet(`/api/cases/${c.id}/renders/status`);
       const previousActiveJob = getActiveJob(c);
       const nextActiveJob = (status.jobs || []).find((job) => job.status === "PENDING" || job.status === "RUNNING") || null;
       const justCompleted = previousActiveJob && !nextActiveJob;

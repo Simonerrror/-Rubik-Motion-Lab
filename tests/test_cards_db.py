@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import re
+import shutil
 from pathlib import Path
 
-from cubeanim.cards.db import _load_oll_seed_cases, connect, initialize_database, reset_runtime_state
+from cubeanim.cards.db import connect, initialize_database, reset_runtime_state
 from cubeanim.cards.services import CardsService
 from cubeanim.pll import balance_pll_formula_rotations
 
@@ -66,19 +67,47 @@ def test_pll_formulas_seeded_from_pll_txt(tmp_path: Path) -> None:
     assert pll_by_case["PLL_21"]["formula"] == "M2 U M2 U M' U2 M2 U2 M' U2"
 
 
-def test_oll_seed_source_is_complete_and_strict() -> None:
+def test_canonical_seed_tables_are_complete(tmp_path: Path) -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    oll_cases = _load_oll_seed_cases(repo_root)
-    assert len(oll_cases) == 57
+    db_path = tmp_path / "cards.db"
+    initialize_database(repo_root=repo_root, db_path=db_path)
 
-    for index in range(1, 58):
-        case_code = f"OLL_{index}"
-        assert case_code in oll_cases
-        item = oll_cases[case_code]
-        assert item.case_title == f"OLL #{index}"
-        assert item.formula
-        assert re.fullmatch(r"\d+/\d+", item.probability_text)
-        assert item.subgroup_title
+    with connect(db_path) as conn:
+        canonical_case_count = int(conn.execute("SELECT COUNT(*) FROM canonical_cases").fetchone()[0])
+        canonical_algo_count = int(conn.execute("SELECT COUNT(*) FROM canonical_algorithms").fetchone()[0])
+        oll_nonempty = int(
+            conn.execute(
+                """
+                SELECT COUNT(*)
+                FROM canonical_cases cc
+                JOIN canonical_algorithms ca ON ca.canonical_case_id = cc.id
+                WHERE cc.category_code = 'OLL'
+                  AND TRIM(ca.formula) != ''
+                """
+            ).fetchone()[0]
+        )
+
+    assert canonical_case_count == 88
+    assert canonical_algo_count == 88
+    assert oll_nonempty == 57
+
+
+def test_initialize_database_does_not_require_legacy_txt_sources(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    synthetic_root = tmp_path / "synthetic_repo"
+    (synthetic_root / "db").mkdir(parents=True, exist_ok=True)
+    shutil.copy2(repo_root / "db" / "cards_schema.sql", synthetic_root / "db" / "cards_schema.sql")
+    shutil.copy2(repo_root / "db" / "cards_seed.sql", synthetic_root / "db" / "cards_seed.sql")
+
+    db_path = synthetic_root / "data" / "cards" / "runtime" / "cards.db"
+    initialize_database(repo_root=synthetic_root, db_path=db_path)
+
+    with connect(db_path) as conn:
+        case_count = int(conn.execute("SELECT COUNT(*) FROM cases").fetchone()[0])
+        algo_count = int(conn.execute("SELECT COUNT(*) FROM algorithms").fetchone()[0])
+
+    assert case_count == 88
+    assert algo_count == 88
 
 
 def test_oll_formulas_seeded_from_oll_txt(tmp_path: Path) -> None:
@@ -90,6 +119,8 @@ def test_oll_formulas_seeded_from_oll_txt(tmp_path: Path) -> None:
     assert all(str(item["formula"]).strip() for item in oll_items if not item.get("is_custom"))
 
     oll_by_case = {item["case_code"]: item for item in oll_items}
+    assert oll_by_case["OLL_12"]["formula"] == "F R U R' U' F' U F R U R' U' F'"
+    assert oll_by_case["OLL_14"]["formula"] == "R' F R U R' F' R F U' F'"
     assert oll_by_case["OLL_26"]["formula"] == "R U2 R' U' R U' R'"
     assert oll_by_case["OLL_27"]["formula"] == "R U R' U R U2 R'"
     assert oll_by_case["OLL_57"]["formula"] == "(R U R' U') M' (U R U' r')"
@@ -153,6 +184,17 @@ def test_oll_recognizer_svg_is_minimal_top_card(tmp_path: Path) -> None:
     assert "recognizer:v4 category=OLL case=OLL_26" in content
     assert "<text" not in content
     assert "rx=\"10\"" not in content
+
+
+def test_oll_12_14_are_not_fallback_recognizers(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    db_path = tmp_path / "cards.db"
+    initialize_database(repo_root=repo_root, db_path=db_path)
+
+    svg_dir = tmp_path / "recognizers" / "oll" / "svg"
+    for case_code in ("oll_oll_12.svg", "oll_oll_14.svg"):
+        content = (svg_dir / case_code).read_text(encoding="utf-8")
+        assert "recognizer:v4-fallback" not in content
 
 
 def test_oll_recognizer_path_is_case_stable(tmp_path: Path) -> None:

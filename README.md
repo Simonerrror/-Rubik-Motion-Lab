@@ -16,7 +16,7 @@ Rubik Motion Lab turns cube formulas into polished animations with:
 - robust formula parsing (`cubeanim.formula`)
 - deterministic cube state preparation from inverse moves (`set_state` path)
 - smooth move execution with easing and timing policy
-- GUI-first workflow (`scripts/render_ui.py`) and optional CLI (`scripts/render_algo.py`)
+- GUI-first workflow (`scripts/app/render_ui.py`) and optional CLI (`scripts/tools/render_algo.py`)
 - render planning, naming conflict handling, and catalog persistence
 
 ## AI-Assisted Evolution
@@ -43,19 +43,19 @@ uv pip install -r requirements.txt
 ## Run GUI (Primary)
 
 ```bash
-uv run python scripts/render_ui.py
+uv run python scripts/app/render_ui.py
 ```
 
 ## CLI (Optional)
 
 ```bash
-uv run python scripts/render_algo.py --formula "R U R' U'" --name MyAlgo --group PLL --quality standard
+uv run python scripts/tools/render_algo.py --formula "R U R' U'" --name MyAlgo --group PLL --quality standard
 ```
 
 ## Web Cards (FastAPI + HTML/JS)
 
 ```bash
-uv run python scripts/cards_api.py
+uv run python scripts/app/cards_api.py
 ```
 
 Open `http://127.0.0.1:8008/`.
@@ -63,7 +63,7 @@ Open `http://127.0.0.1:8008/`.
 Run render worker in a second terminal:
 
 ```bash
-uv run python scripts/cards_worker.py
+uv run python scripts/app/cards_worker.py --workers 1 --manim-threads 1
 ```
 
 ## Persistent Dev Sessions (No Copy-Paste Between Worktrees)
@@ -128,7 +128,7 @@ Use `high`/`final` only for final export.
 ## Testing
 
 ```bash
-python3 -m py_compile cubist.py cubeanim/*.py scripts/render_algo.py scripts/render_ui.py
+python3 -m py_compile cubist.py cubeanim/*.py scripts/tools/render_algo.py scripts/app/render_ui.py scripts/app/cards_api.py scripts/app/cards_worker.py
 PYTHONPATH=. uv run pytest -q
 ```
 

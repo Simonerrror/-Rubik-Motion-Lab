@@ -49,11 +49,11 @@ create_session() {
   if [ -n "$python_bin" ]; then
     py_q="$(printf '%q' "$python_bin")"
     root_q="$(printf '%q' "$worktree_path")"
-    api_exec="PYTHONPATH=${root_q} ${py_q} -c 'import uvicorn; uvicorn.run(\"scripts.cards_api:app\", host=\"127.0.0.1\", port=${cards_port}, reload=True)'"
-    worker_exec="PYTHONPATH=${root_q} ${py_q} scripts/cards_worker.py"
+    api_exec="PYTHONPATH=${root_q} ${py_q} -c 'import uvicorn; uvicorn.run(\"scripts.app.cards_api:app\", host=\"127.0.0.1\", port=${cards_port}, reload=True)'"
+    worker_exec="PYTHONPATH=${root_q} ${py_q} scripts/app/cards_worker.py"
   else
-    api_exec="uv run python -c 'import uvicorn; uvicorn.run(\"scripts.cards_api:app\", host=\"127.0.0.1\", port=${cards_port}, reload=True)'"
-    worker_exec='uv run python scripts/cards_worker.py'
+    api_exec="uv run python -c 'import uvicorn; uvicorn.run(\"scripts.app.cards_api:app\", host=\"127.0.0.1\", port=${cards_port}, reload=True)'"
+    worker_exec='uv run python scripts/app/cards_worker.py'
   fi
 
   api_start_cmd="clear; echo \"[cards_api:${cards_port}]\"; if lsof -nP -iTCP:${cards_port} -sTCP:LISTEN >/dev/null 2>&1; then echo \"Port ${cards_port} is already in use. Stop old API first.\"; exit 1; fi; ${api_exec}"
