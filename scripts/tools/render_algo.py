@@ -5,7 +5,7 @@ import argparse
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
@@ -69,6 +69,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--play", action="store_true", help="Play video after render")
     parser.add_argument("--manim-bin", default="manim", help="Path to manim executable")
     parser.add_argument("--manim-file", default="cubist.py", help="Path to manim scenes file")
+    parser.add_argument("--manim-threads", type=int, default=1, help="Thread budget for render subprocess")
 
     return parser.parse_args()
 
@@ -92,6 +93,7 @@ def main() -> int:
             play=args.play,
             manim_bin=args.manim_bin,
             manim_file=args.manim_file,
+            manim_threads=max(int(args.manim_threads), 1),
         )
     else:
         request = RenderRequest(
@@ -103,6 +105,7 @@ def main() -> int:
             play=args.play,
             manim_bin=args.manim_bin,
             manim_file=args.manim_file,
+            manim_threads=max(int(args.manim_threads), 1),
         )
 
     result = render_formula(request=request, repo_root=REPO_ROOT, allow_rerender=True)

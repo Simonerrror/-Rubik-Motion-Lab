@@ -222,6 +222,49 @@ def list_case_algorithms(conn: sqlite3.Connection, case_id: int) -> list[dict[st
     return [_algorithm_row_payload(row) for row in rows]
 
 
+def list_case_alternatives(conn: sqlite3.Connection, case_id: int) -> list[dict[str, Any]]:
+    rows = conn.execute(
+        """
+        SELECT
+            a.id,
+            a.name,
+            a.formula,
+            a.progress_status,
+            a.is_custom,
+            CASE
+                WHEN a.id = COALESCE(
+                    c.selected_algorithm_id,
+                    (
+                        SELECT aa.id
+                        FROM algorithms aa
+                        WHERE aa.case_id = c.id
+                        ORDER BY aa.is_custom ASC, aa.id ASC
+                        LIMIT 1
+                    )
+                )
+                THEN 1
+                ELSE 0
+            END AS is_active
+        FROM algorithms a
+        JOIN cases c ON c.id = a.case_id
+        WHERE a.case_id = ?
+        ORDER BY a.is_custom ASC, a.id ASC
+        """,
+        (case_id,),
+    ).fetchall()
+    return [
+        {
+            "id": int(row["id"]),
+            "name": row["name"],
+            "formula": row["formula"],
+            "status": row["progress_status"],
+            "is_custom": bool(row["is_custom"]),
+            "is_active": bool(row["is_active"]),
+        }
+        for row in rows
+    ]
+
+
 def list_reference_sets(conn: sqlite3.Connection, category: str) -> list[dict[str, Any]]:
     rows = conn.execute(
         """
@@ -721,6 +764,10 @@ def upsert_render_artifact(
     )
 
 
+def delete_render_artifact(conn: sqlite3.Connection, artifact_id: int) -> None:
+    conn.execute("DELETE FROM render_artifacts WHERE id = ?", (artifact_id,))
+
+
 def get_active_job(
     conn: sqlite3.Connection,
     algorithm_id: int,
@@ -848,38 +895,45 @@ def list_latest_jobs_for_algorithm(conn: sqlite3.Connection, algorithm_id: int) 
 
 
 def claim_next_pending_job(conn: sqlite3.Connection) -> dict[str, Any] | None:
+    now = _utc_now_iso()
     row = conn.execute(
         """
-        SELECT id
-        FROM render_jobs
-        WHERE status = 'PENDING'
-        ORDER BY
-            CASE target_quality
-                WHEN 'draft' THEN 0
-                WHEN 'high' THEN 1
-                ELSE 2
-            END ASC,
-            id ASC
-        LIMIT 1
+        WITH picked AS (
+            SELECT id
+            FROM render_jobs
+            WHERE status = 'PENDING'
+            ORDER BY
+                CASE target_quality
+                    WHEN 'draft' THEN 0
+                    WHEN 'high' THEN 1
+                    ELSE 2
+                END ASC,
+                id ASC
+            LIMIT 1
+        )
+        UPDATE render_jobs
+        SET status = 'RUNNING', started_at = ?
+        WHERE id = (SELECT id FROM picked)
+          AND status = 'PENDING'
+        RETURNING
+            id,
+            algorithm_id,
+            target_quality,
+            status,
+            plan_action,
+            output_name,
+            output_path,
+            error_message,
+            created_at,
+            started_at,
+            finished_at
         """
+        ,
+        (now,),
     ).fetchone()
     if row is None:
         return None
-
-    job_id = int(row["id"])
-    now = _utc_now_iso()
-    cur = conn.execute(
-        """
-        UPDATE render_jobs
-        SET status = 'RUNNING', started_at = ?
-        WHERE id = ? AND status = 'PENDING'
-        """,
-        (now, job_id),
-    )
-    if cur.rowcount == 0:
-        return None
-
-    return get_job(conn, job_id)
+    return _job_row(row)
 
 
 def mark_job_done(

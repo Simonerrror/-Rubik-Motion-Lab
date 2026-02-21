@@ -7,6 +7,32 @@ CREATE TABLE IF NOT EXISTS categories (
     sort_order INTEGER NOT NULL DEFAULT 0
 );
 
+CREATE TABLE IF NOT EXISTS canonical_cases (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category_code TEXT NOT NULL,
+    case_code TEXT NOT NULL,
+    title TEXT NOT NULL,
+    subgroup_title TEXT,
+    case_number INTEGER,
+    probability_text TEXT,
+    orientation_front TEXT NOT NULL DEFAULT 'F',
+    orientation_auf INTEGER NOT NULL DEFAULT 0,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    UNIQUE(category_code, case_code),
+    FOREIGN KEY(category_code) REFERENCES categories(code)
+);
+
+CREATE TABLE IF NOT EXISTS canonical_algorithms (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    canonical_case_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    formula TEXT NOT NULL DEFAULT '',
+    is_primary INTEGER NOT NULL DEFAULT 1,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    UNIQUE(canonical_case_id, name),
+    FOREIGN KEY(canonical_case_id) REFERENCES canonical_cases(id)
+);
+
 CREATE TABLE IF NOT EXISTS cases (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     category_code TEXT NOT NULL,
@@ -94,5 +120,7 @@ CREATE INDEX IF NOT EXISTS idx_algorithms_case_id ON algorithms(case_id);
 CREATE INDEX IF NOT EXISTS idx_render_jobs_algorithm_quality ON render_jobs(algorithm_id, target_quality);
 CREATE INDEX IF NOT EXISTS idx_render_jobs_status ON render_jobs(status);
 CREATE INDEX IF NOT EXISTS idx_cases_group_subgroup_number ON cases(category_code, subgroup_title, case_number);
+CREATE INDEX IF NOT EXISTS idx_canonical_cases_group_sort ON canonical_cases(category_code, sort_order, case_number);
+CREATE INDEX IF NOT EXISTS idx_canonical_algorithms_case_sort ON canonical_algorithms(canonical_case_id, sort_order);
 CREATE INDEX IF NOT EXISTS idx_ref_sets_category_sort ON reference_case_sets(category_code, sort_order);
 CREATE INDEX IF NOT EXISTS idx_ref_stats_set_sort ON reference_case_stats(set_id, sort_order);
