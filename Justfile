@@ -21,6 +21,9 @@ render formula name group="NO_GROUP" quality="draft" repeat="1":
 test:
   PYTHONPATH=. uv run pytest -q
 
+smoke-ui base_url="http://127.0.0.1:8008":
+  SMOKE_STRICT=1 CARDS_BASE_URL={{base_url}} PYTHONPATH=. uv run pytest -q tests/e2e/test_cards_smoke.py -s
+
 check:
   python3 -m py_compile cubist.py cubeanim/*.py scripts/tools/render_algo.py scripts/app/render_ui.py scripts/app/cards_api.py scripts/app/cards_worker.py
 

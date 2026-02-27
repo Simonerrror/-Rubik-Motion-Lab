@@ -42,6 +42,13 @@ def test_api_cases_list_and_detail(tmp_path: Path) -> None:
     assert sum(1 for item in alternatives_payload if item["is_active"]) == 1
 
 
+def test_favicon_route_redirects(tmp_path: Path) -> None:
+    client = _build_client(tmp_path)
+    response = client.get("/favicon.ico", follow_redirects=False)
+    assert response.status_code == 307
+    assert response.headers["location"] == "/static/cards/favicon.svg"
+
+
 def test_api_progress_and_render_flow(tmp_path: Path) -> None:
     client = _build_client(tmp_path)
 

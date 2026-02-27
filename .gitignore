@@ -20,3 +20,7 @@ media/*
 # Cards runtime
 data/cards/runtime/*.db
 data/cards/runtime/recognizers/**
+
+# Browser smoke artifacts
+output/playwright/
+.playwright-cli/

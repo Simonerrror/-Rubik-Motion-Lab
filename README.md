@@ -38,7 +38,14 @@ source .venv/bin/activate
 uv pip install -r requirements.txt
 ```
 
-`cubeanim` applies a runtime compatibility patch for `manim_rubikscube` automatically.
+`manim-rubikscube` is installed from the local patched package in
+`vendor/manim-rubikscube` for Manim `0.19.x` compatibility.
+
+For browser smoke tests, install Playwright Chromium once:
+
+```bash
+uv run python -m playwright install chromium
+```
 
 ## Run GUI (Primary)
 
@@ -64,6 +71,18 @@ Run render worker in a second terminal:
 
 ```bash
 uv run python scripts/app/cards_worker.py --workers 1 --manim-threads 1
+```
+
+Run the UI smoke suite against the running API:
+
+```bash
+just smoke-ui
+```
+
+Use a custom base URL if needed:
+
+```bash
+just smoke-ui base_url=http://127.0.0.1:8010
 ```
 
 ## Persistent Dev Sessions (No Copy-Paste Between Worktrees)
@@ -130,6 +149,7 @@ Use `high`/`final` only for final export.
 ```bash
 python3 -m py_compile cubist.py cubeanim/*.py scripts/tools/render_algo.py scripts/app/render_ui.py scripts/app/cards_api.py scripts/app/cards_worker.py
 PYTHONPATH=. uv run pytest -q
+just smoke-ui
 ```
 
 ## Media Tracking Policy
