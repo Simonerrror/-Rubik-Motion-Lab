@@ -1,9 +1,10 @@
 # Python 3.13 is used in this project setup (macOS Framework build recommended for tkinter)
 manim==0.19.2
-manim-rubikscube==0.1.0
+./vendor/manim-rubikscube
 pytest==8.3.4
 fastapi==0.116.1
 uvicorn==0.35.0
 pydantic==2.11.7
 pillow==11.3.0
 httpx==0.28.1
+playwright==1.58.0

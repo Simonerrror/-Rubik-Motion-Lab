@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -18,6 +18,7 @@ from cubeanim.cards.services import CardsService
 
 INDEX_HTML = REPO_ROOT / "index.html"
 STATIC_DIR = REPO_ROOT / "static"
+FAVICON_SVG = STATIC_DIR / "cards" / "favicon.svg"
 RUNTIME_ASSETS_DIR = REPO_ROOT / "data" / "cards" / "runtime"
 MEDIA_DIR = REPO_ROOT / "media"
 
@@ -62,6 +63,13 @@ def root() -> FileResponse:
     if not INDEX_HTML.exists():
         raise HTTPException(status_code=404, detail="index.html not found")
     return FileResponse(INDEX_HTML)
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon() -> RedirectResponse:
+    if not FAVICON_SVG.exists():
+        raise HTTPException(status_code=404, detail="favicon not found")
+    return RedirectResponse(url="/static/cards/favicon.svg", status_code=307)
 
 
 @app.get("/api/cases")

@@ -7,6 +7,7 @@
     LEARNED: 2,
   };
   const RECOGNIZER_CACHE_BUSTER = `r${Date.now()}`;
+  const POLL_BACKOFF_STEPS_MS = [5000, 10000, 20000, 30000];
 
   function loadProgressSortMap() {
     const defaults = { F2L: false, OLL: false, PLL: false };
@@ -41,7 +42,9 @@
     localPendingByCase: new Map(),
     activeDisplayMode: "algorithm",
     activeDisplayFormula: "",
-    pollHandle: null,
+    pollTimer: null,
+    pollBackoffIndex: 0,
+    pollOutageNotified: false,
     progressSortByGroup: loadProgressSortMap(),
   };
 
@@ -60,6 +63,39 @@
     mRenderBtn: document.getElementById("m-render-btn"),
     toast: document.getElementById("toast"),
   };
+
+  function clearPollingTimer() {
+    if (state.pollTimer) {
+      clearTimeout(state.pollTimer);
+      state.pollTimer = null;
+    }
+  }
+
+  function getCurrentPollDelayMs() {
+    return POLL_BACKOFF_STEPS_MS[Math.min(state.pollBackoffIndex, POLL_BACKOFF_STEPS_MS.length - 1)];
+  }
+
+  function scheduleNextPoll() {
+    clearPollingTimer();
+    state.pollTimer = setTimeout(() => {
+      void pollQueue();
+    }, getCurrentPollDelayMs());
+  }
+
+  function markPollFailure() {
+    if (!state.pollOutageNotified) {
+      showToast("Cards API unavailable. Retrying...");
+      state.pollOutageNotified = true;
+    }
+    if (state.pollBackoffIndex < POLL_BACKOFF_STEPS_MS.length - 1) {
+      state.pollBackoffIndex += 1;
+    }
+  }
+
+  function markPollSuccess() {
+    state.pollBackoffIndex = 0;
+    state.pollOutageNotified = false;
+  }
 
   async function apiGet(url) {
     const res = await fetch(url);
@@ -194,7 +230,7 @@
       return;
     }
     container.textContent = "No image";
-    container.classList.add("text-[10px]", "text-gray-500");
+    container.classList.add("catalog-preview-empty");
   }
 
   function tokenizeFormula(formula) {
@@ -247,12 +283,13 @@
   function appendCatalogCard(grid, item) {
     const card = document.createElement("article");
     card.className = "catalog-card";
+    card.setAttribute("data-testid", `case-card-${item.id}`);
     if (item.id === state.activeCaseId) card.classList.add("active");
 
     const status = isCaseQueued(item) ? "QUEUED" : String(item.status || "NEW");
     card.innerHTML = `
       <div class="status-dot ${status}"></div>
-      <div class="catalog-preview mx-auto"></div>
+      <div class="catalog-preview"></div>
       <div class="tile-title">${tileTitle(item)}</div>
     `;
 
@@ -268,7 +305,7 @@
     DOM.catalog.innerHTML = "";
     if (!state.cases.length) {
       const empty = document.createElement("div");
-      empty.className = "text-sm text-gray-500 border border-gray-800 rounded-xl p-4 bg-gray-900/30";
+      empty.className = "catalog-empty";
       empty.textContent = "No cases in this group.";
       DOM.catalog.appendChild(empty);
       return;
@@ -287,7 +324,7 @@
     const grouped = groupBySubgroup(state.cases);
     Object.entries(grouped).forEach(([subgroup, cases]) => {
       const section = document.createElement("section");
-      section.className = "space-y-2";
+      section.className = "subgroup-section";
 
       const title = document.createElement("div");
       title.className = "subgroup-title";
@@ -374,7 +411,7 @@
       btn.classList.remove("active");
       btn.disabled = true;
     });
-    DOM.mAlgoList.innerHTML = '<div class="text-xs text-gray-500">Select case to manage algorithms.</div>';
+    DOM.mAlgoList.innerHTML = '<div class="algo-empty">Select case to manage algorithms.</div>';
     setActiveDisplayFormula("", "algorithm");
   }
 
@@ -465,16 +502,16 @@
     const canDelete = (c.algorithms || []).length > 1;
 
     (c.algorithms || []).forEach((algo) => {
-      const activeClass = algo.id === c.active_algorithm_id ? "bg-blue-500/10 border-blue-500/50" : "bg-gray-800/40 border-gray-700";
+      const activeClass = algo.id === c.active_algorithm_id ? "algo-option-active" : "algo-option-inactive";
       const option = document.createElement("label");
-      option.className = `algo-option p-2 rounded-lg border ${activeClass}`;
+      option.className = `algo-option ${activeClass}`;
       const checked = algo.id === c.active_algorithm_id ? "checked" : "";
       option.innerHTML = `
         <div class="algo-main">
-          <input type="radio" name="algo_sel" value="${algo.id}" ${checked} class="accent-blue-500">
-          <code class="mono text-xs text-slate-300">${algo.formula || "(empty)"}</code>
+          <input type="radio" name="algo_sel" value="${algo.id}" ${checked} class="algo-radio" data-testid="algo-radio-${algo.id}">
+          <code>${algo.formula || "(empty)"}</code>
         </div>
-        ${canDelete ? '<button class="px-2 py-1 text-[10px] font-bold rounded border border-red-400/50 bg-red-500/10 text-red-300 hover:bg-red-500/20" data-action="delete" type="button">Delete</button>' : ""}
+        ${canDelete ? `<button class="algo-delete-btn" data-action="delete" data-testid="delete-algo-${algo.id}" type="button">Delete</button>` : ""}
       `;
       option.querySelector("input").addEventListener("change", async () => {
         try {
@@ -503,10 +540,10 @@
     });
 
     const customWrap = document.createElement("div");
-    customWrap.className = "mt-4 pt-4 border-t border-gray-800 space-y-2";
+    customWrap.className = "custom-algo-form";
     customWrap.innerHTML = `
-      <input id="custom-formula-input" type="text" placeholder="Enter custom algorithm..." class="w-full bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs mono focus:border-blue-500 outline-none">
-      <button id="custom-formula-apply" type="button" class="w-full bg-gray-800 hover:bg-gray-700 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider">Use</button>
+      <input id="custom-formula-input" data-testid="custom-formula-input" type="text" placeholder="Enter custom algorithm..." class="custom-formula-input" />
+      <button id="custom-formula-apply" data-testid="custom-formula-apply" type="button" class="custom-formula-apply">Use</button>
     `;
 
     const input = customWrap.querySelector("#custom-formula-input");
@@ -668,8 +705,10 @@
 
   async function pollQueue() {
     const c = currentCase();
-    if (!c) return;
-    if (isCustomFormulaInputFocused()) return;
+    if (!c || isCustomFormulaInputFocused()) {
+      scheduleNextPoll();
+      return;
+    }
 
     try {
       const status = await apiGet(`/api/cases/${c.id}/renders/status`);
@@ -686,9 +725,11 @@
       if (justCompleted) {
         showToast("Render finished");
       }
+      markPollSuccess();
     } catch (error) {
-      console.error(error);
+      markPollFailure();
     }
+    scheduleNextPoll();
   }
 
   function setupEventListeners() {
@@ -755,10 +796,7 @@
     syncProgressSortToggle();
     await loadCatalog();
 
-    if (state.pollHandle) clearInterval(state.pollHandle);
-    state.pollHandle = setInterval(() => {
-      void pollQueue();
-    }, 5000);
+    scheduleNextPoll();
   }
 
   void init();
