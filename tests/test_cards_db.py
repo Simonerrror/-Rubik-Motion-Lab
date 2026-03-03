@@ -204,7 +204,7 @@ def test_f2l_recognizer_svg_is_start_cube_preview(tmp_path: Path) -> None:
 
     svg_dir = tmp_path / "recognizers" / "f2l" / "svg"
     content = (svg_dir / "f2l_b01.svg").read_text(encoding="utf-8")
-    assert "recognizer:v7-f2l category=F2L case=B01" in content
+    assert "recognizer:v8-f2l category=F2L case=B01" in content
     assert "recognizer:v4-fallback" not in content
     assert content.count("<polygon ") >= 12
     assert "#0B1220" in content
