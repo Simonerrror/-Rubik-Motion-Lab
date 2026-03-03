@@ -3,12 +3,32 @@ from __future__ import annotations
 from pathlib import Path
 import threading
 import time
+from typing import Callable
 
 from cubeanim.cards.db import connect
 from cubeanim.cards import repository
 from cubeanim.cards.services import CardsService
 from cubeanim.render_service import RenderPlan
-import cubeanim.cards.services as cards_services
+
+
+class _StubRendererClient:
+    local_paths = True
+
+    def __init__(
+        self,
+        plan_fn: Callable,
+        render_fn: Callable | None = None,
+    ) -> None:
+        self._plan_fn = plan_fn
+        self._render_fn = render_fn
+
+    def plan(self, request, repo_root):
+        return self._plan_fn(request, repo_root)
+
+    def render(self, request, repo_root, allow_rerender=False):
+        if self._render_fn is None:
+            raise AssertionError("render() should not be called in this test")
+        return self._render_fn(request, repo_root, allow_rerender=allow_rerender)
 
 
 def test_enqueue_deduplicates_active_job(tmp_path: Path) -> None:
@@ -46,7 +66,7 @@ def test_enqueue_reuses_existing_identical_render(tmp_path: Path, monkeypatch) -
             reason="An identical formula already exists",
         )
 
-    monkeypatch.setattr(cards_services, "plan_formula_render", fake_plan_formula_render)
+    service.renderer_client = _StubRendererClient(plan_fn=fake_plan_formula_render)
 
     queued = service.enqueue_render(algorithm_id=algo_id, quality="draft")
     assert queued["reused"] is True
