@@ -1,0 +1,1 @@
+/Users/sergio/.codex/projects/manim-tests/AGENTS.shared.md
