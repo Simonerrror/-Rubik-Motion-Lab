@@ -85,6 +85,11 @@ class BaseAlgorithmScene(ThreeDScene):
         preset = self.resolve_algorithm()
         execution_config = self._resolve_execution_config()
         cube = SceneSetup.apply(self, self.VISUAL_CONFIG)
+        if preset.group == RenderGroup.F2L:
+            execution_config = replace(
+                execution_config,
+                mask_u_color=self.VISUAL_CONFIG.stickerless_u_color,
+            )
         formula_for_scene = preset.formula
         if preset.group == RenderGroup.PLL:
             formula_for_scene = balance_pll_formula_rotations(formula_for_scene)

@@ -14,6 +14,7 @@ class CubeVisualConfig:
     colors: Sequence[str] = CONTRAST_SAFE_CUBE_COLORS
     background_color: str = "#D4D4D4"
     sticker_stroke_color: str = "#1F2733"
+    stickerless_u_color: str = "#0B1220"
     sticker_stroke_width: float = 3.4
     sticker_sheen_factor: float = 0.08
     sticker_gloss: float = 0.06
