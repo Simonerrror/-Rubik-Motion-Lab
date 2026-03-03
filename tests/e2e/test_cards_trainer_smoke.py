@@ -114,6 +114,20 @@ def test_cards_trainer_smoke_static_no_api(tmp_path: Path) -> None:
                 page.get_by_test_id("custom-formula-apply").click()
                 expect(page.locator("#m-algo-list")).to_contain_text(custom_formula, timeout=10000)
 
+                all_algo_radios = page.locator(".algo-option input.algo-radio")
+                assert all_algo_radios.count() >= 2
+
+                page.locator("#sandbox-play-pause-btn").click()
+                page.wait_for_timeout(220)
+
+                switch_target = all_algo_radios.nth(0)
+                if switch_target.is_checked():
+                    switch_target = all_algo_radios.nth(1)
+                switch_target.click()
+
+                expect(page.locator("#sandbox-play-pause-btn")).to_have_text("▶", timeout=10000)
+                expect(page.locator("#sandbox-timeline-slider")).to_have_value("0", timeout=10000)
+
                 custom_option = page.locator(".algo-option", has_text=custom_formula).first
                 expect(custom_option).to_be_visible(timeout=10000)
                 custom_option.locator("[data-testid^='delete-algo-']").click()
