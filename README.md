@@ -2,11 +2,11 @@
 
 AI-assisted renderer for Rubik's Cube algorithms built on Manim.
 
-## Current Status (2026-02-18)
+## Current Status (2026-03-03)
 
-- Cards workflow is active on FastAPI + vanilla HTML/JS.
-- PLL flow is completed: grouped case catalog, active algorithm selection, custom algorithm support, draft/HD queue, and polling updates.
-- OLL parity is completed: strict `oll.txt` source-of-truth (57/57), canonical algorithm seed, and stable per-case recognizer cards.
+- Trainer is now static-first (`trainer/`) and does not require `/api`.
+- Trainer data is built into `trainer/data/catalog-v1.json` with recognizers in `trainer/assets/recognizers/**`.
+- Render backend (`scripts/app/cards_api.py` + `scripts/app/cards_worker.py`) is preserved as legacy mode.
 - Top recognizers are generated and stored by group (`F2L` / `OLL` / `PLL`).
 
 ## What This Project Does
@@ -59,7 +59,37 @@ uv run python scripts/app/render_ui.py
 uv run python scripts/tools/render_algo.py --formula "R U R' U'" --name MyAlgo --group PLL --quality standard
 ```
 
+## Trainer (static, no API)
+
+Build static trainer catalog + recognizer assets:
+
+```bash
+just trainer-build
+```
+
+Serve locally:
+
+```bash
+just trainer-serve port=8011
+```
+
+Open `http://127.0.0.1:8011/`.
+
+Profile transfer format:
+
+- storage key: `cards_trainer_profile_v1`
+- schema version: `1`
+- codec: `base64url(gzip(json))`
+
+CLI helper for payload export from local JSON:
+
+```bash
+just trainer-export input=trainer/profile.json
+```
+
 ## Web Cards (FastAPI + HTML/JS)
+
+Legacy scope for server-side queue + video rendering.
 
 ```bash
 uv run python scripts/app/cards_api.py
@@ -72,6 +102,30 @@ Run render worker in a second terminal:
 ```bash
 uv run python scripts/app/cards_worker.py --workers 1 --manim-threads 1
 ```
+
+Renderer backend selection (split-ready):
+
+- default: local in-process renderer (`CUBEANIM_RENDER_BACKEND=local`)
+- remote HTTP renderer: set
+  - `CUBEANIM_RENDER_BACKEND=http`
+  - `CUBEANIM_RENDER_API_URL=http://127.0.0.1:9010`
+  - optional `CUBEANIM_RENDER_API_TIMEOUT_SEC=60`
+
+HTTP contract expected by the cards worker:
+
+- `POST /plan` -> `{ action, output_name, final_path, reason }`
+- `POST /render` -> `{ output_name, final_path, action }`
+
+Detailed split notes: `docs/RENDERER_SPLIT.md`.
+
+## Render backend (legacy)
+
+Legacy render path entrypoints are kept for API/worker deployments:
+
+- `scripts/app/cards_api.py`
+- `scripts/app/cards_worker.py`
+
+Trainer UI at `trainer/` intentionally does not call `/api`.
 
 Run the UI smoke suite against the running API:
 
@@ -150,7 +204,18 @@ Use `high`/`final` only for final export.
 python3 -m py_compile cubist.py cubeanim/*.py scripts/tools/render_algo.py scripts/app/render_ui.py scripts/app/cards_api.py scripts/app/cards_worker.py
 PYTHONPATH=. uv run pytest -q
 just smoke-ui
+SMOKE_STRICT=1 PYTHONPATH=. uv run pytest -q tests/e2e/test_cards_trainer_smoke.py -s
 ```
+
+## Deployment
+
+Vercel static config is in `vercel.json` (serves `trainer/` with SPA fallback).
+
+GitHub Pages flow:
+
+1. `just trainer-build`
+2. Copy `trainer/` contents to deployment root (`docs/` or `gh-pages` branch).
+3. Publish as static site.
 
 ## Media Tracking Policy
 

@@ -1,0 +1,69 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+import sys
+
+repo_root = Path(__file__).resolve().parents[1]
+if str(repo_root) not in sys.path:
+    sys.path.insert(0, str(repo_root))
+
+from cubeanim.cards.services import CardsService
+from scripts.trainer.build_trainer_catalog import (
+    SCHEMA_VERSION,
+    build_catalog_payload,
+    build_trainer_catalog,
+)
+
+
+def _build_payload(tmp_path: Path) -> dict:
+    db_path = tmp_path / "cards.db"
+    service = CardsService.create(repo_root=repo_root, db_path=db_path)
+    return build_catalog_payload(service, base_catalog_url="./assets")
+
+
+def test_build_trainer_catalog_payload_is_complete_and_grouped(tmp_path: Path) -> None:
+    payload = _build_payload(tmp_path)
+
+    assert payload["schema_version"] == SCHEMA_VERSION
+    assert payload["categories"] == ["F2L", "OLL", "PLL"]
+
+    cases = payload["cases"]
+    assert cases
+    assert {case["group"] for case in cases} == {"F2L", "OLL", "PLL"}
+
+    for case in cases:
+        assert case["case_key"]
+        assert ":" in case["case_key"]
+        assert case["status"] in {"NEW", "IN_PROGRESS", "LEARNED"}
+        assert case["sandbox"]
+        assert case["active_algorithm_id"]
+        algorithms = case["algorithms"]
+        assert isinstance(algorithms, list)
+        assert algorithms
+
+        for algorithm in algorithms:
+            sandbox = algorithm["sandbox"]
+            move_steps = list(sandbox["move_steps"])
+            states_by_step = list(sandbox["states_by_step"])
+            assert len(states_by_step) == len(move_steps) + 1
+            assert len(sandbox["state_slots"]) == 54
+            assert all(len(state) == 54 for state in states_by_step)
+
+
+def test_build_trainer_catalog_writes_files(tmp_path: Path) -> None:
+    output_dir = tmp_path / "trainer"
+    assets_dir = tmp_path / "assets"
+    build_trainer_catalog(
+        repo_root=repo_root,
+        db_path=tmp_path / "cards.db",
+        output_dir=output_dir,
+        assets_dir=assets_dir,
+        base_catalog_url="./assets",
+    )
+
+    catalog_path = output_dir / "data" / "catalog-v1.json"
+    assert catalog_path.exists()
+    catalog = catalog_path.read_text(encoding="utf-8")
+    assert SCHEMA_VERSION in catalog
+    assert (assets_dir / "recognizers").exists()
