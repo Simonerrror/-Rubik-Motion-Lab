@@ -78,6 +78,7 @@ Open `http://127.0.0.1:8011/`.
 Mobile-first isolated entrypoint:
 
 - `http://127.0.0.1:8011/mobile.html`
+- sandbox screen is fixed (no page scroll), with hidden settings under the gear button (bottom sheet)
 
 Profile transfer format:
 

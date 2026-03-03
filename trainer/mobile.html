@@ -28,9 +28,6 @@
           <button id="export-profile-btn" class="trainer-btn" type="button" data-testid="export-profile">Экспорт</button>
           <button id="import-profile-btn" class="trainer-btn" type="button" data-testid="import-profile">Импорт</button>
         </div>
-        <div class="legacy-note" id="legacy-note">
-          Video rendering is legacy-only · <a href="./legacy/reference.md" target="_blank" rel="noopener noreferrer">legacy reference</a>
-        </div>
       </div>
       <div id="catalog-container" class="catalog-container" data-testid="catalog-container"></div>
     </aside>
@@ -39,6 +36,7 @@
       <div class="mobile-view-header">
         <button id="mobile-back-btn" class="trainer-btn mobile-back-btn" type="button" aria-label="Back to catalog">← Catalog</button>
         <div id="mobile-view-title" class="mobile-view-title">Sandbox</div>
+        <button id="mobile-settings-btn" class="trainer-btn mobile-settings-btn" type="button" aria-label="Open settings">⚙</button>
       </div>
       <div class="details-grid">
         <section class="details-main">
@@ -89,8 +87,15 @@
             <div id="active-algo-display"></div>
           </div>
         </section>
+      </div>
 
-        <section class="details-side">
+      <div id="mobile-settings-backdrop" class="mobile-settings-backdrop" aria-hidden="true"></div>
+      <section id="mobile-settings-sheet" class="mobile-settings-sheet" aria-hidden="true">
+        <div class="mobile-settings-head">
+          <div class="mobile-settings-title">Settings</div>
+          <button id="mobile-settings-close-btn" class="trainer-btn mobile-settings-close-btn" type="button" aria-label="Close settings">Close</button>
+        </div>
+        <div class="mobile-settings-content">
           <div class="panel">
             <label class="panel-label">Learning Status</label>
             <div id="m-status-group" class="status-group">
@@ -104,8 +109,8 @@
             <label class="panel-label">Algorithm Selection</label>
             <div id="m-algo-list" class="algo-list"></div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </main>
   </div>
 
