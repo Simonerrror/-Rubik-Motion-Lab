@@ -29,6 +29,54 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Ensure Pages site exists (REST API)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            async function createPagesSite() {
+              core.info("Pages site not found. Creating with build_type=workflow.");
+              await github.request("POST /repos/{owner}/{repo}/pages", {
+                owner,
+                repo,
+                build_type: "workflow",
+                source: { branch: "main", path: "/" },
+              });
+            }
+
+            async function setWorkflowBuildType() {
+              await github.request("PUT /repos/{owner}/{repo}/pages", {
+                owner,
+                repo,
+                build_type: "workflow",
+                source: { branch: "main", path: "/" },
+              });
+              core.info("Pages site build_type set to workflow.");
+            }
+
+            try {
+              await github.request("GET /repos/{owner}/{repo}/pages", { owner, repo });
+              core.info("Pages site already exists.");
+            } catch (error) {
+              if (error.status === 404) {
+                await createPagesSite();
+              } else {
+                throw error;
+              }
+            }
+
+            try {
+              await setWorkflowBuildType();
+            } catch (error) {
+              if (error.status === 409) {
+                core.warning("Pages update is temporarily conflicted. Continuing.");
+              } else {
+                throw error;
+              }
+            }
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
