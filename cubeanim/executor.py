@@ -124,16 +124,8 @@ class MoveExecutor:
         from_hex: str,
         to_hex: str,
         sticker_hexes: set[str],
-        *,
-        mask_top_layer: bool = False,
     ) -> None:
         from_hex_norm = from_hex.lower()
-        top_layer_z: float | None = None
-        if mask_top_layer:
-            try:
-                top_layer_z = max(float(cubie.get_center()[2]) for cubie in cube.cubies.flatten())
-            except Exception:
-                top_layer_z = None
         for cubie in cube.cubies.flatten():
             faces: list[tuple[object, str]] = []
             has_target_face = False
@@ -145,13 +137,7 @@ class MoveExecutor:
                 faces.append((face, current))
                 if current == from_hex_norm:
                     has_target_face = True
-            is_top_layer = False
-            if top_layer_z is not None:
-                try:
-                    is_top_layer = abs(float(cubie.get_center()[2]) - top_layer_z) <= 0.2
-                except Exception:
-                    is_top_layer = False
-            if not has_target_face and not is_top_layer:
+            if not has_target_face:
                 continue
             for face, current in faces:
                 if current not in sticker_hexes:
@@ -596,7 +582,6 @@ class MoveExecutor:
                 from_hex=u_color,
                 to_hex=mask_u_color,
                 sticker_hexes=sticker_hexes,
-                mask_top_layer=True,
             )
 
         MoveExecutor._add_algorithm_name(scene, algorithm_name, config)
