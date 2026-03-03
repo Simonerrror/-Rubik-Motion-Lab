@@ -151,6 +151,28 @@ class FormulaConverter:
 
         raise FormulaSyntaxError(f"Unknown move token '{raw_move}'", token.start)
 
+    @classmethod
+    def _axis_for_base(cls, base: str) -> str:
+        if base in ("F", "B", "S", "f", "b", "z"):
+            return "x"
+        if base in ("U", "D", "E", "u", "d", "y"):
+            return "z"
+        if base in ("L", "R", "M", "l", "r", "x"):
+            return "y"
+        raise ValueError(f"Unsupported move base: {base}")
+
+    @classmethod
+    def validate_simultaneous_axis(cls, moves: list[str], position: int) -> None:
+        if len(moves) < 2:
+            return
+
+        axes = {
+            cls._axis_for_base(cls._split_move_modifier(move)[0])
+            for move in moves
+        }
+        if len(axes) != 1:
+            raise FormulaSyntaxError("Simultaneous moves must share axis", position)
+
 
 @dataclass
 class _FormulaParser:
@@ -204,14 +226,18 @@ class _FormulaParser:
         if token.kind == "MOVE":
             expanded = self.converter.expand_move(token)
             simultaneous = [expanded[0]]
+            simultaneous_pos = token.start
 
             while self.has_more() and self.peek().kind == "PLUS":
                 plus = self.consume()
+                simultaneous_pos = plus.start
                 if not self.has_more() or self.peek().kind != "MOVE":
                     raise FormulaSyntaxError("Expected move after '+'", plus.start)
                 move_token = self.consume()
                 next_expanded = self.converter.expand_move(move_token)
                 simultaneous.append(next_expanded[0])
+
+            self.converter.validate_simultaneous_axis(simultaneous, simultaneous_pos)
 
             return [simultaneous], False
 

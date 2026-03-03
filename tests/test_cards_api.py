@@ -130,6 +130,46 @@ def test_api_reference_sets(tmp_path: Path) -> None:
     assert any(item["title"] == "G-Perms" for item in payload["data"])
 
 
+def test_api_case_sandbox_timeline(tmp_path: Path) -> None:
+    client = _build_client(tmp_path)
+    case_id = int(client.get("/api/cases", params={"group": "PLL"}).json()["data"][0]["id"])
+
+    response = client.get(f"/api/cases/{case_id}/sandbox")
+    assert response.status_code == 200
+    payload = response.json()["data"]
+    assert payload["case_id"] == case_id
+    assert payload["group"] == "PLL"
+    assert payload["step_count"] == len(payload["move_steps"])
+    assert len(payload["states_by_step"]) == payload["step_count"] + 1
+    assert len(payload["state_slots"]) == 54
+    assert all(len(state) == 54 for state in payload["states_by_step"])
+    playback = payload["playback_config"]
+    assert playback["rate_func"] == "ease_in_out_sine"
+    assert float(playback["run_time_sec"]) > 0
+    assert float(playback["double_turn_multiplier"]) > 1
+    assert float(playback["inter_move_pause_ratio"]) >= 0
+
+
+def test_api_case_sandbox_uses_env_move_runtime(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("CUBEANIM_MOVE_RUN_TIME", "1.25")
+    client = _build_client(tmp_path)
+    case_id = int(client.get("/api/cases", params={"group": "PLL"}).json()["data"][0]["id"])
+
+    response = client.get(f"/api/cases/{case_id}/sandbox")
+    assert response.status_code == 200
+    payload = response.json()["data"]
+    assert payload["playback_config"]["run_time_sec"] == pytest.approx(1.25)
+
+
+def test_api_case_sandbox_rejects_unsupported_formula_mode(tmp_path: Path) -> None:
+    client = _build_client(tmp_path)
+    case_id = int(client.get("/api/cases", params={"group": "PLL"}).json()["data"][0]["id"])
+
+    response = client.get(f"/api/cases/{case_id}/sandbox", params={"formula_mode": "custom"})
+    assert response.status_code == 400
+    assert "formula_mode=active" in response.json()["detail"]
+
+
 def test_api_activate_does_not_reorder_algorithms(tmp_path: Path) -> None:
     client = _build_client(tmp_path)
 

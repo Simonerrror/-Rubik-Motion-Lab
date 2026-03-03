@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import os
 import hashlib
 import json
 import re
-from dataclasses import dataclass
-import os
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -19,9 +19,31 @@ from cubeanim.cards.db import (
 )
 from cubeanim.cards.models import RENDER_QUALITIES
 from cubeanim.cards.recognizer import ensure_recognizer_assets
+from cubeanim.cards.sandbox import build_sandbox_timeline
+from cubeanim.executor import ExecutionConfig
 from cubeanim.render_service import RenderRequest, plan_formula_render, render_formula
 
 GROUPS = {"F2L", "OLL", "PLL"}
+_MOVE_RUN_TIME_ENV = "CUBEANIM_MOVE_RUN_TIME"
+_SANDBOX_RATE_FUNC = "ease_in_out_sine"
+
+
+def _resolved_execution_config() -> ExecutionConfig:
+    config = ExecutionConfig()
+    raw_run_time = os.environ.get(_MOVE_RUN_TIME_ENV, "").strip()
+    if not raw_run_time:
+        return config
+    try:
+        run_time = float(raw_run_time)
+    except ValueError as exc:
+        raise ValueError(
+            f"Environment variable {_MOVE_RUN_TIME_ENV} must be a float"
+        ) from exc
+    if run_time <= 0:
+        raise ValueError(
+            f"Environment variable {_MOVE_RUN_TIME_ENV} must be > 0"
+        )
+    return replace(config, run_time=run_time)
 
 
 @dataclass
@@ -70,6 +92,29 @@ class CardsService:
             if row is None:
                 raise KeyError(f"case id {case_id} not found")
             return self._decorate_case(row, conn, include_jobs=True)
+
+    def get_case_sandbox(self, case_id: int) -> dict[str, Any]:
+        with connect(self.db_path) as conn:
+            row = repository.get_case(conn, case_id=case_id)
+            if row is None:
+                raise KeyError(f"case id {case_id} not found")
+
+        group = str(row["group"])
+        formula = self._normalize_formula(str(row.get("active_formula") or ""))
+        timeline = build_sandbox_timeline(formula=formula, group=group)
+        return {
+            "case_id": int(row["id"]),
+            "group": group,
+            "formula": timeline.formula,
+            "moves_flat": timeline.moves_flat,
+            "move_steps": timeline.move_steps,
+            "step_count": len(timeline.move_steps),
+            "initial_state": timeline.initial_state,
+            "states_by_step": timeline.states_by_step,
+            "highlight_by_step": timeline.highlight_by_step,
+            "state_slots": timeline.state_slots,
+            "playback_config": self._sandbox_playback_config(),
+        }
 
     def list_alternatives(self, case_id: int) -> list[dict[str, Any]]:
         with connect(self.db_path) as conn:
@@ -565,6 +610,16 @@ class CardsService:
     @staticmethod
     def _normalize_formula(formula: str) -> str:
         return " ".join(formula.split())
+
+    @staticmethod
+    def _sandbox_playback_config() -> dict[str, Any]:
+        config = _resolved_execution_config()
+        return {
+            "run_time_sec": config.run_time,
+            "double_turn_multiplier": config.double_turn_multiplier,
+            "inter_move_pause_ratio": config.inter_move_pause_ratio,
+            "rate_func": _SANDBOX_RATE_FUNC,
+        }
 
     def _is_existing_artifact(self, artifact: dict[str, Any] | None) -> bool:
         if artifact is None:

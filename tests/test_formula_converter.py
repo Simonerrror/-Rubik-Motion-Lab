@@ -23,6 +23,11 @@ def test_simultaneous_moves_are_grouped_into_single_step() -> None:
     assert FormulaConverter.convert("U+D") == ["U", "D"]
 
 
+def test_simultaneous_moves_with_mismatched_axes_fail_fast() -> None:
+    with pytest.raises(FormulaSyntaxError, match="Simultaneous moves must share axis"):
+        FormulaConverter.convert_steps("U+R")
+
+
 def test_inverse_moves_are_built_in_reverse_order() -> None:
     moves = FormulaConverter.convert("R U2 F'")
     inverse = FormulaConverter.invert_moves(moves)
