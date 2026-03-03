@@ -37,7 +37,30 @@
                     </div>
 
                     <div class="video-frame">
+                        <div class="playback-mode-toggle" role="group" aria-label="Playback mode">
+                            <button id="mode-video-btn" class="mode-btn active" type="button">Video</button>
+                            <button id="mode-sandbox-btn" class="mode-btn" type="button">Sandbox</button>
+                        </div>
                         <video id="m-video" class="video-player" controls autoplay loop muted></video>
+                        <div id="sandbox-frame" class="sandbox-frame hidden" data-testid="sandbox-frame">
+                            <div class="sandbox-stage">
+                                <canvas id="sandbox-canvas" class="sandbox-canvas"></canvas>
+                            </div>
+                            <div class="sandbox-controls">
+                                <div class="sandbox-controls-left">
+                                    <button id="sandbox-to-start-btn" class="sandbox-btn sandbox-btn-icon" type="button" title="Back to start">FB</button>
+                                    <button id="sandbox-prev-btn" class="sandbox-btn sandbox-btn-step" type="button" title="Previous step">Prev</button>
+                                    <button id="sandbox-play-pause-btn" class="sandbox-btn sandbox-btn-primary" type="button">Play</button>
+                                    <button id="sandbox-next-btn" class="sandbox-btn sandbox-btn-step" type="button" title="Next step">Next</button>
+                                </div>
+                                <div class="sandbox-speed-group" role="group" aria-label="Sandbox speed">
+                                    <button id="sandbox-speed-x1" class="sandbox-btn sandbox-speed-btn active" type="button" data-speed="1">x1</button>
+                                    <button id="sandbox-speed-x15" class="sandbox-btn sandbox-speed-btn" type="button" data-speed="1.5">x1.5</button>
+                                    <button id="sandbox-speed-x2" class="sandbox-btn sandbox-speed-btn" type="button" data-speed="2">x2</button>
+                                </div>
+                                <div id="sandbox-step-label" class="sandbox-step-label">Step 0/0</div>
+                            </div>
+                        </div>
                         <div id="m-queue-msg" class="queue-overlay">Select case</div>
                     </div>
 
@@ -72,6 +95,8 @@
     </div>
 
     <div class="toast" id="toast"></div>
+    <script src="/static/vendor/three.min.js"></script>
+    <script src="/static/cards/sandbox3d.js"></script>
     <script src="/static/cards/app.js"></script>
 </body>
 </html>

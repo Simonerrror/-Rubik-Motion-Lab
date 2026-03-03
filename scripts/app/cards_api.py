@@ -97,6 +97,24 @@ def api_get_case(case_id: int) -> dict:
     return {"ok": True, "data": item}
 
 
+@app.get("/api/cases/{case_id}/sandbox")
+def api_get_case_sandbox(
+    case_id: int,
+    formula_mode: str = Query(default="active"),
+) -> dict:
+    if formula_mode.strip().lower() != "active":
+        raise HTTPException(status_code=400, detail="Only formula_mode=active is supported")
+    try:
+        item = service.get_case_sandbox(case_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return {"ok": True, "data": item}
+
+
 @app.get("/api/cases/{case_id}/alternatives")
 def api_list_alternatives(case_id: int) -> dict:
     try:

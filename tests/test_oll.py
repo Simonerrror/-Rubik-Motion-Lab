@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from cubeanim.formula import FormulaConverter
-from cubeanim.oll import build_oll_top_view_data, validate_oll_f2l_start_state
+from cubeanim.oll import build_oll_top_view_data, resolve_valid_oll_start_state, validate_oll_f2l_start_state
 from cubeanim.state import solved_state_string, state_slots_metadata, state_string_from_moves
 
 
@@ -26,6 +26,13 @@ def test_oll_validation_fails_for_non_oll_start_case() -> None:
     state = _start_state_for_formula("R U")
     with pytest.raises(ValueError, match="Invalid OLL start state"):
         validate_oll_f2l_start_state(state)
+
+
+def test_resolve_valid_oll_start_state_handles_rotation_formulas() -> None:
+    moves = FormulaConverter.convert("R' F R U R' F' R (y') R U' R'")
+    inverse = FormulaConverter.invert_moves(moves)
+    resolved_state = resolve_valid_oll_start_state(inverse)
+    validate_oll_f2l_start_state(resolved_state)
 
 
 def test_top_view_on_solved_state_is_full_yellow_and_no_side_indicators() -> None:

@@ -8,6 +8,13 @@
   };
   const RECOGNIZER_CACHE_BUSTER = `r${Date.now()}`;
   const POLL_BACKOFF_STEPS_MS = [5000, 10000, 20000, 30000];
+  const DEFAULT_SANDBOX_PLAYBACK_CONFIG = {
+    run_time_sec: 0.65,
+    double_turn_multiplier: 1.7,
+    inter_move_pause_ratio: 0.05,
+    rate_func: "ease_in_out_sine",
+  };
+  const SANDBOX_PLAYBACK_SPEEDS = [1, 1.5, 2];
 
   function loadProgressSortMap() {
     const defaults = { F2L: false, OLL: false, PLL: false };
@@ -46,6 +53,16 @@
     pollBackoffIndex: 0,
     pollOutageNotified: false,
     progressSortByGroup: loadProgressSortMap(),
+    playbackMode: "video",
+    sandboxData: null,
+    sandboxStepIndex: 0,
+    sandboxRequestToken: 0,
+    sandboxPlayer: null,
+    sandboxBusy: false,
+    sandboxPlaybackSpeed: 1,
+    sandboxPlaybackActive: false,
+    sandboxPlaybackToken: 0,
+    sandboxPlaybackConfig: { ...DEFAULT_SANDBOX_PLAYBACK_CONFIG },
   };
 
   const DOM = {
@@ -56,6 +73,16 @@
     mCaseCode: document.getElementById("m-case-code"),
     mVideo: document.getElementById("m-video"),
     mQueueMsg: document.getElementById("m-queue-msg"),
+    modeVideoBtn: document.getElementById("mode-video-btn"),
+    modeSandboxBtn: document.getElementById("mode-sandbox-btn"),
+    sandboxFrame: document.getElementById("sandbox-frame"),
+    sandboxCanvas: document.getElementById("sandbox-canvas"),
+    sandboxToStartBtn: document.getElementById("sandbox-to-start-btn"),
+    sandboxPrevBtn: document.getElementById("sandbox-prev-btn"),
+    sandboxPlayPauseBtn: document.getElementById("sandbox-play-pause-btn"),
+    sandboxNextBtn: document.getElementById("sandbox-next-btn"),
+    sandboxSpeedButtons: Array.from(document.querySelectorAll(".sandbox-speed-btn")),
+    sandboxStepLabel: document.getElementById("sandbox-step-label"),
     mStatusGroup: document.getElementById("m-status-group"),
     mAlgoList: document.getElementById("m-algo-list"),
     activeAlgoDisplay: document.getElementById("active-algo-display"),
@@ -63,6 +90,10 @@
     mRenderBtn: document.getElementById("m-render-btn"),
     toast: document.getElementById("toast"),
   };
+
+  function sandboxSpeedButtons() {
+    return Array.from(document.querySelectorAll(".sandbox-speed-btn"));
+  }
 
   function clearPollingTimer() {
     if (state.pollTimer) {
@@ -95,6 +126,321 @@
   function markPollSuccess() {
     state.pollBackoffIndex = 0;
     state.pollOutageNotified = false;
+  }
+
+  function normalizeSandboxPlaybackConfig(raw) {
+    const config = { ...DEFAULT_SANDBOX_PLAYBACK_CONFIG };
+    if (!raw || typeof raw !== "object") return config;
+    const runTime = Number(raw.run_time_sec);
+    const doubleMultiplier = Number(raw.double_turn_multiplier);
+    const pauseRatio = Number(raw.inter_move_pause_ratio);
+    const rateFunc = String(raw.rate_func || "").trim();
+    if (Number.isFinite(runTime) && runTime > 0) config.run_time_sec = runTime;
+    if (Number.isFinite(doubleMultiplier) && doubleMultiplier > 0) config.double_turn_multiplier = doubleMultiplier;
+    if (Number.isFinite(pauseRatio) && pauseRatio >= 0) config.inter_move_pause_ratio = pauseRatio;
+    if (rateFunc) config.rate_func = rateFunc;
+    return config;
+  }
+
+  function stopSandboxPlayback(options = {}) {
+    const hadPlayback = state.sandboxPlaybackActive;
+    state.sandboxPlaybackActive = false;
+    state.sandboxPlaybackToken += 1;
+    if (!options.silent && (hadPlayback || options.forceUpdate)) {
+      updateSandboxControls();
+    }
+  }
+
+  function setSandboxPlaybackSpeed(rawSpeed) {
+    const parsed = Number(rawSpeed);
+    const next = SANDBOX_PLAYBACK_SPEEDS.includes(parsed) ? parsed : 1;
+    state.sandboxPlaybackSpeed = next;
+    updateSandboxControls();
+  }
+
+  function sleepWithToken(delayMs, token) {
+    const ms = Math.max(0, Math.round(delayMs));
+    if (!ms) {
+      return Promise.resolve(state.sandboxPlaybackToken === token);
+    }
+    return new Promise((resolve) => {
+      window.setTimeout(() => {
+        resolve(state.sandboxPlaybackToken === token);
+      }, ms);
+    });
+  }
+
+  function isDoubleTurnMove(move) {
+    return /2'?$/.test(String(move || "").trim());
+  }
+
+  function sandboxStepDurationMs(stepMoves) {
+    const cfg = state.sandboxPlaybackConfig || DEFAULT_SANDBOX_PLAYBACK_CONFIG;
+    const speed = state.sandboxPlaybackSpeed || 1;
+    const step = Array.isArray(stepMoves) ? stepMoves : [];
+    const allDoubleTurns = step.length > 0 && step.every(isDoubleTurnMove);
+    const runTimeSec = allDoubleTurns
+      ? cfg.run_time_sec * cfg.double_turn_multiplier
+      : cfg.run_time_sec;
+    return Math.max(80, Math.round((runTimeSec * 1000) / speed));
+  }
+
+  function sandboxInterMovePauseMs() {
+    const cfg = state.sandboxPlaybackConfig || DEFAULT_SANDBOX_PLAYBACK_CONFIG;
+    const speed = state.sandboxPlaybackSpeed || 1;
+    const pauseSec = (cfg.run_time_sec * cfg.inter_move_pause_ratio) / speed;
+    return Math.max(0, Math.round(pauseSec * 1000));
+  }
+
+  function setPlaybackMode(mode) {
+    const normalized = mode === "sandbox" ? "sandbox" : "video";
+    state.playbackMode = normalized;
+
+    const videoActive = normalized === "video";
+    DOM.modeVideoBtn?.classList.toggle("active", videoActive);
+    DOM.modeSandboxBtn?.classList.toggle("active", !videoActive);
+    DOM.mVideo?.classList.toggle("hidden", !videoActive);
+    DOM.sandboxFrame?.classList.toggle("hidden", videoActive);
+
+    if (videoActive) {
+      stopSandboxPlayback({ silent: true });
+    } else if (state.sandboxPlayer) {
+      window.requestAnimationFrame(() => {
+        state.sandboxPlayer?.resize();
+        renderSandboxStep();
+      });
+    }
+    updateSandboxControls();
+  }
+
+  function currentSandboxStepCount() {
+    const steps = state.sandboxData?.move_steps;
+    return Array.isArray(steps) ? steps.length : 0;
+  }
+
+  function stepLabelText() {
+    const total = currentSandboxStepCount();
+    const index = Math.min(Math.max(state.sandboxStepIndex, 0), total);
+    if (!total) return "Step 0/0";
+    if (index === 0) return `Step 0/${total} · Start`;
+    const label = state.sandboxData?.highlight_by_step?.[index - 1] || "";
+    return label ? `Step ${index}/${total} · ${label}` : `Step ${index}/${total}`;
+  }
+
+  function renderSandboxStep(options = {}) {
+    if (!state.sandboxData) {
+      DOM.sandboxStepLabel.textContent = "Step 0/0";
+      return;
+    }
+
+    const syncState = options.syncState !== false;
+    const total = currentSandboxStepCount();
+    state.sandboxStepIndex = Math.min(Math.max(state.sandboxStepIndex, 0), total);
+    const nextState = state.sandboxData.states_by_step?.[state.sandboxStepIndex] || "";
+    if (syncState && state.sandboxPlayer && nextState) {
+      state.sandboxPlayer.setState(nextState);
+    }
+    DOM.sandboxStepLabel.textContent = stepLabelText();
+    updateSandboxControls();
+  }
+
+  function updateSandboxControls() {
+    const hasTimeline = Boolean(state.sandboxData);
+    const total = currentSandboxStepCount();
+    const atStart = state.sandboxStepIndex <= 0;
+    const atEnd = state.sandboxStepIndex >= total;
+    const locked = state.sandboxBusy || state.sandboxPlaybackActive;
+
+    if (DOM.sandboxToStartBtn) {
+      DOM.sandboxToStartBtn.disabled = !hasTimeline || atStart || locked;
+    }
+    if (DOM.sandboxPrevBtn) {
+      DOM.sandboxPrevBtn.disabled = !hasTimeline || atStart || locked;
+    }
+    if (DOM.sandboxPlayPauseBtn) {
+      DOM.sandboxPlayPauseBtn.disabled = !hasTimeline || total === 0;
+      DOM.sandboxPlayPauseBtn.textContent = state.sandboxPlaybackActive ? "Pause" : "Play";
+    }
+    if (DOM.sandboxNextBtn) {
+      DOM.sandboxNextBtn.disabled = !hasTimeline || atEnd || locked;
+    }
+    const speedButtons = sandboxSpeedButtons();
+    if (speedButtons.length) {
+      speedButtons.forEach((btn) => {
+        const speedValue = Number(btn.dataset.speed || "1");
+        btn.classList.toggle("active", speedValue === state.sandboxPlaybackSpeed);
+        btn.disabled = !hasTimeline || total === 0;
+      });
+    }
+    if (!hasTimeline) {
+      DOM.sandboxStepLabel.textContent = "Step 0/0";
+    }
+  }
+
+  function resetSandboxData() {
+    stopSandboxPlayback({ silent: true });
+    state.sandboxData = null;
+    state.sandboxStepIndex = 0;
+    state.sandboxBusy = false;
+    state.sandboxPlaybackConfig = { ...DEFAULT_SANDBOX_PLAYBACK_CONFIG };
+    if (state.sandboxPlayer) {
+      state.sandboxPlayer.setSlots([]);
+      state.sandboxPlayer.setState("");
+    }
+    updateSandboxControls();
+  }
+
+  async function loadSandboxForCurrentCase() {
+    const c = currentCase();
+    if (!c?.id) {
+      resetSandboxData();
+      return;
+    }
+
+    const requestToken = state.sandboxRequestToken + 1;
+    state.sandboxRequestToken = requestToken;
+    try {
+      const sandbox = await apiGet(`/api/cases/${c.id}/sandbox`);
+      if (requestToken !== state.sandboxRequestToken) return;
+
+      state.sandboxData = sandbox;
+      state.sandboxStepIndex = 0;
+      state.sandboxBusy = false;
+      stopSandboxPlayback({ silent: true });
+      state.sandboxPlaybackConfig = normalizeSandboxPlaybackConfig(sandbox.playback_config);
+      if (state.sandboxPlayer) {
+        state.sandboxPlayer.setSlots(Array.isArray(sandbox.state_slots) ? sandbox.state_slots : []);
+        if (state.playbackMode === "sandbox") {
+          window.requestAnimationFrame(() => {
+            state.sandboxPlayer?.resize();
+            renderSandboxStep();
+          });
+        }
+      }
+      renderSandboxStep();
+    } catch (error) {
+      if (requestToken !== state.sandboxRequestToken) return;
+      resetSandboxData();
+      setPlaybackMode("video");
+      showToast(`Sandbox unavailable: ${String(error.message || error)}`);
+    }
+  }
+
+  async function moveSandboxBy(delta, options = {}) {
+    if (!state.sandboxData || state.sandboxBusy) return;
+
+    const total = currentSandboxStepCount();
+    const currentIndex = state.sandboxStepIndex;
+    const targetIndex = Math.min(Math.max(currentIndex + delta, 0), total);
+    if (targetIndex === currentIndex) return;
+
+    const forward = delta > 0;
+    const stepIndex = forward ? currentIndex : currentIndex - 1;
+    const moveStep = Array.isArray(state.sandboxData.move_steps?.[stepIndex])
+      ? state.sandboxData.move_steps[stepIndex]
+      : [];
+    const animate = options.animate !== false;
+    const durationMs = Number(options.durationMs) || sandboxStepDurationMs(moveStep);
+
+    state.sandboxBusy = true;
+    updateSandboxControls();
+
+    let animated = false;
+    try {
+      if (animate && state.sandboxPlayer?.playStep && moveStep.length) {
+        animated = await state.sandboxPlayer.playStep(moveStep, {
+          reverse: !forward,
+          durationMs,
+          easing: state.sandboxPlaybackConfig.rate_func,
+        });
+      }
+    } catch (error) {
+      console.warn(error);
+    }
+
+    state.sandboxStepIndex = targetIndex;
+    state.sandboxBusy = false;
+
+    if (animated) {
+      DOM.sandboxStepLabel.textContent = stepLabelText();
+      updateSandboxControls();
+      return true;
+    }
+    renderSandboxStep();
+    return true;
+  }
+
+  function sandboxSetStep(index) {
+    if (!state.sandboxData || state.sandboxBusy) return;
+    const total = currentSandboxStepCount();
+    state.sandboxStepIndex = Math.min(Math.max(index, 0), total);
+    renderSandboxStep();
+  }
+
+  function sandboxToStart() {
+    if (!state.sandboxData || state.sandboxBusy) return;
+    sandboxSetStep(0);
+  }
+
+  async function sandboxStepBackward() {
+    if (!state.sandboxData || state.sandboxBusy || state.sandboxPlaybackActive) return;
+    await moveSandboxBy(-1, { animate: true });
+  }
+
+  async function sandboxStepForward() {
+    if (!state.sandboxData || state.sandboxBusy || state.sandboxPlaybackActive) return;
+    await moveSandboxBy(1, { animate: true });
+  }
+
+  async function startSandboxPlayback() {
+    if (!state.sandboxData || state.sandboxPlaybackActive) return;
+    const total = currentSandboxStepCount();
+    if (total <= 0) return;
+    if (state.sandboxStepIndex >= total) {
+      sandboxSetStep(0);
+    }
+
+    const token = state.sandboxPlaybackToken + 1;
+    state.sandboxPlaybackToken = token;
+    state.sandboxPlaybackActive = true;
+    updateSandboxControls();
+
+    while (state.sandboxPlaybackActive && token === state.sandboxPlaybackToken) {
+      const nowTotal = currentSandboxStepCount();
+      if (state.sandboxStepIndex >= nowTotal) break;
+      if (state.sandboxBusy) {
+        const ok = await sleepWithToken(12, token);
+        if (!ok) return;
+        continue;
+      }
+
+      const step = state.sandboxData.move_steps?.[state.sandboxStepIndex] || [];
+      const durationMs = sandboxStepDurationMs(step);
+      const moved = await moveSandboxBy(1, { animate: true, durationMs });
+      if (!moved || token !== state.sandboxPlaybackToken || !state.sandboxPlaybackActive) {
+        break;
+      }
+      if (state.sandboxStepIndex >= nowTotal) {
+        break;
+      }
+      const pauseOk = await sleepWithToken(sandboxInterMovePauseMs(), token);
+      if (!pauseOk) return;
+    }
+
+    if (token !== state.sandboxPlaybackToken) return;
+    state.sandboxPlaybackActive = false;
+    if (state.sandboxStepIndex >= currentSandboxStepCount()) {
+      sandboxSetStep(0);
+    }
+    updateSandboxControls();
+  }
+
+  function toggleSandboxPlayback() {
+    if (state.sandboxPlaybackActive) {
+      stopSandboxPlayback();
+      return;
+    }
+    void startSandboxPlayback();
   }
 
   async function apiGet(url) {
@@ -413,6 +759,8 @@
     });
     DOM.mAlgoList.innerHTML = '<div class="algo-empty">Select case to manage algorithms.</div>';
     setActiveDisplayFormula("", "algorithm");
+    resetSandboxData();
+    setPlaybackMode("video");
   }
 
   function updateDetailsPaneState() {
@@ -444,11 +792,11 @@
 
     if (videoUrl) {
       setVideoSource(DOM.mVideo, videoUrl);
-      DOM.mQueueMsg.style.display = activeJob ? "flex" : "none";
+      DOM.mQueueMsg.style.display = state.playbackMode === "video" && activeJob ? "flex" : "none";
       DOM.mQueueMsg.textContent = activeJob ? `Render queued (${activeJob.quality})...` : "";
     } else {
       clearVideoSource(DOM.mVideo);
-      DOM.mQueueMsg.style.display = "flex";
+      DOM.mQueueMsg.style.display = state.playbackMode === "video" ? "flex" : "none";
       if (activeJob) {
         DOM.mQueueMsg.textContent = `Render queued (${activeJob.quality})...`;
       } else if (latestFailedJob) {
@@ -567,6 +915,7 @@
         const updated = await apiPost(`/api/cases/${c.id}/alternatives`, { formula, activate: true });
         state.activeCase = updated;
         patchCaseInState(updated);
+        await loadSandboxForCurrentCase();
         renderCatalog();
         updateDetailsPaneState();
       } catch (error) {
@@ -612,6 +961,7 @@
     state.activeCase = details;
     state.activeDisplayMode = "algorithm";
     state.activeDisplayFormula = details.active_formula || "";
+    await loadSandboxForCurrentCase();
     patchCaseInState(details);
     renderCatalog();
     updateDetailsPaneState();
@@ -620,6 +970,7 @@
   async function activateAlgorithm(caseId, algorithmId) {
     const updated = await apiPost(`/api/cases/${caseId}/active-algorithm`, { algorithm_id: algorithmId });
     state.activeCase = updated;
+    await loadSandboxForCurrentCase();
     patchCaseInState(updated);
     renderCatalog();
     updateDetailsPaneState();
@@ -629,6 +980,7 @@
   async function deleteAlgorithm(caseId, algorithmId) {
     const payload = await apiDelete(`/api/cases/${caseId}/alternatives/${algorithmId}?purge_media=true`);
     state.activeCase = payload.case;
+    await loadSandboxForCurrentCase();
     patchCaseInState(payload.case);
     renderCatalog();
     updateDetailsPaneState();
@@ -686,6 +1038,7 @@
     if (!state.cases.length) {
       state.activeCaseId = null;
       state.activeCase = null;
+      resetSandboxData();
       renderCatalog();
       updateDetailsPaneState();
       return;
@@ -698,6 +1051,7 @@
 
     const updated = await apiGet(`/api/cases/${state.activeCaseId}`);
     state.activeCase = updated;
+    await loadSandboxForCurrentCase();
     patchCaseInState(updated);
     renderCatalog();
     updateDetailsPaneState();
@@ -733,6 +1087,45 @@
   }
 
   function setupEventListeners() {
+    DOM.modeVideoBtn?.addEventListener("click", () => {
+      setPlaybackMode("video");
+      updateDetailsPaneState();
+    });
+    DOM.modeSandboxBtn?.addEventListener("click", () => {
+      if (!state.sandboxData) {
+        showToast("Sandbox data not ready yet");
+        return;
+      }
+      setPlaybackMode("sandbox");
+      updateDetailsPaneState();
+      // Always enter sandbox from the canonical starting position.
+      sandboxSetStep(0);
+    });
+    DOM.sandboxToStartBtn?.addEventListener("click", () => {
+      stopSandboxPlayback({ silent: true });
+      sandboxToStart();
+    });
+    DOM.sandboxPrevBtn?.addEventListener("click", () => {
+      void sandboxStepBackward();
+    });
+    DOM.sandboxPlayPauseBtn?.addEventListener("click", () => {
+      toggleSandboxPlayback();
+    });
+    DOM.sandboxNextBtn?.addEventListener("click", () => {
+      void sandboxStepForward();
+    });
+    const onSpeedClick = (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const speedBtn = target.closest(".sandbox-speed-btn");
+      if (!speedBtn) return;
+      setSandboxPlaybackSpeed(speedBtn.dataset.speed || "1");
+    };
+    DOM.sandboxFrame?.addEventListener("click", onSpeedClick);
+    sandboxSpeedButtons().forEach((btn) => {
+      btn.addEventListener("click", onSpeedClick);
+    });
+
     if (DOM.sortProgressToggle) {
       DOM.sortProgressToggle.addEventListener("change", (event) => {
         const enabled = Boolean(event.currentTarget.checked);
@@ -791,8 +1184,16 @@
   }
 
   async function init() {
+    if (window.CubeSandbox3D?.createSandbox3D && DOM.sandboxCanvas) {
+      state.sandboxPlayer = window.CubeSandbox3D.createSandbox3D(DOM.sandboxCanvas);
+      window.addEventListener("resize", () => {
+        state.sandboxPlayer?.resize();
+      });
+    }
     setActiveTab(state.category);
     setupEventListeners();
+    setPlaybackMode("video");
+    updateSandboxControls();
     syncProgressSortToggle();
     await loadCatalog();
 

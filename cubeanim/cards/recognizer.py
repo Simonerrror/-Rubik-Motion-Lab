@@ -7,7 +7,12 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from cubeanim.formula import FormulaConverter
-from cubeanim.oll import OLLTopViewData, build_oll_top_view_data, validate_oll_f2l_start_state
+from cubeanim.oll import (
+    OLLTopViewData,
+    build_oll_top_view_data,
+    resolve_valid_oll_start_state,
+    validate_oll_f2l_start_state,
+)
 from cubeanim.palette import CONTRAST_SAFE_CUBE_COLORS, FACE_ORDER
 from cubeanim.pll import (
     PLLTopViewData,
@@ -15,7 +20,6 @@ from cubeanim.pll import (
     build_pll_top_view_data,
     resolve_valid_pll_start_state,
 )
-from cubeanim.state import state_string_from_moves
 
 
 @dataclass(frozen=True)
@@ -82,7 +86,7 @@ def _oll_data_from_formula(formula: str) -> OLLTopViewData:
     move_steps = FormulaConverter.convert_steps(formula, repeat=1)
     inverse_steps = FormulaConverter.invert_steps(move_steps)
     inverse_flat = [move for step in inverse_steps for move in step]
-    start_state = state_string_from_moves(inverse_flat)
+    start_state = resolve_valid_oll_start_state(inverse_flat)
     validate_oll_f2l_start_state(start_state)
     return build_oll_top_view_data(start_state)
 

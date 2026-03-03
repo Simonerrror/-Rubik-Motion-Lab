@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from cubeanim.render_service import RenderRequest, _build_manim_command, plan_formula_render
+from cubeanim.render_base import BaseRenderer
+from cubeanim.render_service import RenderRequest, _build_manim_command, plan_formula_render, render_formula
 
 
 def test_plan_render_for_new_name(tmp_path: Path) -> None:
@@ -114,3 +115,48 @@ def test_build_command_uses_display_name_for_overlay(tmp_path: Path) -> None:
     )
     assert cmd
     assert env["CUBEANIM_NAME"] == "Jb-perm"
+
+
+class _StubRenderer(BaseRenderer):
+    def __init__(self) -> None:
+        self.output_name = ""
+        self.media_dir = Path(".")
+
+    def build_command(
+        self,
+        request: RenderRequest,
+        repo_root: Path,
+        output_name: str,
+        media_dir: Path,
+    ) -> tuple[list[str], dict[str, str]]:
+        _ = request
+        _ = repo_root
+        self.output_name = output_name
+        self.media_dir = media_dir
+        return ["stub-render"], {"STUB": "1"}
+
+    def run(self, cmd: list[str], *, cwd: Path, env: dict[str, str]) -> None:
+        _ = cmd
+        _ = cwd
+        _ = env
+        rendered = self.media_dir / "videos" / f"{self.output_name}.mp4"
+        rendered.parent.mkdir(parents=True, exist_ok=True)
+        rendered.write_bytes(b"fake")
+
+
+def test_render_formula_supports_custom_renderer(tmp_path: Path) -> None:
+    request = RenderRequest(
+        formula="R U",
+        name="custom_renderer_case",
+        group="PLL",
+        quality="draft",
+    )
+
+    result = render_formula(
+        request=request,
+        repo_root=tmp_path,
+        renderer=_StubRenderer(),
+    )
+    assert result.output_name == "custom_renderer_case"
+    assert result.action == "render"
+    assert result.final_path.exists()

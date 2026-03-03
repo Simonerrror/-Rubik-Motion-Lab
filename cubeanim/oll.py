@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from collections import deque
 from dataclasses import dataclass
+from functools import lru_cache
 
-from cubeanim.state import state_slots_metadata
+from cubeanim.state import state_slots_metadata, state_string_from_moves
 
 _VALID_FACE_COLORS = set("URFDLB")
 _SIDE_FACES = {"F", "R", "B", "L"}
@@ -61,6 +63,50 @@ def validate_oll_f2l_start_state(state: str) -> None:
                 f"but {facelet.face} face index {facelet.index} "
                 f"at (x={x}, y={y}, z={z}) is {facelet.color}"
             )
+
+
+@lru_cache(maxsize=1)
+def _oll_orientation_corrections() -> tuple[tuple[str, ...], ...]:
+    rotations = ("x", "x'", "y", "y'", "z", "z'")
+    queue: deque[tuple[str, ...]] = deque([tuple()])
+    seen_states = {state_string_from_moves([])}
+    sequences: list[tuple[str, ...]] = [tuple()]
+
+    while queue and len(seen_states) < 24:
+        current = queue.popleft()
+        for move in rotations:
+            candidate = (*current, move)
+            signature = state_string_from_moves(list(candidate))
+            if signature in seen_states:
+                continue
+            seen_states.add(signature)
+            sequences.append(candidate)
+            queue.append(candidate)
+            if len(seen_states) >= 24:
+                break
+
+    sequences.sort(key=len)
+    return tuple(sequences)
+
+
+def resolve_valid_oll_start_state(inverse_moves: list[str]) -> str:
+    for correction in _oll_orientation_corrections():
+        state = state_string_from_moves(inverse_moves + list(correction))
+        try:
+            validate_oll_f2l_start_state(state)
+            return state
+        except ValueError:
+            continue
+
+    for correction in _oll_orientation_corrections():
+        state = state_string_from_moves(list(correction) + inverse_moves)
+        try:
+            validate_oll_f2l_start_state(state)
+            return state
+        except ValueError:
+            continue
+
+    return state_string_from_moves(inverse_moves)
 
 
 def build_oll_top_view_data(state: str) -> OLLTopViewData:
