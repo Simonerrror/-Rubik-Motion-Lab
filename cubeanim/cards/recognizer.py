@@ -484,7 +484,7 @@ def _build_f2l_svg(case_code: str, formula: str) -> str:
         for row in range(3):  # B -> F
             x_hi = 1.0 - (2.0 * row) / 3.0
             x_lo = 1.0 - (2.0 * (row + 1)) / 3.0
-            x_idx = 1 - row
+            x_idx = row - 1
             for col in range(3):  # L -> R
                 y_hi = 1.0 - (2.0 * col) / 3.0
                 y_lo = 1.0 - (2.0 * (col + 1)) / 3.0
@@ -531,7 +531,7 @@ def _build_f2l_svg(case_code: str, formula: str) -> str:
                 ]
                 draw_sticker_cell("R", (x_idx, -1, z_idx), points)
 
-    lines = _base_svg_lines(version="v9-f2l", category="F2L", case_code=case_code)
+    lines = _base_svg_lines(version="v10-f2l", category="F2L", case_code=case_code)
     body_fill = stickerless_u
     lines.append(
         polygon(

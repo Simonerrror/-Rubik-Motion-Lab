@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-<!-- recognizer:v9-f2l category=F2L case=E17 -->
+<!-- recognizer:v10-f2l category=F2L case=E17 -->
 <rect x="0" y="0" width="128" height="128" fill="#D8DADF"/>
 <polygon points="64.00,64.00 104.00,42.00 64.00,20.00 24.00,42.00" fill="#0B1220" stroke="#11151B" stroke-width="1.15" stroke-linejoin="round"/>
 <polygon points="24.00,42.00 64.00,20.00 64.00,64.00 24.00,86.00" fill="#0B1220" stroke="#11151B" stroke-width="1.15" stroke-linejoin="round"/>
@@ -41,9 +41,9 @@
 <polygon points="90.67,64.00 104.00,71.33 104.00,86.00 90.67,78.67" fill="#3F516D" stroke="#344660" stroke-width="1.05" stroke-linejoin="round"/>
 <polygon points="92.13,66.42 102.53,72.14 102.53,83.58 92.13,77.86" fill="#0B1220" stroke="#11151B" stroke-width="1.05" stroke-linejoin="round"/>
 <polygon points="64.00,64.00 77.33,56.67 64.00,49.33 50.67,56.67" fill="#3F516D" stroke="#344660" stroke-width="1.05" stroke-linejoin="round"/>
-<polygon points="64.00,62.39 74.40,56.67 64.00,50.95 53.60,56.67" fill="#C1121F" stroke="#11151B" stroke-width="1.05" stroke-linejoin="round"/>
+<polygon points="64.00,62.39 74.40,56.67 64.00,50.95 53.60,56.67" fill="#0B1220" stroke="#11151B" stroke-width="1.05" stroke-linejoin="round"/>
 <polygon points="77.33,56.67 90.67,49.33 77.33,42.00 64.00,49.33" fill="#3F516D" stroke="#344660" stroke-width="1.05" stroke-linejoin="round"/>
-<polygon points="77.33,55.05 87.73,49.33 77.33,43.61 66.93,49.33" fill="#C1121F" stroke="#11151B" stroke-width="1.05" stroke-linejoin="round"/>
+<polygon points="77.33,55.05 87.73,49.33 77.33,43.61 66.93,49.33" fill="#0B1220" stroke="#11151B" stroke-width="1.05" stroke-linejoin="round"/>
 <polygon points="90.67,49.33 104.00,42.00 90.67,34.67 77.33,42.00" fill="#3F516D" stroke="#344660" stroke-width="1.05" stroke-linejoin="round"/>
 <polygon points="90.67,47.72 101.07,42.00 90.67,36.28 80.27,42.00" fill="#0B1220" stroke="#11151B" stroke-width="1.05" stroke-linejoin="round"/>
 <polygon points="50.67,56.67 64.00,49.33 50.67,42.00 37.33,49.33" fill="#3F516D" stroke="#344660" stroke-width="1.05" stroke-linejoin="round"/>
@@ -53,9 +53,9 @@
 <polygon points="77.33,42.00 90.67,34.67 77.33,27.33 64.00,34.67" fill="#3F516D" stroke="#344660" stroke-width="1.05" stroke-linejoin="round"/>
 <polygon points="77.33,40.39 87.73,34.67 77.33,28.95 66.93,34.67" fill="#0B1220" stroke="#11151B" stroke-width="1.05" stroke-linejoin="round"/>
 <polygon points="37.33,49.33 50.67,42.00 37.33,34.67 24.00,42.00" fill="#3F516D" stroke="#344660" stroke-width="1.05" stroke-linejoin="round"/>
-<polygon points="37.33,47.72 47.73,42.00 37.33,36.28 26.93,42.00" fill="#0B1220" stroke="#11151B" stroke-width="1.05" stroke-linejoin="round"/>
+<polygon points="37.33,47.72 47.73,42.00 37.33,36.28 26.93,42.00" fill="#C1121F" stroke="#11151B" stroke-width="1.05" stroke-linejoin="round"/>
 <polygon points="50.67,42.00 64.00,34.67 50.67,27.33 37.33,34.67" fill="#3F516D" stroke="#344660" stroke-width="1.05" stroke-linejoin="round"/>
-<polygon points="50.67,40.39 61.07,34.67 50.67,28.95 40.27,34.67" fill="#0B1220" stroke="#11151B" stroke-width="1.05" stroke-linejoin="round"/>
+<polygon points="50.67,40.39 61.07,34.67 50.67,28.95 40.27,34.67" fill="#C1121F" stroke="#11151B" stroke-width="1.05" stroke-linejoin="round"/>
 <polygon points="64.00,34.67 77.33,27.33 64.00,20.00 50.67,27.33" fill="#3F516D" stroke="#344660" stroke-width="1.05" stroke-linejoin="round"/>
 <polygon points="64.00,33.05 74.40,27.33 64.00,21.61 53.60,27.33" fill="#0B1220" stroke="#11151B" stroke-width="1.05" stroke-linejoin="round"/>
 </svg>
