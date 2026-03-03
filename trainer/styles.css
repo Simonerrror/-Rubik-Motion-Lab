@@ -425,14 +425,6 @@ body {
   background: #1e293b;
 }
 
-.legacy-note {
-  margin-top: 0.45rem;
-  color: #e2e8f0;
-  font-size: 0.64rem;
-  opacity: 0.85;
-  font-weight: 700;
-}
-
 .profile-modal {
   position: fixed;
   inset: 0;
