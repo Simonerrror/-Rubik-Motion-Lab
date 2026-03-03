@@ -24,3 +24,4 @@ data/cards/runtime/recognizers/**
 # Browser smoke artifacts
 output/playwright/
 .playwright-cli/
+/Best F2L Algorithms.pdf
