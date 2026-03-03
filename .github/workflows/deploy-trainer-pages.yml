@@ -5,7 +5,11 @@ on:
     branches:
       - main
     paths:
-      - 'trainer/**'
+      - 'apps/trainer/**'
+      - 'tools/trainer/**'
+      - 'packages/cubeanim/**'
+      - 'db/cards/**'
+      - 'data/f2l/**'
       - '.github/workflows/deploy-trainer-pages.yml'
   workflow_dispatch:
 
@@ -29,13 +33,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Rebuild trainer catalog and prune recognizers
+        run: PYTHONPATH=packages/cubeanim/src uv run --with-requirements requirements.txt python tools/trainer/build_trainer_catalog.py --output apps/trainer --assets-dir apps/trainer/assets --base-catalog-url ./assets
+
+      - name: Guard recognizer asset diff
+        run: git diff --exit-code -- apps/trainer/assets/recognizers
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
       - name: Upload trainer artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: trainer
+          path: apps/trainer
 
       - name: Deploy to GitHub Pages
         id: deployment

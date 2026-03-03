@@ -9,7 +9,7 @@ Cards pipeline talks only to `RendererClient`:
 - local implementation: `LocalRendererClient`
 - remote implementation: `HttpRendererClient`
 
-Implementation location: `cubeanim/cards/renderer_client.py`.
+Implementation location: `packages/cubeanim/src/cubeanim/cards/renderer_client.py`.
 
 `CardsService` no longer imports `plan_formula_render` / `render_formula` directly.
 
@@ -57,17 +57,16 @@ export CUBEANIM_RENDER_API_TIMEOUT_SEC=60
 
 For dedicated renderer repository, move:
 
-- `cubeanim/render_base.py`
-- `cubeanim/render_service.py`
-- `cubeanim/models.py`
-- `cubeanim/utils.py`
+- `packages/cubeanim/src/cubeanim/render_base.py`
+- `packages/cubeanim/src/cubeanim/render_service.py`
+- `packages/cubeanim/src/cubeanim/models.py`
+- `packages/cubeanim/src/cubeanim/utils.py`
 - `cubist.py`
-- `vendor/manim-rubikscube`
-- optional CLI wrapper: `scripts/tools/render_algo.py`
+- optional CLI wrapper: `tools/render_algo.py`
 
 Keep in cards repository:
 
-- `scripts/app/cards_api.py`
-- `scripts/app/cards_worker.py`
-- `cubeanim/cards/*`
+- `apps/cards-api/main.py`
+- `apps/cards-worker/main.py`
+- `packages/cubeanim/src/cubeanim/cards/*`
 - frontend and DB schema/seed.

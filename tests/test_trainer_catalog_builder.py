@@ -5,11 +5,14 @@ from pathlib import Path
 import sys
 
 repo_root = Path(__file__).resolve().parents[1]
-if str(repo_root) not in sys.path:
-    sys.path.insert(0, str(repo_root))
+package_src = repo_root / "packages" / "cubeanim" / "src"
+for entry in (repo_root, package_src):
+    token = str(entry)
+    if token not in sys.path:
+        sys.path.insert(0, token)
 
 from cubeanim.cards.services import CardsService
-from scripts.trainer.build_trainer_catalog import (
+from tools.trainer.build_trainer_catalog import (
     SCHEMA_VERSION,
     build_catalog_payload,
     build_trainer_catalog,

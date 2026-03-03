@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+<!-- recognizer:v4 category=PLL case=PLL_1 -->
+<rect x="0" y="0" width="128" height="128" fill="#D8DADF"/>
+<rect x="28" y="28" width="24" height="24" fill="#FDFF00" stroke="#11151B" stroke-width="1.4"/>
+<rect x="52" y="28" width="24" height="24" fill="#FDFF00" stroke="#11151B" stroke-width="1.4"/>
+<rect x="76" y="28" width="24" height="24" fill="#FDFF00" stroke="#11151B" stroke-width="1.4"/>
+<rect x="28" y="52" width="24" height="24" fill="#FDFF00" stroke="#11151B" stroke-width="1.4"/>
+<rect x="52" y="52" width="24" height="24" fill="#FDFF00" stroke="#11151B" stroke-width="1.4"/>
+<rect x="76" y="52" width="24" height="24" fill="#FDFF00" stroke="#11151B" stroke-width="1.4"/>
+<rect x="28" y="76" width="24" height="24" fill="#FDFF00" stroke="#11151B" stroke-width="1.4"/>
+<rect x="52" y="76" width="24" height="24" fill="#FDFF00" stroke="#11151B" stroke-width="1.4"/>
+<rect x="76" y="76" width="24" height="24" fill="#FDFF00" stroke="#11151B" stroke-width="1.4"/>
+<rect x="28" y="28" width="72" height="72" fill="none" stroke="#11151B" stroke-width="1.9"/>
+<rect x="31.00" y="18.00" width="18.00" height="4.00" fill="#C1121F" stroke="#11151B" stroke-width="1.0"/>
+<rect x="55.00" y="18.00" width="18.00" height="4.00" fill="#2B63E8" stroke="#11151B" stroke-width="1.0"/>
+<rect x="79.00" y="18.00" width="18.00" height="4.00" fill="#2DBE4A" stroke="#11151B" stroke-width="1.0"/>
+<rect x="31.00" y="106.00" width="18.00" height="4.00" fill="#E06A00" stroke="#11151B" stroke-width="1.0"/>
+<rect x="55.00" y="106.00" width="18.00" height="4.00" fill="#2DBE4A" stroke="#11151B" stroke-width="1.0"/>
+<rect x="79.00" y="106.00" width="18.00" height="4.00" fill="#2DBE4A" stroke="#11151B" stroke-width="1.0"/>
+<rect x="18.00" y="31.00" width="4.00" height="18.00" fill="#2B63E8" stroke="#11151B" stroke-width="1.0"/>
+<rect x="18.00" y="55.00" width="4.00" height="18.00" fill="#E06A00" stroke="#11151B" stroke-width="1.0"/>
+<rect x="18.00" y="79.00" width="4.00" height="18.00" fill="#2B63E8" stroke="#11151B" stroke-width="1.0"/>
+<rect x="106.00" y="31.00" width="4.00" height="18.00" fill="#E06A00" stroke="#11151B" stroke-width="1.0"/>
+<rect x="106.00" y="55.00" width="4.00" height="18.00" fill="#C1121F" stroke="#11151B" stroke-width="1.0"/>
+<rect x="106.00" y="79.00" width="4.00" height="18.00" fill="#C1121F" stroke="#11151B" stroke-width="1.0"/>
+<line x1="45.40" y1="40.00" x2="80.97" y2="40.00" stroke="#11151B" stroke-width="1.7" stroke-linecap="butt" /><polygon points="82.60,40.00 75.20,42.40 75.20,37.60" fill="#11151B" />
+<line x1="84.18" y1="43.82" x2="44.97" y2="83.03" stroke="#11151B" stroke-width="1.7" stroke-linecap="butt" /><polygon points="43.82,84.18 47.35,77.25 50.75,80.65" fill="#11151B" />
+<line x1="40.00" y1="82.60" x2="40.00" y2="47.03" stroke="#11151B" stroke-width="1.7" stroke-linecap="butt" /><polygon points="40.00,45.40 42.40,52.80 37.60,52.80" fill="#11151B" />
+</svg>

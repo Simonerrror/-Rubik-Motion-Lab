@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rubik Motion Lab - Cards</title>
+    <link rel="icon" type="image/svg+xml" href="/static/cards/favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/cards/styles.css">
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-topbar">
+                    <div class="sidebar-tabs">
+                        <button class="nav-tab" data-category="F2L" data-testid="tab-f2l">F2L</button>
+                        <button class="nav-tab" data-category="OLL" data-testid="tab-oll">OLL</button>
+                        <button class="nav-tab active" data-category="PLL" data-testid="tab-pll">PLL</button>
+                    </div>
+                    <label class="sort-toggle" for="sort-progress-toggle">
+                        <input id="sort-progress-toggle" type="checkbox">
+                        <span>Progress Sort</span>
+                    </label>
+                </div>
+            </div>
+            <div id="catalog-container" class="catalog-container" data-testid="catalog-container"></div>
+        </aside>
+
+        <main id="details-pane" class="details-pane">
+            <div class="details-grid">
+                <section class="details-main">
+                    <div>
+                        <h2 id="m-name" class="case-title">Select Case</h2>
+                        <div id="m-case-code" class="case-meta">-</div>
+                        <div id="m-prob" class="case-meta">Probability: n/a</div>
+                    </div>
+
+                    <div class="video-frame">
+                        <div id="sandbox-frame" class="sandbox-frame" data-testid="sandbox-frame">
+                            <div class="sandbox-stage">
+                                <canvas id="sandbox-canvas" class="sandbox-canvas"></canvas>
+                                <div class="sandbox-overlay sandbox-overlay-top-left">
+                                    <div id="sandbox-overlay-title" class="sandbox-overlay-title">Select Case</div>
+                                    <div id="sandbox-overlay-subtitle" class="sandbox-overlay-subtitle">-</div>
+                                </div>
+                                <div class="sandbox-overlay sandbox-overlay-top-right">
+                                    <div class="sandbox-top-panel">
+                                        <img id="sandbox-overlay-top-image" class="sandbox-top-image" alt="Case diagram">
+                                    </div>
+                                </div>
+                                <div id="sandbox-overlay-formula" class="sandbox-overlay-formula">-</div>
+                            </div>
+                            <div class="sandbox-controls">
+                                <div class="sandbox-controls-left">
+                                    <button id="sandbox-to-start-btn" class="sandbox-btn sandbox-btn-icon" type="button" title="Back to start" aria-label="Back to start">⏮</button>
+                                    <button id="sandbox-prev-btn" class="sandbox-btn sandbox-btn-step" type="button" title="Previous step" aria-label="Previous step">⏪</button>
+                                    <button id="sandbox-play-pause-btn" class="sandbox-btn sandbox-btn-primary" type="button" title="Play/Pause" aria-label="Play/Pause">▶</button>
+                                    <button id="sandbox-next-btn" class="sandbox-btn sandbox-btn-step" type="button" title="Next step" aria-label="Next step">⏩</button>
+                                </div>
+                                <div class="sandbox-speed-group" role="group" aria-label="Sandbox speed">
+                                    <button id="sandbox-speed-x1" class="sandbox-btn sandbox-speed-btn active" type="button" data-speed="1">x1</button>
+                                    <button id="sandbox-speed-x15" class="sandbox-btn sandbox-speed-btn" type="button" data-speed="1.5">x1.5</button>
+                                    <button id="sandbox-speed-x2" class="sandbox-btn sandbox-speed-btn" type="button" data-speed="2">x2</button>
+                                </div>
+                                <div class="sandbox-timeline" role="group" aria-label="Sandbox timeline">
+                                    <input id="sandbox-timeline-slider" class="sandbox-timeline-slider" type="range" min="0" max="0" step="0.001" value="0">
+                                    <div id="sandbox-timeline-label" class="sandbox-timeline-label">0.00 / 0</div>
+                                </div>
+                                <div id="sandbox-step-label" class="sandbox-step-label">Step 0/0</div>
+                            </div>
+                        </div>
+                        <div id="m-queue-msg" class="queue-overlay">Select case</div>
+                    </div>
+
+                    <div class="active-algo-display">
+                        <div class="panel-label">Active Algorithm</div>
+                        <div id="active-algo-display"></div>
+                    </div>
+
+                </section>
+
+                <section class="details-side">
+                    <div class="panel">
+                        <label class="panel-label">Learning Status</label>
+                        <div id="m-status-group" class="status-group">
+                            <button class="status-btn" data-status="NEW" data-testid="status-new">NEW</button>
+                            <button class="status-btn" data-status="IN_PROGRESS" data-testid="status-work">WORK</button>
+                            <button class="status-btn" data-status="LEARNED" data-testid="status-done">DONE</button>
+                        </div>
+                    </div>
+
+                    <div class="panel panel-algorithms">
+                        <label class="panel-label">Algorithm Selection</label>
+                        <div id="m-algo-list" class="algo-list"></div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <script src="/static/vendor/three.min.js"></script>
+    <script src="/static/cards/sandbox3d.js"></script>
+    <script src="/static/cards/app.js"></script>
+</body>
+</html>
