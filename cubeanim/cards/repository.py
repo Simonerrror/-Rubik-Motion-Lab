@@ -115,7 +115,21 @@ def list_algorithms(conn: sqlite3.Connection, group: str = "ALL") -> list[dict[s
         FROM algorithms a
         JOIN cases c ON c.id = a.case_id
         {where}
-        ORDER BY c.category_code, c.case_code, a.name
+        ORDER BY
+            c.category_code ASC,
+            CASE
+                WHEN c.category_code = 'F2L' AND c.subgroup_title = 'Basic F2L' THEN 0
+                WHEN c.category_code = 'F2L' AND c.subgroup_title = 'Advanced F2L' THEN 1
+                WHEN c.category_code = 'F2L' AND c.subgroup_title = 'Expert F2L' THEN 2
+                ELSE 99
+            END ASC,
+            CASE
+                WHEN c.category_code = 'F2L' THEN ''
+                ELSE COALESCE(c.subgroup_title, '')
+            END ASC,
+            COALESCE(c.case_number, 999999) ASC,
+            c.case_code ASC,
+            a.name ASC
         """,
         params,
     ).fetchall()
@@ -186,7 +200,19 @@ def list_cases(conn: sqlite3.Connection, group: str) -> list[dict[str, Any]]:
             )
         )
         WHERE c.category_code = ?
-        ORDER BY c.subgroup_title, c.case_number, c.case_code
+        ORDER BY
+            CASE
+                WHEN c.category_code = 'F2L' AND c.subgroup_title = 'Basic F2L' THEN 0
+                WHEN c.category_code = 'F2L' AND c.subgroup_title = 'Advanced F2L' THEN 1
+                WHEN c.category_code = 'F2L' AND c.subgroup_title = 'Expert F2L' THEN 2
+                ELSE 99
+            END ASC,
+            CASE
+                WHEN c.category_code = 'F2L' THEN ''
+                ELSE COALESCE(c.subgroup_title, '')
+            END ASC,
+            COALESCE(c.case_number, 999999) ASC,
+            c.case_code ASC
         """,
         (group,),
     ).fetchall()

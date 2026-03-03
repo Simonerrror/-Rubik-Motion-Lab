@@ -173,6 +173,8 @@
     let slots = [];
     let currentState = "";
     let faceColors = { ...FACE_COLORS };
+    let stickerlessTopMaskEnabled = false;
+    let stickerlessTopMaskColor = 0x0b1220;
     let disposed = false;
     let isAnimating = false;
     let animationRaf = 0;
@@ -302,12 +304,24 @@
       if (!Array.isArray(slots) || !slots.length) return;
       const normalized = String(state || "");
       const length = Math.min(normalized.length, slots.length);
+      const maskedCubieKeys = new Set();
+      if (stickerlessTopMaskEnabled) {
+        for (let idx = 0; idx < length; idx += 1) {
+          if (normalized[idx] !== "U") continue;
+          const slot = slots[idx];
+          const position = Array.isArray(slot?.position) ? slot.position : [0, 0, 0];
+          maskedCubieKeys.add(makeKey(position[0], position[1], position[2]));
+        }
+      }
       for (let idx = 0; idx < length; idx += 1) {
         const slot = slots[idx];
         const face = String(slot?.face || "");
         const position = Array.isArray(slot?.position) ? slot.position : [0, 0, 0];
         const colorCode = normalized[idx];
-        const colorHex = faceColors[colorCode] || 0x64748b;
+        const cubieKey = makeKey(position[0], position[1], position[2]);
+        const colorHex = (stickerlessTopMaskEnabled && maskedCubieKeys.has(cubieKey))
+          ? stickerlessTopMaskColor
+          : (faceColors[colorCode] || 0x64748b);
 
         const cubie = cubieFromStatePosition(position);
         const sticker = cubie?.userData?.stickers?.[face] || null;
@@ -587,6 +601,15 @@
       render();
     }
 
+    function setStickerlessTopMask(enabled, colorHex) {
+      stickerlessTopMaskEnabled = Boolean(enabled);
+      if (typeof colorHex !== "undefined") {
+        stickerlessTopMaskColor = parseColorToHex(colorHex, stickerlessTopMaskColor);
+      }
+      applyStateColors(currentState);
+      render();
+    }
+
     function setState(state) {
       resetFromState(state);
     }
@@ -650,6 +673,7 @@
       setSlots,
       setState,
       setFaceColors,
+      setStickerlessTopMask,
       previewStepFromState,
       resize,
       dispose,

@@ -1680,6 +1680,9 @@
     state.sandboxPlaybackConfig = { ...DEFAULT_SANDBOX_PLAYBACK_CONFIG };
     if (state.sandboxPlayer) {
       state.sandboxPlayer.setSlots([]);
+      if (state.sandboxPlayer.setStickerlessTopMask) {
+        state.sandboxPlayer.setStickerlessTopMask(false);
+      }
       state.sandboxPlayer.setState("");
     }
     updateSandboxControls();
@@ -1706,14 +1709,18 @@
 
       if (state.sandboxPlayer) {
         state.sandboxPlayer.setSlots(Array.isArray(sandbox.state_slots) ? sandbox.state_slots : []);
+        const isF2L = String(sandbox.group || "").toUpperCase() === "F2L";
         if (state.sandboxPlayer.setFaceColors) {
           state.sandboxPlayer.setFaceColors(null);
           if (sandbox.face_colors) {
             state.sandboxPlayer.setFaceColors(sandbox.face_colors);
           }
-          if (String(sandbox.group || "").toUpperCase() === "F2L") {
+          if (isF2L && !state.sandboxPlayer.setStickerlessTopMask) {
             state.sandboxPlayer.setFaceColors({ U: 0x0b1220 });
           }
+        }
+        if (state.sandboxPlayer.setStickerlessTopMask) {
+          state.sandboxPlayer.setStickerlessTopMask(isF2L, 0x0b1220);
         }
         window.requestAnimationFrame(() => {
           state.sandboxPlayer?.resize();
