@@ -37,26 +37,35 @@
                     </div>
 
                     <div class="video-frame">
-                        <div class="playback-mode-toggle" role="group" aria-label="Playback mode">
-                            <button id="mode-video-btn" class="mode-btn active" type="button">Video</button>
-                            <button id="mode-sandbox-btn" class="mode-btn" type="button">Sandbox</button>
-                        </div>
-                        <video id="m-video" class="video-player" controls autoplay loop muted></video>
-                        <div id="sandbox-frame" class="sandbox-frame hidden" data-testid="sandbox-frame">
+                        <div id="sandbox-frame" class="sandbox-frame" data-testid="sandbox-frame">
                             <div class="sandbox-stage">
                                 <canvas id="sandbox-canvas" class="sandbox-canvas"></canvas>
+                                <div class="sandbox-overlay sandbox-overlay-top-left">
+                                    <div id="sandbox-overlay-title" class="sandbox-overlay-title">Select Case</div>
+                                    <div id="sandbox-overlay-subtitle" class="sandbox-overlay-subtitle">-</div>
+                                </div>
+                                <div class="sandbox-overlay sandbox-overlay-top-right">
+                                    <div class="sandbox-top-panel">
+                                        <img id="sandbox-overlay-top-image" class="sandbox-top-image" alt="Top view">
+                                    </div>
+                                </div>
+                                <div id="sandbox-overlay-formula" class="sandbox-overlay-formula">-</div>
                             </div>
                             <div class="sandbox-controls">
                                 <div class="sandbox-controls-left">
-                                    <button id="sandbox-to-start-btn" class="sandbox-btn sandbox-btn-icon" type="button" title="Back to start">FB</button>
-                                    <button id="sandbox-prev-btn" class="sandbox-btn sandbox-btn-step" type="button" title="Previous step">Prev</button>
-                                    <button id="sandbox-play-pause-btn" class="sandbox-btn sandbox-btn-primary" type="button">Play</button>
-                                    <button id="sandbox-next-btn" class="sandbox-btn sandbox-btn-step" type="button" title="Next step">Next</button>
+                                    <button id="sandbox-to-start-btn" class="sandbox-btn sandbox-btn-icon" type="button" title="Back to start" aria-label="Back to start">⏮</button>
+                                    <button id="sandbox-prev-btn" class="sandbox-btn sandbox-btn-step" type="button" title="Previous step" aria-label="Previous step">⏪</button>
+                                    <button id="sandbox-play-pause-btn" class="sandbox-btn sandbox-btn-primary" type="button" title="Play/Pause" aria-label="Play/Pause">▶</button>
+                                    <button id="sandbox-next-btn" class="sandbox-btn sandbox-btn-step" type="button" title="Next step" aria-label="Next step">⏩</button>
                                 </div>
                                 <div class="sandbox-speed-group" role="group" aria-label="Sandbox speed">
                                     <button id="sandbox-speed-x1" class="sandbox-btn sandbox-speed-btn active" type="button" data-speed="1">x1</button>
                                     <button id="sandbox-speed-x15" class="sandbox-btn sandbox-speed-btn" type="button" data-speed="1.5">x1.5</button>
                                     <button id="sandbox-speed-x2" class="sandbox-btn sandbox-speed-btn" type="button" data-speed="2">x2</button>
+                                </div>
+                                <div class="sandbox-timeline" role="group" aria-label="Sandbox timeline">
+                                    <input id="sandbox-timeline-slider" class="sandbox-timeline-slider" type="range" min="0" max="0" step="0.001" value="0">
+                                    <div id="sandbox-timeline-label" class="sandbox-timeline-label">0.00 / 0</div>
                                 </div>
                                 <div id="sandbox-step-label" class="sandbox-step-label">Step 0/0</div>
                             </div>
@@ -69,10 +78,6 @@
                         <div id="active-algo-display"></div>
                     </div>
 
-                    <div class="render-actions">
-                        <button class="render-btn render-btn-primary" id="m-render-draft-btn" data-testid="btn-render-draft">Generate Draft</button>
-                        <button class="render-btn render-btn-secondary" id="m-render-btn" data-testid="btn-render-hd">Request HD Render</button>
-                    </div>
                 </section>
 
                 <section class="details-side">

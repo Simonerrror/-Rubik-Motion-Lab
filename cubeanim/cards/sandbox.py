@@ -9,6 +9,12 @@ from cubeanim.pll import resolve_valid_pll_start_state
 from cubeanim.state import state_slots_metadata, state_string_from_moves
 
 _SUPPORTED_GROUPS = {"F2L", "OLL", "PLL"}
+_AUTO_MERGE_UD_PAIRS = {
+    ("U", "D'"),
+    ("D'", "U"),
+    ("U'", "D"),
+    ("D", "U'"),
+}
 
 
 @dataclass(frozen=True)
@@ -43,6 +49,28 @@ def _serialize_state_slots() -> list[dict[str, Any]]:
     return serialized
 
 
+def _should_merge_adjacent_steps(first_step: list[str], second_step: list[str]) -> bool:
+    if len(first_step) != 1 or len(second_step) != 1:
+        return False
+    return (first_step[0], second_step[0]) in _AUTO_MERGE_UD_PAIRS
+
+
+def _merge_parallel_ud_steps(move_steps: list[list[str]]) -> list[list[str]]:
+    merged: list[list[str]] = []
+    index = 0
+    while index < len(move_steps):
+        current = move_steps[index]
+        if index + 1 < len(move_steps):
+            next_step = move_steps[index + 1]
+            if _should_merge_adjacent_steps(current, next_step):
+                merged.append([current[0], next_step[0]])
+                index += 2
+                continue
+        merged.append(current[:])
+        index += 1
+    return merged
+
+
 def build_sandbox_timeline(formula: str, group: str) -> SandboxTimeline:
     normalized_group = group.strip().upper()
     if normalized_group not in _SUPPORTED_GROUPS:
@@ -52,7 +80,8 @@ def build_sandbox_timeline(formula: str, group: str) -> SandboxTimeline:
     if not normalized_formula:
         raise ValueError("Formula must be non-empty")
 
-    move_steps = FormulaConverter.convert_steps(normalized_formula, repeat=1)
+    parsed_steps = FormulaConverter.convert_steps(normalized_formula, repeat=1)
+    move_steps = _merge_parallel_ud_steps(parsed_steps)
     moves_flat = [move for step in move_steps for move in step]
     inverse_steps = FormulaConverter.invert_steps(move_steps)
     inverse_flat = [move for step in inverse_steps for move in step]

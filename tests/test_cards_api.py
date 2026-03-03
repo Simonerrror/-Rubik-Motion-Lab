@@ -148,6 +148,16 @@ def test_api_case_sandbox_timeline(tmp_path: Path) -> None:
     assert float(playback["run_time_sec"]) > 0
     assert float(playback["double_turn_multiplier"]) > 1
     assert float(playback["inter_move_pause_ratio"]) >= 0
+    face_colors = payload["face_colors"]
+    assert set(face_colors) == {"U", "R", "F", "D", "L", "B"}
+    assert face_colors == {
+        "U": "#FDFF00",
+        "R": "#C1121F",
+        "F": "#2DBE4A",
+        "D": "#F4F4F4",
+        "L": "#E06A00",
+        "B": "#2B63E8",
+    }
 
 
 def test_api_case_sandbox_uses_env_move_runtime(tmp_path: Path, monkeypatch) -> None:

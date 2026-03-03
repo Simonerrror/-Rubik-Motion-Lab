@@ -21,6 +21,7 @@ from cubeanim.cards.models import RENDER_QUALITIES
 from cubeanim.cards.recognizer import ensure_recognizer_assets
 from cubeanim.cards.sandbox import build_sandbox_timeline
 from cubeanim.executor import ExecutionConfig
+from cubeanim.palette import FACE_ORDER, CONTRAST_SAFE_CUBE_COLORS
 from cubeanim.render_service import RenderRequest, plan_formula_render, render_formula
 
 GROUPS = {"F2L", "OLL", "PLL"}
@@ -114,6 +115,7 @@ class CardsService:
             "highlight_by_step": timeline.highlight_by_step,
             "state_slots": timeline.state_slots,
             "playback_config": self._sandbox_playback_config(),
+            "face_colors": self._sandbox_face_colors(),
         }
 
     def list_alternatives(self, case_id: int) -> list[dict[str, Any]]:
@@ -619,6 +621,13 @@ class CardsService:
             "double_turn_multiplier": config.double_turn_multiplier,
             "inter_move_pause_ratio": config.inter_move_pause_ratio,
             "rate_func": _SANDBOX_RATE_FUNC,
+        }
+
+    @staticmethod
+    def _sandbox_face_colors() -> dict[str, str]:
+        return {
+            face: color
+            for face, color in zip(FACE_ORDER, CONTRAST_SAFE_CUBE_COLORS, strict=True)
         }
 
     def _is_existing_artifact(self, artifact: dict[str, Any] | None) -> bool:
