@@ -217,6 +217,12 @@ GitHub Pages flow:
 2. Copy `trainer/` contents to deployment root (`docs/` or `gh-pages` branch).
 3. Publish as static site.
 
+GitHub Actions auto-deploy:
+
+- Workflow: `.github/workflows/deploy-trainer-pages.yml`
+- Trigger: push to `main` when `trainer/**` changes (or manual `workflow_dispatch`)
+- Source artifact: `trainer/`
+
 ## Media Tracking Policy
 
 Git tracks only curated showcase artifacts in `media/showcase/`.
