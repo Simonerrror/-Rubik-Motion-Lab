@@ -75,6 +75,10 @@ just trainer-serve port=8011
 
 Open `http://127.0.0.1:8011/`.
 
+Mobile-first isolated entrypoint:
+
+- `http://127.0.0.1:8011/mobile.html`
+
 Profile transfer format:
 
 - storage key: `cards_trainer_profile_v1`

@@ -1,0 +1,188 @@
+body.mobile-app {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.mobile-app .app-layout {
+  height: 100dvh;
+}
+
+.mobile-app .sidebar {
+  display: flex;
+  height: 100%;
+  border-bottom: 0;
+}
+
+.mobile-app .details-pane {
+  display: none;
+  height: 100%;
+  overflow: hidden;
+  padding: 0.5rem;
+}
+
+.mobile-app.details-open .sidebar {
+  display: none;
+}
+
+.mobile-app.details-open .details-pane {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-view-header {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 0.55rem;
+  padding: 0.1rem 0.05rem 0.42rem;
+  border-bottom: 1px solid #1f2937;
+  flex-shrink: 0;
+}
+
+.mobile-back-btn {
+  min-width: 7.2rem;
+}
+
+.mobile-view-title {
+  min-width: 0;
+  color: #cbd5e1;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-app .details-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-height: 0;
+  height: 100%;
+  flex: 1;
+  overflow: hidden;
+}
+
+.mobile-app .details-main {
+  gap: 0.65rem;
+  flex-shrink: 0;
+}
+
+.mobile-app .details-main > div:first-child {
+  display: none;
+}
+
+.mobile-app .details-side {
+  gap: 0.65rem;
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.mobile-app .panel {
+  padding: 0.75rem;
+}
+
+.mobile-app .video-frame {
+  height: clamp(238px, 45dvh, 380px);
+  aspect-ratio: auto;
+}
+
+.mobile-app .active-algo-display {
+  min-height: 0;
+  max-height: 106px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.mobile-app .details-side > .panel:first-child {
+  flex-shrink: 0;
+}
+
+.mobile-app .panel-algorithms {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.mobile-app .algo-list {
+  gap: 0.55rem;
+}
+
+.mobile-app .catalog-grid {
+  grid-template-columns: 1fr;
+}
+
+.mobile-app .catalog-container {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+.mobile-app .catalog-card {
+  padding: 0.7rem 0.45rem 0.45rem;
+}
+
+.mobile-app .catalog-preview {
+  width: 132px;
+  height: 132px;
+}
+
+.mobile-app .tile-title {
+  margin-top: 0.5rem;
+  font-size: 1.26rem;
+}
+
+.mobile-app .sandbox-controls {
+  grid-template-columns: 1fr;
+  align-items: stretch;
+  row-gap: 0.42rem;
+}
+
+.mobile-app .sandbox-controls-left {
+  order: 1;
+}
+
+.mobile-app .sandbox-speed-group {
+  order: 2;
+}
+
+.mobile-app .sandbox-timeline {
+  order: 3;
+  width: 100%;
+  min-width: 0;
+}
+
+.mobile-app .sandbox-step-label {
+  order: 4;
+  width: 100%;
+  margin-left: 0;
+  min-width: 0;
+  text-align: left;
+}
+
+.mobile-app .sandbox-overlay-top-left {
+  top: 0.58rem;
+  left: 0.58rem;
+}
+
+.mobile-app .sandbox-overlay-top-right {
+  top: 0.85rem;
+  right: 0.85rem;
+}
+
+.mobile-app .sandbox-top-panel {
+  width: 113px;
+  height: 113px;
+}
+
+.mobile-app .sandbox-overlay-formula {
+  right: 0.58rem;
+  bottom: 0.58rem;
+  max-width: 68%;
+  font-size: 0.8rem;
+  min-height: 3.9rem;
+  padding: 0.5rem 0.56rem;
+}
