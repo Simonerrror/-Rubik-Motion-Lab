@@ -119,24 +119,31 @@ class MoveExecutor:
     DEFAULT_MOVE_RATE_FUNC = rate_functions.ease_in_out_sine
 
     @staticmethod
-    def _recolor_cubies_with_face_fill(cube: RubiksCube, from_hex: str, to_hex: str) -> None:
+    def _recolor_cubies_with_face_fill(
+        cube: RubiksCube,
+        from_hex: str,
+        to_hex: str,
+        sticker_hexes: set[str],
+    ) -> None:
         from_hex_norm = from_hex.lower()
         for cubie in cube.cubies.flatten():
-            faces = list(cubie.faces.values())
+            faces: list[tuple[object, str]] = []
             has_target_face = False
-            for face in faces:
+            for face in cubie.faces.values():
                 try:
                     current = face.get_fill_color().to_hex().lower()
                 except Exception:
                     continue
+                faces.append((face, current))
                 if current == from_hex_norm:
                     has_target_face = True
-                    break
             if not has_target_face:
                 continue
-            for face in faces:
+            for face, current in faces:
+                if current not in sticker_hexes:
+                    continue
                 try:
-                    face.set_fill(to_hex, opacity=1.0)
+                    face.set_fill(to_hex, opacity=face.get_fill_opacity())
                 except Exception:
                     continue
 
@@ -557,9 +564,25 @@ class MoveExecutor:
         if mask_u_color:
             try:
                 u_color = MoveExecutor._face_color_map(cube_face_colors).get("U", "#FDFF00")
+                sticker_hexes = {
+                    color.lower() for color in MoveExecutor._face_color_map(cube_face_colors).values()
+                }
             except Exception:
                 u_color = "#FDFF00"
-            MoveExecutor._recolor_cubies_with_face_fill(cube, from_hex=u_color, to_hex=mask_u_color)
+                sticker_hexes = {
+                    "#fdff00",
+                    "#c1121f",
+                    "#2dbe4a",
+                    "#f4f4f4",
+                    "#e06a00",
+                    "#2b63e8",
+                }
+            MoveExecutor._recolor_cubies_with_face_fill(
+                cube,
+                from_hex=u_color,
+                to_hex=mask_u_color,
+                sticker_hexes=sticker_hexes,
+            )
 
         MoveExecutor._add_algorithm_name(scene, algorithm_name, config)
         MoveExecutor._add_formula_overlay(scene, formula_text, config)
