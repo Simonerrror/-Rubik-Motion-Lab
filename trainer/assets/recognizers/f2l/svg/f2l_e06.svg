@@ -1,22 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-<!-- recognizer:v7-f2l category=F2L case=E06 -->
+<!-- recognizer:v8-f2l category=F2L case=E06 -->
 <rect x="0" y="0" width="128" height="128" fill="#D8DADF"/>
 <polygon points="64.00,64.00 104.00,42.00 64.00,20.00 24.00,42.00" fill="#0B1220" stroke="#11151B" stroke-width="1.25" stroke-linejoin="round"/>
 <polygon points="24.00,42.00 64.00,20.00 64.00,64.00 24.00,86.00" fill="#0B1220" stroke="#11151B" stroke-width="1.25" stroke-linejoin="round"/>
 <polygon points="64.00,20.00 104.00,42.00 104.00,86.00 64.00,64.00" fill="#0B1220" stroke="#11151B" stroke-width="1.25" stroke-linejoin="round"/>
-<polygon points="37.33,34.67 50.67,27.33 50.67,42.00 37.33,49.33" fill="#E06A00" stroke="#11151B" stroke-width="1.25" stroke-linejoin="round"/>
-<polygon points="50.67,27.33 64.00,20.00 64.00,34.67 50.67,42.00" fill="#E06A00" stroke="#11151B" stroke-width="1.25" stroke-linejoin="round"/>
 <polygon points="24.00,56.67 37.33,49.33 37.33,64.00 24.00,71.33" fill="#C1121F" stroke="#11151B" stroke-width="1.25" stroke-linejoin="round"/>
 <polygon points="37.33,49.33 50.67,42.00 50.67,56.67 37.33,64.00" fill="#2DBE4A" stroke="#11151B" stroke-width="1.25" stroke-linejoin="round"/>
 <polygon points="50.67,42.00 64.00,34.67 64.00,49.33 50.67,56.67" fill="#2DBE4A" stroke="#11151B" stroke-width="1.25" stroke-linejoin="round"/>
 <polygon points="37.33,64.00 50.67,56.67 50.67,71.33 37.33,78.67" fill="#2DBE4A" stroke="#11151B" stroke-width="1.25" stroke-linejoin="round"/>
 <polygon points="50.67,56.67 64.00,49.33 64.00,64.00 50.67,71.33" fill="#2DBE4A" stroke="#11151B" stroke-width="1.25" stroke-linejoin="round"/>
-<polygon points="64.00,20.00 77.33,27.33 77.33,42.00 64.00,34.67" fill="#F4F4F4" stroke="#11151B" stroke-width="1.25" stroke-linejoin="round"/>
 <polygon points="64.00,34.67 77.33,42.00 77.33,56.67 64.00,49.33" fill="#C1121F" stroke="#11151B" stroke-width="1.25" stroke-linejoin="round"/>
 <polygon points="77.33,42.00 90.67,49.33 90.67,64.00 77.33,56.67" fill="#C1121F" stroke="#11151B" stroke-width="1.25" stroke-linejoin="round"/>
 <polygon points="64.00,49.33 77.33,56.67 77.33,71.33 64.00,64.00" fill="#C1121F" stroke="#11151B" stroke-width="1.25" stroke-linejoin="round"/>
 <polygon points="77.33,56.67 90.67,64.00 90.67,78.67 77.33,71.33" fill="#C1121F" stroke="#11151B" stroke-width="1.25" stroke-linejoin="round"/>
 <polygon points="90.67,64.00 104.00,71.33 104.00,86.00 90.67,78.67" fill="#C1121F" stroke="#11151B" stroke-width="1.25" stroke-linejoin="round"/>
-<polygon points="50.67,42.00 64.00,34.67 50.67,27.33 37.33,34.67" fill="#2DBE4A" stroke="#11151B" stroke-width="1.25" stroke-linejoin="round"/>
-<polygon points="64.00,34.67 77.33,27.33 64.00,20.00 50.67,27.33" fill="#2DBE4A" stroke="#11151B" stroke-width="1.25" stroke-linejoin="round"/>
 </svg>

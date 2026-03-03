@@ -307,9 +307,11 @@
       const maskedCubieKeys = new Set();
       if (stickerlessTopMaskEnabled) {
         for (let idx = 0; idx < length; idx += 1) {
-          if (normalized[idx] !== "U") continue;
           const slot = slots[idx];
           const position = Array.isArray(slot?.position) ? slot.position : [0, 0, 0];
+          const colorCode = normalized[idx];
+          const isTopLayer = Number(position[2]) === 1;
+          if (colorCode !== "U" && !isTopLayer) continue;
           maskedCubieKeys.add(makeKey(position[0], position[1], position[2]));
         }
       }
