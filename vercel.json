@@ -6,15 +6,15 @@
     },
     {
       "src": "^/$",
-      "dest": "/trainer/index.html"
+      "dest": "/apps/trainer/index.html"
     },
     {
       "src": "^/trainer$",
-      "dest": "/trainer/index.html"
+      "dest": "/apps/trainer/index.html"
     },
     {
       "src": "^/(.*)$",
-      "dest": "/trainer/index.html"
+      "dest": "/apps/trainer/index.html"
     }
   ]
 }

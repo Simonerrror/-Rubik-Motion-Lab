@@ -4,37 +4,37 @@ default:
   @just --list
 
 api:
-  uv run python scripts/app/cards_api.py
+  uv run python apps/cards-api/main.py
 
 worker interval="1" workers="1" manim_threads="1":
-  uv run python scripts/app/cards_worker.py --interval {{interval}} --workers {{workers}} --manim-threads {{manim_threads}}
+  uv run python apps/cards-worker/main.py --interval {{interval}} --workers {{workers}} --manim-threads {{manim_threads}}
 
 worker-once workers="1" manim_threads="1":
-  uv run python scripts/app/cards_worker.py --once --workers {{workers}} --manim-threads {{manim_threads}}
+  uv run python apps/cards-worker/main.py --once --workers {{workers}} --manim-threads {{manim_threads}}
 
 ui:
-  uv run python scripts/app/render_ui.py
+  uv run python apps/render-ui/main.py
 
 render formula name group="NO_GROUP" quality="draft" repeat="1":
-  uv run python scripts/tools/render_algo.py --formula "{{formula}}" --name "{{name}}" --group "{{group}}" --quality {{quality}} --repeat {{repeat}}
+  uv run python tools/render_algo.py --formula "{{formula}}" --name "{{name}}" --group "{{group}}" --quality {{quality}} --repeat {{repeat}}
 
 test:
-  PYTHONPATH=. uv run pytest -q
+  PYTHONPATH=packages/cubeanim/src uv run pytest -q
 
-smoke-ui base_url="http://127.0.0.1:8008":
-  SMOKE_STRICT=1 CARDS_BASE_URL={{base_url}} PYTHONPATH=. uv run pytest -q tests/e2e/test_cards_smoke.py -s
+smoke-ui:
+  SMOKE_STRICT=1 PYTHONPATH=packages/cubeanim/src uv run pytest -q tests/e2e/test_cards_trainer_smoke.py -s
 
-trainer-build output="trainer":
-  PYTHONPATH=. uv run python scripts/trainer/build_trainer_catalog.py --output {{output}} --assets-dir {{output}}/assets --base-catalog-url ./assets
+trainer-build output="apps/trainer":
+  PYTHONPATH=packages/cubeanim/src uv run python tools/trainer/build_trainer_catalog.py --output {{output}} --assets-dir {{output}}/assets --base-catalog-url ./assets
 
 trainer-serve port="8011":
-  cd trainer && python3 -m http.server {{port}}
+  cd apps/trainer && python3 -m http.server {{port}}
 
-trainer-export input="trainer/profile.json":
-  PYTHONPATH=. uv run python scripts/trainer/profile_codec_cli.py export --input {{input}}
+trainer-export input="apps/trainer/profile.json":
+  PYTHONPATH=packages/cubeanim/src uv run python tools/trainer/profile_codec_cli.py export --input {{input}}
 
 check:
-  python3 -m py_compile cubist.py cubeanim/*.py scripts/tools/render_algo.py scripts/app/render_ui.py scripts/app/cards_api.py scripts/app/cards_worker.py
+  PYTHONPATH=packages/cubeanim/src python3 -m py_compile cubist.py packages/cubeanim/src/cubeanim/*.py tools/render_algo.py apps/render-ui/main.py apps/cards-api/main.py apps/cards-worker/main.py tools/trainer/build_trainer_catalog.py tools/trainer/prune_trainer_assets.py
 
 dev:
   @./scripts/dev/dev_tmux.sh up

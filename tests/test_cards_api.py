@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 from pathlib import Path
 
 import pytest
@@ -10,7 +11,20 @@ from fastapi.testclient import TestClient
 from cubeanim.cards import repository
 from cubeanim.cards.db import connect
 from cubeanim.cards.services import CardsService
-import scripts.app.cards_api as cards_api
+
+
+def _load_cards_api_module():
+    repo_root = Path(__file__).resolve().parents[1]
+    module_path = repo_root / "apps" / "cards-api" / "main.py"
+    spec = importlib.util.spec_from_file_location("cards_api_main", module_path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Could not load cards-api module from {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+cards_api = _load_cards_api_module()
 
 
 def _build_client(tmp_path: Path) -> TestClient:
@@ -42,11 +56,17 @@ def test_api_cases_list_and_detail(tmp_path: Path) -> None:
     assert sum(1 for item in alternatives_payload if item["is_active"]) == 1
 
 
-def test_favicon_route_redirects(tmp_path: Path) -> None:
+def test_root_health_payload(tmp_path: Path) -> None:
+    client = _build_client(tmp_path)
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.json() == {"ok": True, "service": "cards-api"}
+
+
+def test_favicon_route_absent(tmp_path: Path) -> None:
     client = _build_client(tmp_path)
     response = client.get("/favicon.ico", follow_redirects=False)
-    assert response.status_code == 307
-    assert response.headers["location"] == "/static/cards/favicon.svg"
+    assert response.status_code == 404
 
 
 def test_api_progress_and_render_flow(tmp_path: Path) -> None:

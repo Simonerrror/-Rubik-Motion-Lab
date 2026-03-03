@@ -119,8 +119,9 @@ def test_initialize_database_does_not_require_legacy_txt_sources(tmp_path: Path)
     repo_root = Path(__file__).resolve().parents[1]
     synthetic_root = tmp_path / "synthetic_repo"
     (synthetic_root / "db").mkdir(parents=True, exist_ok=True)
-    shutil.copy2(repo_root / "db" / "cards_schema.sql", synthetic_root / "db" / "cards_schema.sql")
-    shutil.copy2(repo_root / "db" / "cards_seed.sql", synthetic_root / "db" / "cards_seed.sql")
+    (synthetic_root / "db" / "cards").mkdir(parents=True, exist_ok=True)
+    shutil.copy2(repo_root / "db" / "cards" / "schema.sql", synthetic_root / "db" / "cards" / "schema.sql")
+    shutil.copy2(repo_root / "db" / "cards" / "seed.sql", synthetic_root / "db" / "cards" / "seed.sql")
 
     db_path = synthetic_root / "data" / "cards" / "runtime" / "cards.db"
     initialize_database(repo_root=synthetic_root, db_path=db_path)

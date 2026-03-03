@@ -16,10 +16,13 @@ from playwright.sync_api import expect, sync_playwright
 repo_root = Path(__file__).resolve().parents[2]
 import sys
 
-if str(repo_root) not in sys.path:
-    sys.path.insert(0, str(repo_root))
+package_src = repo_root / "packages" / "cubeanim" / "src"
+for entry in (repo_root, package_src):
+    token = str(entry)
+    if token not in sys.path:
+        sys.path.insert(0, token)
 
-from scripts.trainer.build_trainer_catalog import build_trainer_catalog
+from tools.trainer.build_trainer_catalog import build_trainer_catalog
 
 
 def _strict_mode() -> bool:
@@ -64,7 +67,7 @@ class _StaticServer:
 def test_cards_trainer_smoke_static_no_api(tmp_path: Path) -> None:
     _ensure_smoke_enabled()
 
-    trainer_src = repo_root / "trainer"
+    trainer_src = repo_root / "apps" / "trainer"
     trainer_out = tmp_path / "trainer"
     shutil.copytree(trainer_src, trainer_out, dirs_exist_ok=True)
 
