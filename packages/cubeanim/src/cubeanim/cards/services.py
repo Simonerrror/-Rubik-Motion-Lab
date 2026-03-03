@@ -141,6 +141,13 @@ class CardsService:
 
     def activate_case_algorithm(self, case_id: int, algorithm_id: int) -> dict[str, Any]:
         with connect(self.db_path) as conn:
+            algorithm = repository.get_algorithm(conn, algorithm_id)
+            if algorithm is None or int(algorithm.get("case_id") or -1) != case_id:
+                raise KeyError("algorithm does not belong to case")
+            self._validate_formula_for_group(
+                formula=str(algorithm.get("formula") or ""),
+                group=str(algorithm.get("group") or ""),
+            )
             updated = repository.set_case_selected_algorithm(conn, case_id=case_id, algorithm_id=algorithm_id)
             self._refresh_case_recognizer(conn, updated)
             refreshed = repository.get_case(conn, case_id=case_id)
@@ -160,6 +167,13 @@ class CardsService:
         activate: bool = True,
     ) -> dict[str, Any]:
         with connect(self.db_path) as conn:
+            case_row = repository.get_case(conn, case_id=case_id)
+            if case_row is None:
+                raise KeyError(f"case id {case_id} not found")
+            self._validate_formula_for_group(
+                formula=formula,
+                group=str(case_row.get("group") or ""),
+            )
             repository.create_custom_algorithm_for_case(
                 conn,
                 case_id=case_id,
@@ -250,6 +264,7 @@ class CardsService:
         case_code: str,
     ) -> dict[str, Any]:
         with connect(self.db_path) as conn:
+            self._validate_formula_for_group(formula=formula, group=group)
             created = repository.create_custom_algorithm(
                 conn,
                 name=name,
@@ -358,6 +373,7 @@ class CardsService:
 
             try:
                 formula_norm = self._normalize_formula(formula)
+                self._validate_formula_for_group(formula=formula_norm, group=str(algorithm.get("group") or ""))
                 reused_shared = self._reuse_case_formula_artifact(
                     conn,
                     algorithm=algorithm,
@@ -453,6 +469,10 @@ class CardsService:
         if not formula:
             raise ValueError("Selected algorithm has empty formula. Add or edit formula first.")
         formula_norm = self._normalize_formula(formula)
+        self._validate_formula_for_group(
+            formula=formula_norm,
+            group=str(algorithm.get("group") or ""),
+        )
 
         if quality == "high":
             draft_artifact = repository.get_render_artifact(conn, algorithm_id, "draft")
@@ -622,6 +642,13 @@ class CardsService:
     @staticmethod
     def _normalize_formula(formula: str) -> str:
         return " ".join(formula.split())
+
+    @staticmethod
+    def _validate_formula_for_group(formula: str, group: str) -> None:
+        normalized_group = group.strip().upper()
+        if normalized_group != "OLL":
+            return
+        build_sandbox_timeline(formula=formula, group=normalized_group)
 
     @staticmethod
     def _sandbox_playback_config() -> dict[str, Any]:

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from cubeanim.formula import FormulaConverter
-from cubeanim.oll import resolve_valid_oll_start_state
+from cubeanim.oll import resolve_valid_oll_start_state, validate_oll_f2l_start_state
 from cubeanim.pll import resolve_valid_pll_start_state
 from cubeanim.state import state_slots_metadata, state_string_from_moves
 
@@ -35,7 +35,9 @@ def _normalize_formula(formula: str) -> str:
 
 def _resolve_initial_state(group: str, inverse_moves: list[str]) -> str:
     if group == "OLL":
-        return resolve_valid_oll_start_state(inverse_moves)
+        state = resolve_valid_oll_start_state(inverse_moves)
+        validate_oll_f2l_start_state(state)
+        return state
     if group == "PLL":
         return resolve_valid_pll_start_state(inverse_moves)
     return state_string_from_moves(inverse_moves)
