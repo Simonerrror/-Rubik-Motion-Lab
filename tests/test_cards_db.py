@@ -2,11 +2,34 @@ from __future__ import annotations
 
 import re
 import shutil
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
+from cubeanim.formula import FormulaConverter
 from cubeanim.cards.db import connect, initialize_database, reset_runtime_state
 from cubeanim.cards.services import CardsService
 from cubeanim.pll import balance_pll_formula_rotations
+from cubeanim.state import state_slots_metadata, state_string_from_moves
+
+
+def _svg_polygon_nodes(svg_content: str) -> list[ET.Element]:
+    root = ET.fromstring(svg_content)
+    return [node for node in root.iter() if node.tag.endswith("polygon")]
+
+
+def _polygon_points(raw: str) -> list[tuple[float, float]]:
+    points: list[tuple[float, float]] = []
+    for token in raw.split():
+        px, py = token.split(",")
+        points.append((float(px), float(py)))
+    return points
+
+
+def _centroid(points: list[tuple[float, float]]) -> tuple[float, float]:
+    return (
+        sum(x for x, _ in points) / len(points),
+        sum(y for _, y in points) / len(points),
+    )
 
 
 def test_initialize_database_is_idempotent(tmp_path: Path) -> None:
@@ -197,17 +220,131 @@ def test_oll_12_14_are_not_fallback_recognizers(tmp_path: Path) -> None:
         assert "recognizer:v4-fallback" not in content
 
 
-def test_f2l_recognizer_svg_is_start_cube_preview(tmp_path: Path) -> None:
+def test_f2l_recognizer_version_marker(tmp_path: Path) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     db_path = tmp_path / "cards.db"
     initialize_database(repo_root=repo_root, db_path=db_path)
 
     svg_dir = tmp_path / "recognizers" / "f2l" / "svg"
     content = (svg_dir / "f2l_b01.svg").read_text(encoding="utf-8")
-    assert "recognizer:v10-f2l category=F2L case=B01" in content
+    assert "recognizer:v11-f2l category=F2L case=B01" in content
     assert "recognizer:v4-fallback" not in content
-    assert content.count("<polygon ") >= 12
-    assert "#0B1220" in content
+
+
+def test_f2l_recognizer_has_27_sticker_cells(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    db_path = tmp_path / "cards.db"
+    initialize_database(repo_root=repo_root, db_path=db_path)
+
+    svg_dir = tmp_path / "recognizers" / "f2l" / "svg"
+    content = (svg_dir / "f2l_a06.svg").read_text(encoding="utf-8")
+    sticker_cells = [
+        node
+        for node in _svg_polygon_nodes(content)
+        if node.attrib.get("data-layer") == "sticker"
+    ]
+    assert len(sticker_cells) == 27
+
+
+def test_f2l_recognizer_has_matching_27_cubie_cells(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    db_path = tmp_path / "cards.db"
+    initialize_database(repo_root=repo_root, db_path=db_path)
+
+    svg_dir = tmp_path / "recognizers" / "f2l" / "svg"
+    content = (svg_dir / "f2l_a06.svg").read_text(encoding="utf-8")
+    cubie_cells = [
+        node
+        for node in _svg_polygon_nodes(content)
+        if node.attrib.get("data-layer") == "cubie"
+    ]
+    assert len(cubie_cells) == 27
+
+
+def test_f2l_recognizer_mask_applies_by_cubie_u(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    db_path = tmp_path / "cards.db"
+    initialize_database(repo_root=repo_root, db_path=db_path)
+
+    with connect(db_path) as conn:
+        row = conn.execute(
+            """
+            SELECT ca.formula
+            FROM canonical_cases cc
+            JOIN canonical_algorithms ca ON ca.canonical_case_id = cc.id
+            WHERE cc.category_code = 'F2L'
+              AND cc.case_code = 'A06'
+            ORDER BY ca.is_primary DESC, ca.sort_order ASC, ca.id ASC
+            LIMIT 1
+            """
+        ).fetchone()
+        assert row is not None
+        formula = str(row["formula"] or "")
+
+    move_steps = FormulaConverter.convert_steps(formula, repeat=1)
+    inverse_steps = FormulaConverter.invert_steps(move_steps)
+    inverse_flat = [move for step in inverse_steps for move in step]
+    start_state = state_string_from_moves(inverse_flat)
+
+    masked_positions: set[tuple[int, int, int]] = set()
+    for (position, _face), color_code in zip(state_slots_metadata(), start_state, strict=True):
+        if color_code != "U":
+            continue
+        masked_positions.add((int(position[0]), int(position[1]), int(position[2])))
+    assert masked_positions
+
+    svg_dir = tmp_path / "recognizers" / "f2l" / "svg"
+    content = (svg_dir / "f2l_a06.svg").read_text(encoding="utf-8")
+    masked_fill = "#0b1220"
+    sticker_polygons = [
+        node
+        for node in _svg_polygon_nodes(content)
+        if node.attrib.get("data-layer") == "sticker"
+    ]
+
+    unmasked_count = 0
+    for polygon in sticker_polygons:
+        pos_token = str(polygon.attrib.get("data-pos", ""))
+        pos = tuple(int(chunk) for chunk in pos_token.split(","))
+        fill = str(polygon.attrib.get("fill", "")).lower()
+        if pos in masked_positions:
+            assert fill == masked_fill
+        else:
+            unmasked_count += int(fill != masked_fill)
+
+    assert unmasked_count > 0
+
+
+def test_f2l_recognizer_orientation_adjacency(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    db_path = tmp_path / "cards.db"
+    initialize_database(repo_root=repo_root, db_path=db_path)
+
+    svg_dir = tmp_path / "recognizers" / "f2l" / "svg"
+    content = (svg_dir / "f2l_a06.svg").read_text(encoding="utf-8")
+    sticker_polygons = [
+        node
+        for node in _svg_polygon_nodes(content)
+        if node.attrib.get("data-layer") == "sticker"
+    ]
+
+    centroids: dict[tuple[str, tuple[int, int, int]], tuple[float, float]] = {}
+    for polygon in sticker_polygons:
+        face = str(polygon.attrib.get("data-face", ""))
+        pos = tuple(int(chunk) for chunk in str(polygon.attrib.get("data-pos", "")).split(","))
+        centroids[(face, pos)] = _centroid(_polygon_points(str(polygon.attrib.get("points", ""))))
+
+    u_back = [centroids[("U", (1, y, 1))][1] for y in (1, 0, -1)]
+    u_front = [centroids[("U", (-1, y, 1))][1] for y in (1, 0, -1)]
+    assert sum(u_front) / len(u_front) > sum(u_back) / len(u_back)
+
+    f_top = [centroids[("F", (-1, y, 1))][1] for y in (1, 0, -1)]
+    f_bottom = [centroids[("F", (-1, y, -1))][1] for y in (1, 0, -1)]
+    assert sum(f_top) / len(f_top) < sum(f_bottom) / len(f_bottom)
+
+    r_top = [centroids[("R", (x, -1, 1))][1] for x in (-1, 0, 1)]
+    r_bottom = [centroids[("R", (x, -1, -1))][1] for x in (-1, 0, 1)]
+    assert sum(r_top) / len(r_top) < sum(r_bottom) / len(r_bottom)
 
 
 def test_oll_recognizer_path_is_case_stable(tmp_path: Path) -> None:
