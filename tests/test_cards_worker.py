@@ -3,11 +3,29 @@ from __future__ import annotations
 from pathlib import Path
 import threading
 import time
+from typing import Callable
 
 from cubeanim.cards.db import connect
 from cubeanim.cards.services import CardsService
 from cubeanim.render_service import RenderPlan, RenderResult
-import cubeanim.cards.services as cards_services
+
+
+class _StubRendererClient:
+    local_paths = True
+
+    def __init__(
+        self,
+        plan_fn: Callable,
+        render_fn: Callable,
+    ) -> None:
+        self._plan_fn = plan_fn
+        self._render_fn = render_fn
+
+    def plan(self, request, repo_root):
+        return self._plan_fn(request, repo_root)
+
+    def render(self, request, repo_root, allow_rerender=False):
+        return self._render_fn(request, repo_root, allow_rerender=allow_rerender)
 
 
 def test_worker_processes_pending_job_without_real_manim(tmp_path: Path, monkeypatch) -> None:
@@ -43,8 +61,10 @@ def test_worker_processes_pending_job_without_real_manim(tmp_path: Path, monkeyp
             action="render",
         )
 
-    monkeypatch.setattr(cards_services, "plan_formula_render", fake_plan_formula_render)
-    monkeypatch.setattr(cards_services, "render_formula", fake_render_formula)
+    service.renderer_client = _StubRendererClient(
+        plan_fn=fake_plan_formula_render,
+        render_fn=fake_render_formula,
+    )
 
     processed = service.process_next_job()
     assert processed is not None
@@ -92,8 +112,10 @@ def test_worker_does_not_block_enqueue_during_render(tmp_path: Path, monkeypatch
             action="render",
         )
 
-    monkeypatch.setattr(cards_services, "plan_formula_render", fake_plan_formula_render)
-    monkeypatch.setattr(cards_services, "render_formula", fake_render_formula)
+    service.renderer_client = _StubRendererClient(
+        plan_fn=fake_plan_formula_render,
+        render_fn=fake_render_formula,
+    )
 
     thread = threading.Thread(target=service.process_next_job, daemon=True)
     thread.start()
@@ -140,8 +162,10 @@ def test_worker_passes_manim_threads_to_render_request(tmp_path: Path, monkeypat
             action="render",
         )
 
-    monkeypatch.setattr(cards_services, "plan_formula_render", fake_plan_formula_render)
-    monkeypatch.setattr(cards_services, "render_formula", fake_render_formula)
+    service.renderer_client = _StubRendererClient(
+        plan_fn=fake_plan_formula_render,
+        render_fn=fake_render_formula,
+    )
 
     processed = service.process_next_job(manim_threads=3)
     assert processed is not None

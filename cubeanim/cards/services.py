@@ -19,10 +19,11 @@ from cubeanim.cards.db import (
 )
 from cubeanim.cards.models import RENDER_QUALITIES
 from cubeanim.cards.recognizer import ensure_recognizer_assets
+from cubeanim.cards.renderer_client import RendererClient, build_renderer_client_from_env
 from cubeanim.cards.sandbox import build_sandbox_timeline
 from cubeanim.executor import ExecutionConfig
 from cubeanim.palette import FACE_ORDER, CONTRAST_SAFE_CUBE_COLORS
-from cubeanim.render_service import RenderRequest, plan_formula_render, render_formula
+from cubeanim.render_service import RenderRequest
 
 GROUPS = {"F2L", "OLL", "PLL"}
 _MOVE_RUN_TIME_ENV = "CUBEANIM_MOVE_RUN_TIME"
@@ -51,16 +52,23 @@ def _resolved_execution_config() -> ExecutionConfig:
 class CardsService:
     repo_root: Path
     db_path: Path
+    renderer_client: RendererClient
 
     @classmethod
-    def create(cls, repo_root: Path | None = None, db_path: Path | None = None) -> "CardsService":
+    def create(
+        cls,
+        repo_root: Path | None = None,
+        db_path: Path | None = None,
+        renderer_client: RendererClient | None = None,
+    ) -> "CardsService":
         root = repo_root or repo_root_from_file()
         path = db_path
         if path is None:
             env_path = os.environ.get(DEFAULT_DB_ENV, "").strip()
             path = Path(env_path) if env_path else default_db_path(root)
         initialize_database(repo_root=root, db_path=path)
-        return cls(repo_root=root, db_path=path)
+        client = renderer_client or build_renderer_client_from_env()
+        return cls(repo_root=root, db_path=path, renderer_client=client)
 
     def list_algorithms(self, group: str = "ALL") -> list[dict[str, Any]]:
         with connect(self.db_path) as conn:
@@ -364,14 +372,14 @@ class CardsService:
                     quality=quality,
                     manim_threads=manim_threads,
                 )
-                plan = plan_formula_render(request=request, repo_root=self.repo_root)
+                plan = self.renderer_client.plan(request=request, repo_root=self.repo_root)
 
                 if (
                     plan.action == "confirm_rerender"
                     and "identical formula" in plan.reason.lower()
-                    and plan.final_path.exists()
+                    and self._plan_output_exists(plan)
                 ):
-                    rel_output_path = str(plan.final_path.relative_to(self.repo_root))
+                    rel_output_path = self._path_to_output_path(plan.final_path)
                     repository.upsert_render_artifact(
                         conn,
                         algorithm_id=algorithm_id,
@@ -397,7 +405,7 @@ class CardsService:
             return None
 
         try:
-            result = render_formula(
+            result = self.renderer_client.render(
                 request=request,
                 repo_root=self.repo_root,
                 allow_rerender=allow_rerender,
@@ -406,7 +414,7 @@ class CardsService:
             with connect(self.db_path) as conn:
                 return repository.mark_job_failed(conn, job_id=job_id, error_message=str(exc))
 
-        rel_output_path = str(result.final_path.relative_to(self.repo_root))
+        rel_output_path = self._path_to_output_path(result.final_path)
         with connect(self.db_path) as conn:
             repository.upsert_render_artifact(
                 conn,
@@ -466,11 +474,7 @@ class CardsService:
         if cached_artifact is not None and not self._is_existing_artifact(cached_artifact):
             repository.delete_render_artifact(conn, int(cached_artifact["id"]))
             cached_artifact = None
-        if (
-            cached_artifact is not None
-            and cached_artifact.get("formula_norm") == formula_norm
-            and (self.repo_root / str(cached_artifact["output_path"])).exists()
-        ):
+        if cached_artifact is not None and cached_artifact.get("formula_norm") == formula_norm and self._is_existing_artifact(cached_artifact):
             done_job = repository.insert_render_job(
                 conn,
                 algorithm_id=algorithm_id,
@@ -509,10 +513,10 @@ class CardsService:
             }
 
         request = self._build_request(algorithm=algorithm, quality=quality)
-        plan = plan_formula_render(request=request, repo_root=self.repo_root)
+        plan = self.renderer_client.plan(request=request, repo_root=self.repo_root)
 
-        if plan.action == "confirm_rerender" and "identical formula" in plan.reason.lower() and plan.final_path.exists():
-            rel_output_path = str(plan.final_path.relative_to(self.repo_root))
+        if plan.action == "confirm_rerender" and "identical formula" in plan.reason.lower() and self._plan_output_exists(plan):
+            rel_output_path = self._path_to_output_path(plan.final_path)
             repository.upsert_render_artifact(
                 conn,
                 algorithm_id=algorithm_id,
@@ -595,7 +599,7 @@ class CardsService:
         if shared is None:
             return None
         output_path = str(shared["output_path"])
-        if not (self.repo_root / output_path).exists():
+        if self.renderer_client.local_paths and not (self.repo_root / output_path).exists():
             repository.delete_render_artifact(conn, int(shared["id"]))
             return None
         repository.upsert_render_artifact(
@@ -636,7 +640,22 @@ class CardsService:
         output_path = str(artifact.get("output_path") or "").strip()
         if not output_path:
             return False
+        if not self.renderer_client.local_paths:
+            return True
         return (self.repo_root / output_path).exists()
+
+    def _plan_output_exists(self, plan) -> bool:
+        if not self.renderer_client.local_paths:
+            return True
+        return plan.final_path.exists()
+
+    def _path_to_output_path(self, path: Path) -> str:
+        if self.renderer_client.local_paths:
+            try:
+                return str(path.relative_to(self.repo_root))
+            except ValueError:
+                return str(path)
+        return str(path)
 
     def _decorate_algorithm(
         self,
@@ -660,16 +679,21 @@ class CardsService:
         return payload
 
     def _artifact_payload(self, conn, artifact: dict[str, Any] | None) -> dict[str, Any] | None:
-        if artifact is not None and not self._is_existing_artifact(artifact):
+        if self.renderer_client.local_paths and artifact is not None and not self._is_existing_artifact(artifact):
             repository.delete_render_artifact(conn, int(artifact["id"]))
             return None
         if not self._is_existing_artifact(artifact):
             return None
+        output_path = str(artifact["output_path"])
+        if output_path.startswith("http://") or output_path.startswith("https://"):
+            video_url = output_path
+        else:
+            video_url = f"/{output_path}"
         return {
             "quality": artifact["quality"],
             "output_name": artifact["output_name"],
-            "output_path": artifact["output_path"],
-            "video_url": f"/{artifact['output_path']}",
+            "output_path": output_path,
+            "video_url": video_url,
             "updated_at": artifact["updated_at"],
         }
 
@@ -728,6 +752,8 @@ class CardsService:
 
     def _purge_output_paths(self, output_paths: list[str]) -> None:
         if not output_paths:
+            return
+        if not self.renderer_client.local_paths:
             return
         root = self.repo_root.resolve()
         existing_rel_paths: set[str] = set()
