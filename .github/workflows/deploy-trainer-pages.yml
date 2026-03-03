@@ -37,7 +37,7 @@ jobs:
         uses: astral-sh/setup-uv@v4
 
       - name: Rebuild trainer catalog and prune recognizers
-        run: PYTHONPATH=packages/cubeanim/src uv run --with-requirements requirements.txt python tools/trainer/build_trainer_catalog.py --output apps/trainer --assets-dir apps/trainer/assets --base-catalog-url ./assets
+        run: PYTHONPATH=packages/cubeanim/src uv run python tools/trainer/build_trainer_catalog.py --output apps/trainer --assets-dir apps/trainer/assets --base-catalog-url ./assets
 
       - name: Guard recognizer asset diff
         run: git diff --exit-code -- apps/trainer/assets/recognizers
