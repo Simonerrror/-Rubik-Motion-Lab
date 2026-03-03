@@ -423,8 +423,6 @@ def _build_f2l_svg(case_code: str, formula: str) -> str:
 
     colors = _face_color_map()
     stickerless_u = "#0B1220"
-    stroke = _GRID_STROKE
-    stroke_w = 1.15
     cubie_fill = "#3F516D"
     cubie_stroke = "#344660"
     sticker_inset = 0.22
@@ -434,141 +432,167 @@ def _build_f2l_svg(case_code: str, formula: str) -> str:
     proj_ax = 20.0
     proj_ay = 11.0
     proj_az = 22.0
+    camera = (4.8, 5.6, 6.4)
+
+    def state_to_world(point: tuple[float, float, float]) -> tuple[float, float, float]:
+        sx, sy, sz = point
+        wx = -sy
+        wy = sz
+        wz = -sx
+        return (wx, wy, wz)
 
     def face_color(face: str, pos: tuple[int, int, int]) -> str:
         if pos in masked_positions:
             return stickerless_u
-        code = color_by_face_and_pos[(face, pos)]
+        code = color_by_face_and_pos.get((face, pos), "")
         return colors.get(code, _GRID_CELL_GRAY)
 
-    def project(x: float, y: float, z: float) -> tuple[float, float]:
+    def project(world_point: tuple[float, float, float]) -> tuple[float, float]:
+        wx, wy, wz = world_point
         return (
-            center_x + (x - y) * proj_ax,
-            center_y + (x + y) * proj_ay - z * proj_az,
+            center_x + (wx - wz) * proj_ax,
+            center_y + (wx + wz) * proj_ay - wy * proj_az,
         )
 
     def polygon(
         points: list[tuple[float, float]],
         fill: str,
-        stroke_color: str = stroke,
-        stroke_width: float | None = None,
+        stroke_color: str,
+        stroke_width: float,
+        attrs: dict[str, str],
     ) -> str:
         points_attr = " ".join(f"{x:.2f},{y:.2f}" for x, y in points)
-        width = stroke_w if stroke_width is None else stroke_width
+        attrs_raw = "".join(f' {name}="{value}"' for name, value in attrs.items())
         return (
             f'<polygon points="{points_attr}" fill="{fill}" '
-            f'stroke="{stroke_color}" stroke-width="{width:.2f}" stroke-linejoin="round"/>'
+            f'stroke="{stroke_color}" stroke-width="{stroke_width:.2f}" stroke-linejoin="round"{attrs_raw}/>'
         )
 
     def inset_polygon(points: list[tuple[float, float]], ratio: float) -> list[tuple[float, float]]:
-        center_x = sum(x for x, _ in points) / len(points)
-        center_y = sum(y for _, y in points) / len(points)
+        center_px = sum(x for x, _ in points) / len(points)
+        center_py = sum(y for _, y in points) / len(points)
         return [
             (
-                x + (center_x - x) * ratio,
-                y + (center_y - y) * ratio,
+                x + (center_px - x) * ratio,
+                y + (center_py - y) * ratio,
             )
             for x, y in points
         ]
 
-    def draw_sticker_cell(
+    def append_sticker_cell(
         face: str,
         pos: tuple[int, int, int],
-        points: list[tuple[float, float]],
+        state_points: list[tuple[float, float, float]],
     ) -> None:
-        lines.append(polygon(points, cubie_fill, stroke_color=cubie_stroke, stroke_width=1.05))
-        sticker_points = inset_polygon(points, sticker_inset)
-        lines.append(polygon(sticker_points, face_color(face, pos), stroke_color=stroke, stroke_width=1.05))
+        world_points = [state_to_world(point) for point in state_points]
+        screen_points = [project(world_point) for world_point in world_points]
+        center_wx = sum(point[0] for point in world_points) / len(world_points)
+        center_wy = sum(point[1] for point in world_points) / len(world_points)
+        center_wz = sum(point[2] for point in world_points) / len(world_points)
+        depth = (center_wx * camera[0]) + (center_wy * camera[1]) + (center_wz * camera[2])
+        cells.append((depth, face, pos, screen_points))
 
-    def draw_u_face() -> None:
+    edges = [-1.0, -1.0 / 3.0, 1.0 / 3.0, 1.0]
+
+    def desc_bounds(index: int) -> tuple[float, float]:
+        return (edges[3 - index], edges[2 - index])
+
+    def asc_bounds(index: int) -> tuple[float, float]:
+        return (edges[index], edges[index + 1])
+
+    cells: list[tuple[float, str, tuple[int, int, int], list[tuple[float, float]]]] = []
+
+    def add_u_face() -> None:
         for row in range(3):  # B -> F
-            x_hi = 1.0 - (2.0 * row) / 3.0
-            x_lo = 1.0 - (2.0 * (row + 1)) / 3.0
-            x_idx = row - 1
+            x_hi, x_lo = desc_bounds(row)
+            x_idx = 1 - row
             for col in range(3):  # L -> R
-                y_hi = 1.0 - (2.0 * col) / 3.0
-                y_lo = 1.0 - (2.0 * (col + 1)) / 3.0
+                y_hi, y_lo = desc_bounds(col)
                 y_idx = 1 - col
-                points = [
-                    project(x_hi, y_hi, 1.0),
-                    project(x_hi, y_lo, 1.0),
-                    project(x_lo, y_lo, 1.0),
-                    project(x_lo, y_hi, 1.0),
-                ]
-                draw_sticker_cell("U", (x_idx, y_idx, 1), points)
+                append_sticker_cell(
+                    face="U",
+                    pos=(x_idx, y_idx, 1),
+                    state_points=[
+                        (x_hi, y_hi, 1.0),
+                        (x_hi, y_lo, 1.0),
+                        (x_lo, y_lo, 1.0),
+                        (x_lo, y_hi, 1.0),
+                    ],
+                )
 
-    def draw_f_face() -> None:
+    def add_f_face() -> None:
         for row in range(3):  # z=+1 -> -1
-            z_hi = 1.0 - (2.0 * row) / 3.0
-            z_lo = 1.0 - (2.0 * (row + 1)) / 3.0
+            z_hi, z_lo = desc_bounds(row)
             z_idx = 1 - row
             for col in range(3):  # y=+1 -> -1
-                y_hi = 1.0 - (2.0 * col) / 3.0
-                y_lo = 1.0 - (2.0 * (col + 1)) / 3.0
+                y_hi, y_lo = desc_bounds(col)
                 y_idx = 1 - col
-                points = [
-                    project(-1.0, y_hi, z_hi),
-                    project(-1.0, y_lo, z_hi),
-                    project(-1.0, y_lo, z_lo),
-                    project(-1.0, y_hi, z_lo),
-                ]
-                draw_sticker_cell("F", (-1, y_idx, z_idx), points)
+                append_sticker_cell(
+                    face="F",
+                    pos=(-1, y_idx, z_idx),
+                    state_points=[
+                        (-1.0, y_hi, z_hi),
+                        (-1.0, y_lo, z_hi),
+                        (-1.0, y_lo, z_lo),
+                        (-1.0, y_hi, z_lo),
+                    ],
+                )
 
-    def draw_r_face() -> None:
+    def add_r_face() -> None:
         for row in range(3):  # z=+1 -> -1
-            z_hi = 1.0 - (2.0 * row) / 3.0
-            z_lo = 1.0 - (2.0 * (row + 1)) / 3.0
+            z_hi, z_lo = desc_bounds(row)
             z_idx = 1 - row
             for col in range(3):  # x=-1 -> +1
-                x_lo = -1.0 + (2.0 * col) / 3.0
-                x_hi = -1.0 + (2.0 * (col + 1)) / 3.0
+                x_lo, x_hi = asc_bounds(col)
                 x_idx = -1 + col
-                points = [
-                    project(x_lo, -1.0, z_hi),
-                    project(x_hi, -1.0, z_hi),
-                    project(x_hi, -1.0, z_lo),
-                    project(x_lo, -1.0, z_lo),
-                ]
-                draw_sticker_cell("R", (x_idx, -1, z_idx), points)
+                append_sticker_cell(
+                    face="R",
+                    pos=(x_idx, -1, z_idx),
+                    state_points=[
+                        (x_lo, -1.0, z_hi),
+                        (x_hi, -1.0, z_hi),
+                        (x_hi, -1.0, z_lo),
+                        (x_lo, -1.0, z_lo),
+                    ],
+                )
 
-    lines = _base_svg_lines(version="v10-f2l", category="F2L", case_code=case_code)
-    body_fill = stickerless_u
-    lines.append(
-        polygon(
-            [
-                project(1.0, 1.0, 1.0),
-                project(1.0, -1.0, 1.0),
-                project(-1.0, -1.0, 1.0),
-                project(-1.0, 1.0, 1.0),
-            ],
-            body_fill,
+    add_u_face()
+    add_f_face()
+    add_r_face()
+
+    face_rank = {"U": 0, "F": 1, "R": 2}
+    cells.sort(key=lambda item: (item[0], face_rank.get(item[1], 99), item[2]))
+
+    lines = _base_svg_lines(version="v11-f2l", category="F2L", case_code=case_code)
+    for _depth, face, pos, points in cells:
+        pos_token = f"{pos[0]},{pos[1]},{pos[2]}"
+        lines.append(
+            polygon(
+                points=points,
+                fill=cubie_fill,
+                stroke_color=cubie_stroke,
+                stroke_width=1.05,
+                attrs={
+                    "data-layer": "cubie",
+                    "data-face": face,
+                    "data-pos": pos_token,
+                },
+            )
         )
-    )
-    lines.append(
-        polygon(
-            [
-                project(-1.0, 1.0, 1.0),
-                project(-1.0, -1.0, 1.0),
-                project(-1.0, -1.0, -1.0),
-                project(-1.0, 1.0, -1.0),
-            ],
-            body_fill,
+        lines.append(
+            polygon(
+                points=inset_polygon(points, sticker_inset),
+                fill=face_color(face, pos),
+                stroke_color=_GRID_STROKE,
+                stroke_width=0.95,
+                attrs={
+                    "data-layer": "sticker",
+                    "data-face": face,
+                    "data-pos": pos_token,
+                },
+            )
         )
-    )
-    lines.append(
-        polygon(
-            [
-                project(-1.0, -1.0, 1.0),
-                project(1.0, -1.0, 1.0),
-                project(1.0, -1.0, -1.0),
-                project(-1.0, -1.0, -1.0),
-            ],
-            body_fill,
-        )
-    )
-    draw_f_face()
-    draw_r_face()
-    draw_u_face()
+
     lines.append("</svg>")
     return "\n".join(lines)
 
