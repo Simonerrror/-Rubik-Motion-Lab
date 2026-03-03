@@ -19,6 +19,7 @@
     inter_move_pause_ratio: 0.05,
     rate_func: "ease_in_out_sine",
   };
+  const SANDBOX_RESTART_DELAY_MS = 500;
   const AUTO_MERGE_UD_PAIRS = new Set([
     "U|D'",
     "D'|U",
@@ -1936,6 +1937,8 @@
     if (token !== state.sandboxPlaybackToken) return;
     state.sandboxPlaybackActive = false;
     if (state.sandboxTimelineProgress >= currentSandboxStepCount() - 0.000001) {
+      const restartDelayOk = await sleepWithToken(SANDBOX_RESTART_DELAY_MS, token);
+      if (!restartDelayOk) return;
       renderSandboxProgress({ progress: 0, syncState: true });
     }
     updateSandboxControls();
