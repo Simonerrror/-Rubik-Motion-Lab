@@ -219,6 +219,32 @@
     }
   }
 
+  function hardResetSandboxOnSwitch(options = {}) {
+    const clearData = options.clearData !== false;
+    stopSandboxPlayback({ silent: true, forceUpdate: true });
+    if (clearData) {
+      state.sandboxData = null;
+    }
+    state.sandboxStepIndex = 0;
+    state.sandboxTimelineProgress = 0;
+    state.sandboxCursorStepIndex = 0;
+    state.sandboxCursorStepProgress = 0;
+    state.sandboxScrubbing = false;
+    state.sandboxWasPlayingBeforeScrub = false;
+    state.sandboxTimelineRafPending = false;
+    state.sandboxPendingTimelineProgress = null;
+    state.sandboxBusy = false;
+    state.sandboxPlaybackConfig = { ...DEFAULT_SANDBOX_PLAYBACK_CONFIG };
+    if (state.sandboxPlayer) {
+      state.sandboxPlayer.setSlots([]);
+      if (state.sandboxPlayer.setStickerlessTopMask) {
+        state.sandboxPlayer.setStickerlessTopMask(false);
+      }
+      state.sandboxPlayer.setState("");
+    }
+    updateSandboxControls();
+  }
+
   function setSandboxPlaybackSpeed(rawSpeed) {
     const parsed = Number(rawSpeed);
     const next = SANDBOX_PLAYBACK_SPEEDS.includes(parsed) ? parsed : 1;
@@ -453,32 +479,13 @@
   }
 
   function resetSandboxData() {
-    stopSandboxPlayback({ silent: true });
-    state.sandboxData = null;
-    state.sandboxStepIndex = 0;
-    state.sandboxTimelineProgress = 0;
-    state.sandboxCursorStepIndex = 0;
-    state.sandboxCursorStepProgress = 0;
-    state.sandboxScrubbing = false;
-    state.sandboxWasPlayingBeforeScrub = false;
-    state.sandboxTimelineRafPending = false;
-    state.sandboxPendingTimelineProgress = null;
-    state.sandboxBusy = false;
-    state.sandboxPlaybackConfig = { ...DEFAULT_SANDBOX_PLAYBACK_CONFIG };
-    if (state.sandboxPlayer) {
-      state.sandboxPlayer.setSlots([]);
-      if (state.sandboxPlayer.setStickerlessTopMask) {
-        state.sandboxPlayer.setStickerlessTopMask(false);
-      }
-      state.sandboxPlayer.setState("");
-    }
-    updateSandboxControls();
+    hardResetSandboxOnSwitch({ clearData: true });
   }
 
   async function loadSandboxForCurrentCase() {
+    hardResetSandboxOnSwitch({ clearData: true });
     const c = currentCase();
     if (!c?.id) {
-      resetSandboxData();
       return;
     }
 
@@ -495,7 +502,6 @@
       state.sandboxCursorStepIndex = 0;
       state.sandboxCursorStepProgress = 0;
       state.sandboxBusy = false;
-      stopSandboxPlayback({ silent: true });
       state.sandboxPlaybackConfig = normalizeSandboxPlaybackConfig(sandbox.playback_config);
       renderActiveAlgorithmDisplay(state.activeDisplayFormula);
       if (state.sandboxPlayer) {
@@ -1223,6 +1229,7 @@
         return;
       }
       try {
+        hardResetSandboxOnSwitch({ clearData: true });
         const updated = await apiPost(`/api/cases/${c.id}/alternatives`, { formula, activate: true });
         state.activeCase = updated;
         patchCaseInState(updated);
@@ -1267,6 +1274,7 @@
   }
 
   async function selectCase(caseId) {
+    hardResetSandboxOnSwitch({ clearData: true });
     state.activeCaseId = caseId;
     const details = await apiGet(`/api/cases/${caseId}`);
     state.activeCase = details;
@@ -1279,6 +1287,7 @@
   }
 
   async function activateAlgorithm(caseId, algorithmId) {
+    hardResetSandboxOnSwitch({ clearData: true });
     const updated = await apiPost(`/api/cases/${caseId}/active-algorithm`, { algorithm_id: algorithmId });
     state.activeCase = updated;
     await loadSandboxForCurrentCase();
@@ -1289,6 +1298,7 @@
   }
 
   async function deleteAlgorithm(caseId, algorithmId) {
+    hardResetSandboxOnSwitch({ clearData: true });
     const payload = await apiDelete(`/api/cases/${caseId}/alternatives/${algorithmId}?purge_media=true`);
     state.activeCase = payload.case;
     await loadSandboxForCurrentCase();

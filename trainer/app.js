@@ -1285,6 +1285,7 @@
 
       option.querySelector("input")?.addEventListener("change", async () => {
         try {
+          hardResetSandboxOnSwitch({ clearData: true });
           state.provider.setActiveAlgorithm(c.case_key, algo.id);
           refreshCaseCache();
           state.activeCase = state.provider.getCase(c.case_key);
@@ -1304,6 +1305,7 @@
           event.preventDefault();
           event.stopPropagation();
           try {
+            hardResetSandboxOnSwitch({ clearData: true });
             const payload = state.provider.deleteAlgorithm(c.case_key, algo.id);
             if (!payload.deleted) {
               showToast("Only custom algorithms can be deleted");
@@ -1349,6 +1351,7 @@
         return;
       }
       try {
+        hardResetSandboxOnSwitch({ clearData: true });
         const result = state.provider.createCustomAlgorithm(c.case_key, formula, "", true);
         refreshCaseCache();
         state.activeCase = state.provider.getCase(c.case_key);
@@ -1404,6 +1407,7 @@
 
   async function selectCase(caseKey) {
     if (!state.provider) return;
+    hardResetSandboxOnSwitch({ clearData: true });
     state.activeCaseKey = caseKey;
     state.activeCase = state.provider.getCase(caseKey);
     state.activeDisplayMode = "algorithm";
@@ -1440,6 +1444,32 @@
     if (!options.silent && (hadPlayback || options.forceUpdate)) {
       updateSandboxControls();
     }
+  }
+
+  function hardResetSandboxOnSwitch(options = {}) {
+    const clearData = options.clearData !== false;
+    stopSandboxPlayback({ silent: true, forceUpdate: true });
+    if (clearData) {
+      state.sandboxData = null;
+    }
+    state.sandboxStepIndex = 0;
+    state.sandboxTimelineProgress = 0;
+    state.sandboxCursorStepIndex = 0;
+    state.sandboxCursorStepProgress = 0;
+    state.sandboxScrubbing = false;
+    state.sandboxWasPlayingBeforeScrub = false;
+    state.sandboxTimelineRafPending = false;
+    state.sandboxPendingTimelineProgress = null;
+    state.sandboxBusy = false;
+    state.sandboxPlaybackConfig = { ...DEFAULT_SANDBOX_PLAYBACK_CONFIG };
+    if (state.sandboxPlayer) {
+      state.sandboxPlayer.setSlots([]);
+      if (state.sandboxPlayer.setStickerlessTopMask) {
+        state.sandboxPlayer.setStickerlessTopMask(false);
+      }
+      state.sandboxPlayer.setState("");
+    }
+    updateSandboxControls();
   }
 
   function setSandboxPlaybackSpeed(rawSpeed) {
@@ -1666,32 +1696,13 @@
   }
 
   function resetSandboxData() {
-    stopSandboxPlayback({ silent: true });
-    state.sandboxData = null;
-    state.sandboxStepIndex = 0;
-    state.sandboxTimelineProgress = 0;
-    state.sandboxCursorStepIndex = 0;
-    state.sandboxCursorStepProgress = 0;
-    state.sandboxScrubbing = false;
-    state.sandboxWasPlayingBeforeScrub = false;
-    state.sandboxTimelineRafPending = false;
-    state.sandboxPendingTimelineProgress = null;
-    state.sandboxBusy = false;
-    state.sandboxPlaybackConfig = { ...DEFAULT_SANDBOX_PLAYBACK_CONFIG };
-    if (state.sandboxPlayer) {
-      state.sandboxPlayer.setSlots([]);
-      if (state.sandboxPlayer.setStickerlessTopMask) {
-        state.sandboxPlayer.setStickerlessTopMask(false);
-      }
-      state.sandboxPlayer.setState("");
-    }
-    updateSandboxControls();
+    hardResetSandboxOnSwitch({ clearData: true });
   }
 
   async function loadSandboxForCurrentCase() {
+    hardResetSandboxOnSwitch({ clearData: true });
     const c = currentCase();
     if (!c?.case_key || !state.provider) {
-      resetSandboxData();
       return;
     }
 
@@ -1704,7 +1715,6 @@
       state.sandboxCursorStepIndex = 0;
       state.sandboxCursorStepProgress = 0;
       state.sandboxBusy = false;
-      stopSandboxPlayback({ silent: true });
       state.sandboxPlaybackConfig = normalizeSandboxPlaybackConfig(sandbox.playback_config);
       renderActiveAlgorithmDisplay(c.active_formula || "");
 

@@ -178,6 +178,8 @@
     let disposed = false;
     let isAnimating = false;
     let animationRaf = 0;
+    let activeAnimationParts = null;
+    let activeAnimationResolve = null;
 
     const scene = hasThree ? new THREE.Scene() : null;
     const camera = hasThree ? new THREE.PerspectiveCamera(34, 1, 0.1, 100) : null;
@@ -194,7 +196,10 @@
 
     function clearScene() {
       cubies.forEach((cubie) => {
-        scene.remove(cubie);
+        const parent = cubie.parent;
+        if (parent && typeof parent.remove === "function") {
+          parent.remove(cubie);
+        }
       });
       cubies.length = 0;
     }
@@ -414,11 +419,7 @@
 
     function resetFromState(state) {
       if (!hasThree || disposed) return;
-      if (animationRaf) {
-        cancelAnimationFrame(animationRaf);
-        animationRaf = 0;
-      }
-      isAnimating = false;
+      cancelActiveAnimation({ resolveValue: false, detach: true });
       currentState = String(state || "");
       buildSolvedGeometry();
       applyStateColors(currentState);
@@ -485,6 +486,34 @@
       });
     }
 
+    function cancelActiveAnimation(options = {}) {
+      const resolveValue = Boolean(options.resolveValue);
+      const detach = options.detach !== false;
+
+      if (animationRaf) {
+        cancelAnimationFrame(animationRaf);
+        animationRaf = 0;
+      }
+
+      if (activeAnimationParts?.length) {
+        if (detach) {
+          detachParts(activeAnimationParts);
+        } else {
+          activeAnimationParts.forEach((part) => {
+            scene.remove(part.pivot);
+          });
+        }
+      }
+      activeAnimationParts = null;
+      isAnimating = false;
+
+      if (typeof activeAnimationResolve === "function") {
+        const resolver = activeAnimationResolve;
+        activeAnimationResolve = null;
+        resolver(resolveValue);
+      }
+    }
+
     function playStep(stepMoves, options = {}) {
       if (!hasThree || disposed || isAnimating) {
         return Promise.resolve(false);
@@ -512,14 +541,15 @@
       }
 
       isAnimating = true;
+      activeAnimationParts = parts;
       let startTs = 0;
       if (onProgress) onProgress(startProgress);
 
       return new Promise((resolve) => {
+        activeAnimationResolve = resolve;
         const tick = (timestamp) => {
           if (disposed) {
-            isAnimating = false;
-            resolve(false);
+            cancelActiveAnimation({ resolveValue: false, detach: false });
             return;
           }
 
@@ -541,10 +571,15 @@
           detachParts(parts);
           snapCubiesToGrid();
           render();
+          activeAnimationParts = null;
           isAnimating = false;
           animationRaf = 0;
+          const resolver = activeAnimationResolve;
+          activeAnimationResolve = null;
           if (onProgress) onProgress(1);
-          resolve(true);
+          if (typeof resolver === "function") {
+            resolver(true);
+          }
         };
 
         animationRaf = requestAnimationFrame(tick);
@@ -619,11 +654,8 @@
     }
 
     function dispose() {
+      cancelActiveAnimation({ resolveValue: false, detach: false });
       disposed = true;
-      if (animationRaf) {
-        cancelAnimationFrame(animationRaf);
-        animationRaf = 0;
-      }
       clearScene();
       if (renderer) {
         renderer.dispose();
