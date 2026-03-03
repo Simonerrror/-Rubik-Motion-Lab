@@ -8,6 +8,7 @@ from pathlib import Path
 from cubeanim.formula import FormulaConverter
 from cubeanim.cards.db import connect, initialize_database, reset_runtime_state
 from cubeanim.cards.services import CardsService
+from cubeanim.oll import resolve_valid_oll_start_state, validate_oll_f2l_start_state
 from cubeanim.pll import balance_pll_formula_rotations
 from cubeanim.state import state_slots_metadata, state_string_from_moves
 
@@ -143,11 +144,29 @@ def test_oll_formulas_seeded_from_oll_txt(tmp_path: Path) -> None:
     assert all(str(item["formula"]).strip() for item in oll_items if not item.get("is_custom"))
 
     oll_by_case = {item["case_code"]: item for item in oll_items}
+    assert oll_by_case["OLL_1"]["formula"] == "R U2 R2 F R F' U2 R' F R F'"
     assert oll_by_case["OLL_12"]["formula"] == "F R U R' U' F' U F R U R' U' F'"
     assert oll_by_case["OLL_14"]["formula"] == "R' F R U R' F' R F U' F'"
+    assert oll_by_case["OLL_20"]["formula"] == "M U (R U R' U') M2 (U R U' R') M"
     assert oll_by_case["OLL_26"]["formula"] == "R U2 R' U' R U' R'"
     assert oll_by_case["OLL_27"]["formula"] == "R U R' U R U2 R'"
     assert oll_by_case["OLL_57"]["formula"] == "(R U R' U') M' (U R U' r')"
+
+
+def test_seeded_oll_1_and_20_formulas_produce_valid_oll_start_state(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    service = CardsService.create(repo_root=repo_root, db_path=tmp_path / "cards.db")
+    oll_by_case = {
+        item["case_code"]: str(item["formula"] or "")
+        for item in service.list_algorithms(group="OLL")
+        if not item.get("is_custom")
+    }
+
+    for case_code in ("OLL_1", "OLL_20"):
+        moves = FormulaConverter.convert(oll_by_case[case_code])
+        inverse = FormulaConverter.invert_moves(moves)
+        state = resolve_valid_oll_start_state(inverse)
+        validate_oll_f2l_start_state(state)
 
 
 def test_seeded_pll_formulas_are_rotation_balanced(tmp_path: Path) -> None:
@@ -210,13 +229,13 @@ def test_oll_recognizer_svg_is_minimal_top_card(tmp_path: Path) -> None:
     assert "rx=\"10\"" not in content
 
 
-def test_oll_12_14_are_not_fallback_recognizers(tmp_path: Path) -> None:
+def test_oll_1_12_14_20_are_not_fallback_recognizers(tmp_path: Path) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     db_path = tmp_path / "cards.db"
     initialize_database(repo_root=repo_root, db_path=db_path)
 
     svg_dir = tmp_path / "recognizers" / "oll" / "svg"
-    for case_code in ("oll_oll_12.svg", "oll_oll_14.svg"):
+    for case_code in ("oll_oll_1.svg", "oll_oll_12.svg", "oll_oll_14.svg", "oll_oll_20.svg"):
         content = (svg_dir / case_code).read_text(encoding="utf-8")
         assert "recognizer:v4-fallback" not in content
 

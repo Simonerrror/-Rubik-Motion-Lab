@@ -1,5 +1,5 @@
 №,Название,Алгоритм,Группа,Вероятность
-1,OLL 1,R U2 R2' F R F' U2 R' F R F',Dot,1/108 (~0.9%)
+1,OLL 1,R U2 R2 F R F' U2 R' F R F',Dot,1/108 (~0.9%)
 2,OLL 2,r U r' (U R U' R') (U R U' R') r U' r',Dot,1/54 (~1.8%)
 3,OLL 3,f (R U R' U') f' U' F (R U R' U') F',Dot,1/54 (~1.8%)
 4,OLL 4,f (R U R' U') f' U F (R U R' U') F',Dot,1/54 (~1.8%)
@@ -18,7 +18,7 @@
 17,OLL 17,(R U R' U) (R' F R F') U2 (R' F R F'),Dot,1/54 (~1.8%)
 18,OLL 18,F R U R' U' F' U f R U R' U' f',Dot,1/54 (~1.8%)
 19,OLL 19,M U (R U R' U') M' (R' F R F'),Dot,1/54 (~1.8%)
-20,OLL 20,M U (R U R' U') M2 (U R U' R') U' M,Dot,1/216 (~0.5%)
+20,OLL 20,M U (R U R' U') M2 (U R U' R') M,Dot,1/216 (~0.5%)
 21,OLL 21,(R U2 R' U' R U R' U') R U' R',Cross,1/108 (~0.9%)
 22,OLL 22,R U2 R2 U' R2 U' R2 U2 R,Cross,1/54 (~1.8%)
 23,OLL 23,R2 D R' U2 R D' R' U2 R',Cross,1/54 (~1.8%)
