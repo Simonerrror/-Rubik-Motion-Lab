@@ -4,7 +4,6 @@
   const PROFILE_SCHEMA_VERSION = 1;
   const CATALOG_SCHEMA_VERSION = "trainer-catalog-v1";
   const CATALOG_URL = "./data/catalog-v1.json";
-  const MOBILE_MAX_WIDTH = 860;
   const PROGRESS_SORT_STORAGE_KEY = "cards_progress_sort_by_group_v1";
   const STATUS_SORT_RANK = {
     IN_PROGRESS: 0,
@@ -72,7 +71,6 @@
 
     activeDisplayMode: "algorithm",
     activeDisplayFormula: "",
-    mobileDetailsActive: false,
 
     customTimelineCache: new Map(),
   };
@@ -109,35 +107,12 @@
     profileApplyBtn: document.getElementById("profile-apply-btn"),
     profileCopyBtn: document.getElementById("profile-copy-btn"),
     profileCloseBtn: document.getElementById("profile-close-btn"),
-    mobileBackBtn: document.getElementById("mobile-back-btn"),
-    mobileViewTitle: document.getElementById("mobile-view-title"),
   };
 
   let profileModalMode = "export";
 
   function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
-  }
-
-  function isMobileViewport() {
-    return window.innerWidth <= MOBILE_MAX_WIDTH;
-  }
-
-  function syncMobileViewState() {
-    const mobile = isMobileViewport();
-    document.body.classList.toggle("mobile-ready", mobile);
-    document.body.classList.toggle("mobile-details-active", mobile && state.mobileDetailsActive);
-  }
-
-  function openMobileCatalog() {
-    state.mobileDetailsActive = false;
-    syncMobileViewState();
-  }
-
-  function openMobileDetails() {
-    if (!isMobileViewport()) return;
-    state.mobileDetailsActive = true;
-    syncMobileViewState();
   }
 
   function sanitizeForTestId(raw) {
@@ -1249,9 +1224,6 @@
     DOM.mName.textContent = "Select Case";
     DOM.mCaseCode.textContent = "-";
     DOM.mProb.textContent = "Probability: n/a";
-    if (DOM.mobileViewTitle) {
-      DOM.mobileViewTitle.textContent = "Sandbox";
-    }
     DOM.mStatusGroup.querySelectorAll(".status-btn[data-status]").forEach((btn) => {
       btn.classList.remove("active");
       btn.disabled = true;
@@ -1272,9 +1244,6 @@
     DOM.mName.textContent = detailTitle(c);
     DOM.mProb.textContent = `Probability: ${c.probability_text || "n/a"}`;
     DOM.mCaseCode.textContent = [caseShortLabel(c), c.subgroup_title].filter(Boolean).join(" · ");
-    if (DOM.mobileViewTitle) {
-      DOM.mobileViewTitle.textContent = detailTitle(c);
-    }
 
     DOM.mStatusGroup.querySelectorAll(".status-btn[data-status]").forEach((btn) => {
       btn.disabled = false;
@@ -1443,7 +1412,6 @@
     refreshCaseCache();
     renderCatalog();
     updateDetailsPaneState();
-    openMobileDetails();
   }
 
   async function loadCatalog() {
@@ -1451,7 +1419,6 @@
     if (!state.cases.length) {
       setDetailsDisabled();
       renderCatalog();
-      openMobileCatalog();
       return;
     }
 
@@ -2112,14 +2079,9 @@
         state.category = category;
         state.activeCaseKey = null;
         state.activeCase = null;
-        openMobileCatalog();
         setActiveTab(category);
         await loadCatalog();
       });
-    });
-
-    DOM.mobileBackBtn?.addEventListener("click", () => {
-      openMobileCatalog();
     });
 
     DOM.mStatusGroup.querySelectorAll(".status-btn[data-status]").forEach((btn) => {
@@ -2227,12 +2189,7 @@
       if (window.CubeSandbox3D?.createSandbox3D && DOM.sandboxCanvas) {
         state.sandboxPlayer = window.CubeSandbox3D.createSandbox3D(DOM.sandboxCanvas);
         window.addEventListener("resize", () => {
-          syncMobileViewState();
           state.sandboxPlayer?.resize();
-        });
-      } else {
-        window.addEventListener("resize", () => {
-          syncMobileViewState();
         });
       }
 
@@ -2249,8 +2206,6 @@
         saveProfile(state.profile);
       });
       state.profile = state.provider.getProfile();
-      state.mobileDetailsActive = false;
-      syncMobileViewState();
 
       setActiveTab(state.category);
       setupEventListeners();
