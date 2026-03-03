@@ -37,8 +37,10 @@ class ExecutionConfig:
     double_turn_multiplier: float = 1.7
     inter_move_pause_ratio: float = 0.05
     end_wait: float = 1.0
-    pre_start_wait: float = 0.9
+    pre_start_wait: float = 0.5
     prepare_case_from_inverse: bool = True
+    # Optional: render U (yellow) stickers with a different fill color (e.g. "stickerless" top for F2L tracking).
+    mask_u_color: str | None = None
     show_algorithm_name: bool = True
     name_font_size: int = 30
     name_shift_right: float = 0.45
@@ -115,6 +117,18 @@ class ExecutionConfig:
 
 class MoveExecutor:
     DEFAULT_MOVE_RATE_FUNC = rate_functions.ease_in_out_sine
+
+    @staticmethod
+    def _recolor_facelets_by_fill(cube: RubiksCube, from_hex: str, to_hex: str) -> None:
+        from_hex_norm = from_hex.lower()
+        for cubie in cube.cubies.flatten():
+            for face in cubie.faces.values():
+                try:
+                    current = face.get_fill_color().to_hex().lower()
+                except Exception:
+                    continue
+                if current == from_hex_norm:
+                    face.set_fill(to_hex, opacity=1.0)
 
     @staticmethod
     def _is_double_turn(move: str) -> bool:
@@ -524,9 +538,33 @@ class MoveExecutor:
         pll_top_view_data: PLLTopViewData | None = None,
         cube_face_colors: Sequence[str] | None = None,
     ) -> None:
+        original_u_color: object | None = None
+        mask_u_color = (config.mask_u_color or "").strip() or None
+        if mask_u_color:
+            try:
+                original_u_color = cube.colors[0]
+                cube.colors[0] = mask_u_color
+            except Exception:
+                original_u_color = None
+
         if config.prepare_case_from_inverse and inverse_steps:
             inverse_flat = [move for step in inverse_steps for move in step]
             cube.set_state(state_string_from_moves(inverse_flat))
+
+        if mask_u_color and (not config.prepare_case_from_inverse or not inverse_steps):
+            # No set_state() call happened; recolor existing yellow stickers in-place.
+            try:
+                u_color = MoveExecutor._face_color_map(cube_face_colors).get("U", "#FDFF00")
+            except Exception:
+                u_color = "#FDFF00"
+            MoveExecutor._recolor_facelets_by_fill(cube, from_hex=u_color, to_hex=mask_u_color)
+
+        if mask_u_color and original_u_color is not None:
+            # Keep cube palette intact for downstream consumers; facelets are already filled.
+            try:
+                cube.colors[0] = original_u_color
+            except Exception:
+                pass
 
         MoveExecutor._add_algorithm_name(scene, algorithm_name, config)
         MoveExecutor._add_formula_overlay(scene, formula_text, config)
