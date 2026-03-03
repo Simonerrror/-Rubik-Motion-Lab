@@ -15,6 +15,7 @@
     rate_func: "ease_in_out_sine",
   };
   const SANDBOX_PLAYBACK_SPEEDS = [1, 1.5, 2];
+  const STATUS_CYCLE = ["NEW", "IN_PROGRESS", "LEARNED"];
 
   function loadProgressSortMap() {
     const defaults = { F2L: false, OLL: false, PLL: false };
@@ -47,13 +48,14 @@
     activeCaseId: null,
     activeCase: null,
     localPendingByCase: new Map(),
+    pendingStatusByCase: new Set(),
     activeDisplayMode: "algorithm",
     activeDisplayFormula: "",
     pollTimer: null,
     pollBackoffIndex: 0,
     pollOutageNotified: false,
     progressSortByGroup: loadProgressSortMap(),
-    playbackMode: "video",
+    playbackMode: "sandbox",
     sandboxData: null,
     sandboxStepIndex: 0,
     sandboxRequestToken: 0,
@@ -63,6 +65,13 @@
     sandboxPlaybackActive: false,
     sandboxPlaybackToken: 0,
     sandboxPlaybackConfig: { ...DEFAULT_SANDBOX_PLAYBACK_CONFIG },
+    sandboxTimelineProgress: 0,
+    sandboxScrubbing: false,
+    sandboxWasPlayingBeforeScrub: false,
+    sandboxTimelineRafPending: false,
+    sandboxPendingTimelineProgress: null,
+    sandboxCursorStepIndex: 0,
+    sandboxCursorStepProgress: 0,
   };
 
   const DOM = {
@@ -82,17 +91,76 @@
     sandboxPlayPauseBtn: document.getElementById("sandbox-play-pause-btn"),
     sandboxNextBtn: document.getElementById("sandbox-next-btn"),
     sandboxSpeedButtons: Array.from(document.querySelectorAll(".sandbox-speed-btn")),
+    sandboxTimelineSlider: document.getElementById("sandbox-timeline-slider"),
+    sandboxTimelineLabel: document.getElementById("sandbox-timeline-label"),
     sandboxStepLabel: document.getElementById("sandbox-step-label"),
+    sandboxOverlayTitle: document.getElementById("sandbox-overlay-title"),
+    sandboxOverlaySubtitle: document.getElementById("sandbox-overlay-subtitle"),
+    sandboxOverlayTopImage: document.getElementById("sandbox-overlay-top-image"),
+    sandboxOverlayFormula: document.getElementById("sandbox-overlay-formula"),
     mStatusGroup: document.getElementById("m-status-group"),
     mAlgoList: document.getElementById("m-algo-list"),
     activeAlgoDisplay: document.getElementById("active-algo-display"),
-    mRenderDraftBtn: document.getElementById("m-render-draft-btn"),
-    mRenderBtn: document.getElementById("m-render-btn"),
     toast: document.getElementById("toast"),
   };
 
   function sandboxSpeedButtons() {
     return Array.from(document.querySelectorAll(".sandbox-speed-btn"));
+  }
+
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function sandboxOverlayFormula(caseItem) {
+    const active = String(state.activeDisplayFormula || "").trim();
+    if (state.activeDisplayMode === "custom" && active) return active;
+    return active || String(caseItem?.active_formula || "").trim();
+  }
+
+  function formatSandboxFormulaOverlay(formula) {
+    const allMoves = tokenizeFormula(formula);
+    if (!allMoves.length) return "";
+    const maxMoves = 24;
+    const rowSize = 8;
+    const truncated = allMoves.length > maxMoves;
+    const moves = allMoves.slice(0, maxMoves);
+    const rows = [];
+    for (let index = 0; index < moves.length; index += rowSize) {
+      rows.push(moves.slice(index, index + rowSize).join(" "));
+    }
+    if (truncated && rows.length) {
+      rows[rows.length - 1] = `${rows[rows.length - 1]} ...`;
+    }
+    return rows.join("\n");
+  }
+
+  function updateSandboxOverlay(caseItem = currentCase()) {
+    if (DOM.sandboxOverlayTitle) {
+      DOM.sandboxOverlayTitle.textContent = caseItem ? detailTitle(caseItem) : "Select Case";
+    }
+    if (DOM.sandboxOverlaySubtitle) {
+      DOM.sandboxOverlaySubtitle.textContent = caseItem
+        ? [caseShortLabel(caseItem), caseItem.subgroup_title].filter(Boolean).join(" · ")
+        : "-";
+    }
+    if (DOM.sandboxOverlayFormula) {
+      const formula = caseItem ? sandboxOverlayFormula(caseItem) : "";
+      const formatted = formatSandboxFormulaOverlay(formula);
+      DOM.sandboxOverlayFormula.textContent = formatted || "-";
+      DOM.sandboxOverlayFormula.title = formula || "";
+    }
+    if (DOM.sandboxOverlayTopImage) {
+      const recognizerUrl = caseItem ? String(caseItem.recognizer_url || "").trim() : "";
+      if (recognizerUrl) {
+        const sep = recognizerUrl.includes("?") ? "&" : "?";
+        DOM.sandboxOverlayTopImage.src = `${recognizerUrl}${sep}v=${RECOGNIZER_CACHE_BUSTER}`;
+        DOM.sandboxOverlayTopImage.style.visibility = "visible";
+      } else {
+        DOM.sandboxOverlayTopImage.removeAttribute("src");
+        DOM.sandboxOverlayTopImage.style.visibility = "hidden";
+      }
+    }
   }
 
   function clearPollingTimer() {
@@ -192,19 +260,13 @@
     return Math.max(0, Math.round(pauseSec * 1000));
   }
 
-  function setPlaybackMode(mode) {
-    const normalized = mode === "sandbox" ? "sandbox" : "video";
-    state.playbackMode = normalized;
-
-    const videoActive = normalized === "video";
-    DOM.modeVideoBtn?.classList.toggle("active", videoActive);
-    DOM.modeSandboxBtn?.classList.toggle("active", !videoActive);
-    DOM.mVideo?.classList.toggle("hidden", !videoActive);
-    DOM.sandboxFrame?.classList.toggle("hidden", videoActive);
-
-    if (videoActive) {
-      stopSandboxPlayback({ silent: true });
-    } else if (state.sandboxPlayer) {
+  function setPlaybackMode() {
+    state.playbackMode = "sandbox";
+    DOM.modeVideoBtn?.classList.remove("active");
+    DOM.modeSandboxBtn?.classList.add("active");
+    DOM.mVideo?.classList.add("hidden");
+    DOM.sandboxFrame?.classList.remove("hidden");
+    if (state.sandboxPlayer) {
       window.requestAnimationFrame(() => {
         state.sandboxPlayer?.resize();
         renderSandboxStep();
@@ -218,51 +280,162 @@
     return Array.isArray(steps) ? steps.length : 0;
   }
 
+  function normalizeTimelineProgress(rawProgress) {
+    const total = currentSandboxStepCount();
+    const numeric = Number(rawProgress);
+    if (!Number.isFinite(numeric)) return 0;
+    return clamp(numeric, 0, total);
+  }
+
+  function setCursorFromTimelineProgress(rawProgress) {
+    const total = currentSandboxStepCount();
+    const clamped = normalizeTimelineProgress(rawProgress);
+    let stepIndex = Math.floor(clamped);
+    let stepProgress = 0;
+    if (stepIndex >= total) {
+      stepIndex = total;
+      stepProgress = 0;
+    } else {
+      stepProgress = clamp(clamped - stepIndex, 0, 0.999999);
+      if (stepProgress >= 0.999999) {
+        stepIndex = Math.min(stepIndex + 1, total);
+        stepProgress = 0;
+      }
+    }
+    state.sandboxTimelineProgress = clamped;
+    state.sandboxCursorStepIndex = stepIndex;
+    state.sandboxCursorStepProgress = stepProgress;
+    state.sandboxStepIndex = stepIndex;
+  }
+
+  function timelineCurrentStepForHighlight() {
+    const total = currentSandboxStepCount();
+    const stepIndex = state.sandboxCursorStepIndex;
+    if (stepIndex < total && state.sandboxCursorStepProgress > 0) {
+      return stepIndex;
+    }
+    return -1;
+  }
+
+  function timelineLabelText() {
+    const total = currentSandboxStepCount();
+    const progress = normalizeTimelineProgress(state.sandboxTimelineProgress);
+    return `${progress.toFixed(2)} / ${total}`;
+  }
+
   function stepLabelText() {
     const total = currentSandboxStepCount();
-    const index = Math.min(Math.max(state.sandboxStepIndex, 0), total);
+    const stepIndex = state.sandboxCursorStepIndex;
+    const stepProgress = state.sandboxCursorStepProgress;
     if (!total) return "Step 0/0";
-    if (index === 0) return `Step 0/${total} · Start`;
-    const label = state.sandboxData?.highlight_by_step?.[index - 1] || "";
-    return label ? `Step ${index}/${total} · ${label}` : `Step ${index}/${total}`;
+    if (stepIndex >= total && stepProgress <= 0) return `Step ${total}/${total} · Done`;
+    if (stepProgress > 0 && stepIndex < total) {
+      const label = state.sandboxData?.highlight_by_step?.[stepIndex] || "";
+      const percent = Math.round(stepProgress * 100);
+      return label
+        ? `Step ${stepIndex + 1}/${total} · ${label} (${percent}%)`
+        : `Step ${stepIndex + 1}/${total} (${percent}%)`;
+    }
+    if (stepIndex === 0) return `Step 0/${total} · Start`;
+    const label = state.sandboxData?.highlight_by_step?.[stepIndex - 1] || "";
+    return label ? `Step ${stepIndex}/${total} · ${label}` : `Step ${stepIndex}/${total}`;
+  }
+
+  function updateTimelineDisplay() {
+    const total = currentSandboxStepCount();
+    if (DOM.sandboxTimelineSlider) {
+      DOM.sandboxTimelineSlider.max = String(total);
+      DOM.sandboxTimelineSlider.value = String(normalizeTimelineProgress(state.sandboxTimelineProgress));
+    }
+    if (DOM.sandboxTimelineLabel) {
+      DOM.sandboxTimelineLabel.textContent = timelineLabelText();
+    }
+  }
+
+  function updateActiveAlgorithmStepHighlight() {
+    const activeStep = timelineCurrentStepForHighlight();
+    DOM.activeAlgoDisplay.querySelectorAll(".move-tile[data-step-index]").forEach((tile) => {
+      const index = Number(tile.getAttribute("data-step-index"));
+      tile.classList.toggle("current", index === activeStep);
+    });
+  }
+
+  function renderSandboxProgress(options = {}) {
+    if (!state.sandboxData) {
+      DOM.sandboxStepLabel.textContent = "Step 0/0";
+      state.sandboxTimelineProgress = 0;
+      updateTimelineDisplay();
+      updateActiveAlgorithmStepHighlight();
+      return false;
+    }
+
+    const progress = options.progress != null ? options.progress : state.sandboxTimelineProgress;
+    const syncState = options.syncState !== false;
+    setCursorFromTimelineProgress(progress);
+
+    const total = currentSandboxStepCount();
+    const stepIndex = state.sandboxCursorStepIndex;
+    const stepProgress = state.sandboxCursorStepProgress;
+    if (syncState && state.sandboxPlayer) {
+      const baseState = state.sandboxData.states_by_step?.[stepIndex] || "";
+      if (baseState) {
+        state.sandboxPlayer.setState(baseState);
+        if (stepProgress > 0 && stepIndex < total && state.sandboxPlayer.previewStepFromState) {
+          const stepMoves = Array.isArray(state.sandboxData.move_steps?.[stepIndex]) ? state.sandboxData.move_steps[stepIndex] : [];
+          state.sandboxPlayer.previewStepFromState(baseState, stepMoves, {
+            progress: stepProgress,
+            easing: state.sandboxPlaybackConfig.rate_func,
+          });
+        }
+      }
+    }
+    DOM.sandboxStepLabel.textContent = stepLabelText();
+    updateTimelineDisplay();
+    updateActiveAlgorithmStepHighlight();
+    updateSandboxControls();
+    return true;
   }
 
   function renderSandboxStep(options = {}) {
-    if (!state.sandboxData) {
-      DOM.sandboxStepLabel.textContent = "Step 0/0";
-      return;
-    }
-
-    const syncState = options.syncState !== false;
-    const total = currentSandboxStepCount();
-    state.sandboxStepIndex = Math.min(Math.max(state.sandboxStepIndex, 0), total);
-    const nextState = state.sandboxData.states_by_step?.[state.sandboxStepIndex] || "";
-    if (syncState && state.sandboxPlayer && nextState) {
-      state.sandboxPlayer.setState(nextState);
-    }
-    DOM.sandboxStepLabel.textContent = stepLabelText();
-    updateSandboxControls();
+    const progress = options.progress != null ? options.progress : state.sandboxTimelineProgress;
+    return renderSandboxProgress({
+      progress,
+      syncState: options.syncState,
+    });
   }
 
   function updateSandboxControls() {
     const hasTimeline = Boolean(state.sandboxData);
     const total = currentSandboxStepCount();
-    const atStart = state.sandboxStepIndex <= 0;
-    const atEnd = state.sandboxStepIndex >= total;
-    const locked = state.sandboxBusy || state.sandboxPlaybackActive;
+    const progress = normalizeTimelineProgress(state.sandboxTimelineProgress);
+    const atStart = progress <= 0.000001;
+    const atEnd = progress >= total - 0.000001;
+    const locked = state.sandboxBusy || state.sandboxPlaybackActive || state.sandboxScrubbing;
 
     if (DOM.sandboxToStartBtn) {
       DOM.sandboxToStartBtn.disabled = !hasTimeline || atStart || locked;
+      DOM.sandboxToStartBtn.title = "Back to start";
+      DOM.sandboxToStartBtn.setAttribute("aria-label", "Back to start");
     }
     if (DOM.sandboxPrevBtn) {
       DOM.sandboxPrevBtn.disabled = !hasTimeline || atStart || locked;
+      DOM.sandboxPrevBtn.title = "Previous step";
+      DOM.sandboxPrevBtn.setAttribute("aria-label", "Previous step");
     }
     if (DOM.sandboxPlayPauseBtn) {
       DOM.sandboxPlayPauseBtn.disabled = !hasTimeline || total === 0;
-      DOM.sandboxPlayPauseBtn.textContent = state.sandboxPlaybackActive ? "Pause" : "Play";
+      const isPlaying = state.sandboxPlaybackActive;
+      DOM.sandboxPlayPauseBtn.textContent = isPlaying ? "⏸" : "▶";
+      DOM.sandboxPlayPauseBtn.title = isPlaying ? "Pause" : "Play";
+      DOM.sandboxPlayPauseBtn.setAttribute("aria-label", isPlaying ? "Pause" : "Play");
     }
     if (DOM.sandboxNextBtn) {
       DOM.sandboxNextBtn.disabled = !hasTimeline || atEnd || locked;
+      DOM.sandboxNextBtn.title = "Next step";
+      DOM.sandboxNextBtn.setAttribute("aria-label", "Next step");
+    }
+    if (DOM.sandboxTimelineSlider) {
+      DOM.sandboxTimelineSlider.disabled = !hasTimeline || total === 0;
     }
     const speedButtons = sandboxSpeedButtons();
     if (speedButtons.length) {
@@ -275,12 +448,21 @@
     if (!hasTimeline) {
       DOM.sandboxStepLabel.textContent = "Step 0/0";
     }
+    updateTimelineDisplay();
+    updateActiveAlgorithmStepHighlight();
   }
 
   function resetSandboxData() {
     stopSandboxPlayback({ silent: true });
     state.sandboxData = null;
     state.sandboxStepIndex = 0;
+    state.sandboxTimelineProgress = 0;
+    state.sandboxCursorStepIndex = 0;
+    state.sandboxCursorStepProgress = 0;
+    state.sandboxScrubbing = false;
+    state.sandboxWasPlayingBeforeScrub = false;
+    state.sandboxTimelineRafPending = false;
+    state.sandboxPendingTimelineProgress = null;
     state.sandboxBusy = false;
     state.sandboxPlaybackConfig = { ...DEFAULT_SANDBOX_PLAYBACK_CONFIG };
     if (state.sandboxPlayer) {
@@ -305,81 +487,122 @@
 
       state.sandboxData = sandbox;
       state.sandboxStepIndex = 0;
+      state.sandboxTimelineProgress = 0;
+      state.sandboxCursorStepIndex = 0;
+      state.sandboxCursorStepProgress = 0;
       state.sandboxBusy = false;
       stopSandboxPlayback({ silent: true });
       state.sandboxPlaybackConfig = normalizeSandboxPlaybackConfig(sandbox.playback_config);
+      renderActiveAlgorithmDisplay(state.activeDisplayFormula);
       if (state.sandboxPlayer) {
         state.sandboxPlayer.setSlots(Array.isArray(sandbox.state_slots) ? sandbox.state_slots : []);
+        if (sandbox.face_colors && state.sandboxPlayer.setFaceColors) {
+          state.sandboxPlayer.setFaceColors(sandbox.face_colors);
+        }
         if (state.playbackMode === "sandbox") {
           window.requestAnimationFrame(() => {
             state.sandboxPlayer?.resize();
-            renderSandboxStep();
+            renderSandboxProgress({ progress: 0, syncState: true });
           });
         }
       }
-      renderSandboxStep();
+      renderSandboxProgress({ progress: 0, syncState: true });
     } catch (error) {
       if (requestToken !== state.sandboxRequestToken) return;
       resetSandboxData();
-      setPlaybackMode("video");
+      setPlaybackMode();
       showToast(`Sandbox unavailable: ${String(error.message || error)}`);
     }
   }
 
   async function moveSandboxBy(delta, options = {}) {
-    if (!state.sandboxData || state.sandboxBusy) return;
-
+    if (!state.sandboxData || state.sandboxBusy || state.sandboxScrubbing) return false;
     const total = currentSandboxStepCount();
-    const currentIndex = state.sandboxStepIndex;
-    const targetIndex = Math.min(Math.max(currentIndex + delta, 0), total);
-    if (targetIndex === currentIndex) return;
-
-    const forward = delta > 0;
-    const stepIndex = forward ? currentIndex : currentIndex - 1;
-    const moveStep = Array.isArray(state.sandboxData.move_steps?.[stepIndex])
-      ? state.sandboxData.move_steps[stepIndex]
-      : [];
+    if (total <= 0) return false;
     const animate = options.animate !== false;
-    const durationMs = Number(options.durationMs) || sandboxStepDurationMs(moveStep);
 
-    state.sandboxBusy = true;
-    updateSandboxControls();
-
-    let animated = false;
-    try {
-      if (animate && state.sandboxPlayer?.playStep && moveStep.length) {
-        animated = await state.sandboxPlayer.playStep(moveStep, {
-          reverse: !forward,
-          durationMs,
-          easing: state.sandboxPlaybackConfig.rate_func,
-        });
+    if (delta < 0) {
+      const currentProgress = normalizeTimelineProgress(state.sandboxTimelineProgress);
+      if (currentProgress <= 0.000001) return false;
+      if (state.sandboxCursorStepProgress > 0) {
+        return renderSandboxProgress({ progress: state.sandboxCursorStepIndex, syncState: true });
       }
-    } catch (error) {
-      console.warn(error);
+
+      const targetStep = Math.max(0, state.sandboxCursorStepIndex - 1);
+      const moveStep = Array.isArray(state.sandboxData.move_steps?.[targetStep]) ? state.sandboxData.move_steps[targetStep] : [];
+      const durationMs = Number(options.durationMs) || sandboxStepDurationMs(moveStep);
+      if (animate && state.sandboxPlayer?.playStep && moveStep.length) {
+        state.sandboxBusy = true;
+        updateSandboxControls();
+        let animated = false;
+        try {
+          animated = await state.sandboxPlayer.playStep(moveStep, {
+            reverse: true,
+            durationMs,
+            easing: state.sandboxPlaybackConfig.rate_func,
+          });
+        } catch (error) {
+          console.warn(error);
+        }
+        state.sandboxBusy = false;
+        if (animated) {
+          return renderSandboxProgress({ progress: targetStep, syncState: false });
+        }
+      }
+      return renderSandboxProgress({ progress: targetStep, syncState: true });
     }
 
-    state.sandboxStepIndex = targetIndex;
-    state.sandboxBusy = false;
-
-    if (animated) {
-      DOM.sandboxStepLabel.textContent = stepLabelText();
-      updateSandboxControls();
-      return true;
+    if (delta > 0) {
+      const stepIndex = state.sandboxCursorStepIndex;
+      if (stepIndex >= total) return false;
+      const stepProgress = state.sandboxCursorStepProgress;
+      const moveStep = Array.isArray(state.sandboxData.move_steps?.[stepIndex]) ? state.sandboxData.move_steps[stepIndex] : [];
+      const durationMs = Number(options.durationMs) || sandboxStepDurationMs(moveStep);
+      const baseState = state.sandboxData.states_by_step?.[stepIndex] || "";
+      if (animate && state.sandboxPlayer?.playStep && moveStep.length) {
+        state.sandboxBusy = true;
+        updateSandboxControls();
+        let animated = false;
+        try {
+          animated = await state.sandboxPlayer.playStep(moveStep, {
+            durationMs,
+            easing: state.sandboxPlaybackConfig.rate_func,
+            baseState,
+            startProgress: stepProgress,
+            onProgress: (progress01) => {
+              setCursorFromTimelineProgress(stepIndex + progress01);
+              DOM.sandboxStepLabel.textContent = stepLabelText();
+              updateTimelineDisplay();
+              updateActiveAlgorithmStepHighlight();
+            },
+          });
+        } catch (error) {
+          console.warn(error);
+        }
+        state.sandboxBusy = false;
+        if (animated) {
+          return renderSandboxProgress({ progress: Math.min(stepIndex + 1, total), syncState: false });
+        }
+      }
+      return renderSandboxProgress({ progress: Math.min(stepIndex + 1, total), syncState: true });
     }
-    renderSandboxStep();
-    return true;
+
+    return false;
   }
 
   function sandboxSetStep(index) {
-    if (!state.sandboxData || state.sandboxBusy) return;
-    const total = currentSandboxStepCount();
-    state.sandboxStepIndex = Math.min(Math.max(index, 0), total);
-    renderSandboxStep();
+    if (!state.sandboxData || state.sandboxBusy) return false;
+    return renderSandboxProgress({ progress: index, syncState: true });
+  }
+
+  function sandboxSetProgress(progress) {
+    if (!state.sandboxData || state.sandboxBusy) return false;
+    return renderSandboxProgress({ progress, syncState: true });
   }
 
   function sandboxToStart() {
     if (!state.sandboxData || state.sandboxBusy) return;
-    sandboxSetStep(0);
+    sandboxSetProgress(0);
   }
 
   async function sandboxStepBackward() {
@@ -392,12 +615,56 @@
     await moveSandboxBy(1, { animate: true });
   }
 
+  function queueTimelinePreview(progress) {
+    state.sandboxPendingTimelineProgress = normalizeTimelineProgress(progress);
+    if (state.sandboxTimelineRafPending) return;
+    state.sandboxTimelineRafPending = true;
+    window.requestAnimationFrame(() => {
+      state.sandboxTimelineRafPending = false;
+      const pending = state.sandboxPendingTimelineProgress;
+      if (pending == null) return;
+      if (state.sandboxBusy) return;
+      state.sandboxPendingTimelineProgress = null;
+      renderSandboxProgress({ progress: pending, syncState: true });
+    });
+  }
+
+  function beginSandboxScrubbing() {
+    if (!state.sandboxData) return;
+    state.sandboxWasPlayingBeforeScrub = state.sandboxPlaybackActive;
+    if (state.sandboxPlaybackActive) {
+      stopSandboxPlayback({ silent: true, forceUpdate: true });
+    }
+    state.sandboxScrubbing = true;
+    updateSandboxControls();
+  }
+
+  async function finishSandboxScrubbing(progress) {
+    if (!state.sandboxData) return;
+    if (state.sandboxBusy) {
+      window.setTimeout(() => {
+        void finishSandboxScrubbing(progress);
+      }, 20);
+      return;
+    }
+    state.sandboxScrubbing = false;
+    state.sandboxPendingTimelineProgress = null;
+    renderSandboxProgress({ progress, syncState: true });
+    const shouldResume = state.sandboxWasPlayingBeforeScrub;
+    state.sandboxWasPlayingBeforeScrub = false;
+    if (shouldResume) {
+      await startSandboxPlayback();
+    } else {
+      updateSandboxControls();
+    }
+  }
+
   async function startSandboxPlayback() {
-    if (!state.sandboxData || state.sandboxPlaybackActive) return;
+    if (!state.sandboxData || state.sandboxPlaybackActive || state.sandboxScrubbing) return;
     const total = currentSandboxStepCount();
     if (total <= 0) return;
-    if (state.sandboxStepIndex >= total) {
-      sandboxSetStep(0);
+    if (state.sandboxTimelineProgress >= total) {
+      renderSandboxProgress({ progress: 0, syncState: true });
     }
 
     const token = state.sandboxPlaybackToken + 1;
@@ -407,20 +674,22 @@
 
     while (state.sandboxPlaybackActive && token === state.sandboxPlaybackToken) {
       const nowTotal = currentSandboxStepCount();
-      if (state.sandboxStepIndex >= nowTotal) break;
-      if (state.sandboxBusy) {
+      if (state.sandboxTimelineProgress >= nowTotal - 0.000001) break;
+      if (state.sandboxBusy || state.sandboxScrubbing) {
         const ok = await sleepWithToken(12, token);
         if (!ok) return;
         continue;
       }
 
-      const step = state.sandboxData.move_steps?.[state.sandboxStepIndex] || [];
+      const stepIndex = state.sandboxCursorStepIndex;
+      if (stepIndex >= nowTotal) break;
+      const step = state.sandboxData.move_steps?.[stepIndex] || [];
       const durationMs = sandboxStepDurationMs(step);
       const moved = await moveSandboxBy(1, { animate: true, durationMs });
       if (!moved || token !== state.sandboxPlaybackToken || !state.sandboxPlaybackActive) {
         break;
       }
-      if (state.sandboxStepIndex >= nowTotal) {
+      if (state.sandboxTimelineProgress >= nowTotal - 0.000001) {
         break;
       }
       const pauseOk = await sleepWithToken(sandboxInterMovePauseMs(), token);
@@ -429,8 +698,8 @@
 
     if (token !== state.sandboxPlaybackToken) return;
     state.sandboxPlaybackActive = false;
-    if (state.sandboxStepIndex >= currentSandboxStepCount()) {
-      sandboxSetStep(0);
+    if (state.sandboxTimelineProgress >= currentSandboxStepCount() - 0.000001) {
+      renderSandboxProgress({ progress: 0, syncState: true });
     }
     updateSandboxControls();
   }
@@ -586,8 +855,70 @@
       .filter(Boolean);
   }
 
+  function nextProgressStatus(status) {
+    const normalized = String(status || "NEW").toUpperCase();
+    const idx = STATUS_CYCLE.indexOf(normalized);
+    if (idx < 0) return STATUS_CYCLE[0];
+    return STATUS_CYCLE[(idx + 1) % STATUS_CYCLE.length];
+  }
+
+  async function updateCatalogCaseProgress(caseId, currentStatus) {
+    const id = Number(caseId);
+    if (!Number.isFinite(id) || id <= 0) return;
+    if (state.pendingStatusByCase.has(id)) return;
+
+    const nextStatus = nextProgressStatus(currentStatus);
+    state.pendingStatusByCase.add(id);
+    renderCatalog();
+    try {
+      const updated = await apiPatch(`/api/cases/${id}/progress`, { status: nextStatus });
+      patchCaseInState(updated);
+      if (state.activeCaseId === id) {
+        state.activeCase = updated;
+        updateDetailsPaneState();
+      }
+      renderCatalog();
+    } catch (error) {
+      showToast(String(error.message || error));
+      renderCatalog();
+    } finally {
+      state.pendingStatusByCase.delete(id);
+      renderCatalog();
+    }
+  }
+
   function renderActiveAlgorithmDisplay(formula) {
     DOM.activeAlgoDisplay.innerHTML = "";
+    const timelineSteps = Array.isArray(state.sandboxData?.highlight_by_step)
+      ? state.sandboxData.highlight_by_step.filter((step) => String(step || "").trim())
+      : [];
+    if (timelineSteps.length) {
+      const chunk = 8;
+      for (let offset = 0; offset < timelineSteps.length; offset += chunk) {
+        const row = document.createElement("div");
+        row.className = "algo-line";
+        timelineSteps.slice(offset, offset + chunk).forEach((stepLabel, localIndex) => {
+          const stepIndex = offset + localIndex;
+          const tile = document.createElement("button");
+          const inverse = String(stepLabel).includes("'");
+          tile.className = `move-tile ${inverse ? "inverse" : "base"}`;
+          tile.type = "button";
+          tile.textContent = stepLabel;
+          tile.setAttribute("data-step-index", String(stepIndex));
+          tile.title = `Go to step ${stepIndex + 1}`;
+          tile.setAttribute("aria-label", `Go to step ${stepIndex + 1}`);
+          tile.addEventListener("click", () => {
+            stopSandboxPlayback({ silent: true, forceUpdate: true });
+            sandboxSetStep(stepIndex);
+          });
+          row.appendChild(tile);
+        });
+        DOM.activeAlgoDisplay.appendChild(row);
+      }
+      updateActiveAlgorithmStepHighlight();
+      return;
+    }
+
     const moves = tokenizeFormula(formula);
     if (!moves.length) {
       DOM.activeAlgoDisplay.innerHTML = '<div class="algo-placeholder">No algorithm selected</div>';
@@ -611,6 +942,7 @@
       });
       DOM.activeAlgoDisplay.appendChild(row);
     });
+    updateActiveAlgorithmStepHighlight();
   }
 
   function syncActiveAlgorithmSummary(formula, mode = "algorithm") {
@@ -624,6 +956,7 @@
     state.activeDisplayFormula = String(formula || "").trim();
     syncActiveAlgorithmSummary(state.activeDisplayFormula, state.activeDisplayMode);
     renderActiveAlgorithmDisplay(state.activeDisplayFormula);
+    updateSandboxOverlay(currentCase());
   }
 
   function appendCatalogCard(grid, item) {
@@ -633,14 +966,24 @@
     if (item.id === state.activeCaseId) card.classList.add("active");
 
     const status = isCaseQueued(item) ? "QUEUED" : String(item.status || "NEW");
+    const statusPending = state.pendingStatusByCase.has(Number(item.id));
     card.innerHTML = `
-      <div class="status-dot ${status}"></div>
+      <button class="status-dot ${status}" type="button" title="Cycle status" aria-label="Cycle status" ${statusPending ? "disabled" : ""}></button>
       <div class="catalog-preview"></div>
       <div class="tile-title">${tileTitle(item)}</div>
     `;
 
     const preview = card.querySelector(".catalog-preview");
     appendRecognizerPreview(preview, item);
+    const statusDot = card.querySelector(".status-dot");
+    if (statusDot) {
+      statusDot.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (status === "QUEUED") return;
+        void updateCatalogCaseProgress(item.id, item.status);
+      });
+    }
     card.addEventListener("click", () => {
       void selectCase(item.id);
     });
@@ -727,6 +1070,7 @@
   }
 
   function setVideoSource(videoEl, src) {
+    if (!videoEl) return;
     const normalized = new URL(src, window.location.origin).href;
     if (videoEl.dataset.currentSrc !== normalized) {
       videoEl.src = src;
@@ -735,6 +1079,7 @@
   }
 
   function clearVideoSource(videoEl) {
+    if (!videoEl) return;
     videoEl.pause();
     videoEl.removeAttribute("src");
     delete videoEl.dataset.currentSrc;
@@ -747,12 +1092,6 @@
     clearVideoSource(DOM.mVideo);
     DOM.mQueueMsg.style.display = "flex";
     DOM.mQueueMsg.textContent = "Select case";
-    DOM.mRenderDraftBtn.disabled = true;
-    DOM.mRenderDraftBtn.textContent = "Generate Draft";
-    DOM.mRenderDraftBtn.classList.remove("render-busy");
-    DOM.mRenderBtn.disabled = true;
-    DOM.mRenderBtn.textContent = "Request HD Render";
-    DOM.mRenderBtn.classList.remove("render-busy");
     DOM.mStatusGroup.querySelectorAll(".status-btn[data-status]").forEach((btn) => {
       btn.classList.remove("active");
       btn.disabled = true;
@@ -760,7 +1099,8 @@
     DOM.mAlgoList.innerHTML = '<div class="algo-empty">Select case to manage algorithms.</div>';
     setActiveDisplayFormula("", "algorithm");
     resetSandboxData();
-    setPlaybackMode("video");
+    setPlaybackMode();
+    updateSandboxOverlay(null);
   }
 
   function updateDetailsPaneState() {
@@ -780,63 +1120,21 @@
       syncActiveAlgorithmSummary(c.active_formula || "", "algorithm");
     }
 
-    const draftArtifact = c.artifacts?.draft || null;
-    const highArtifact = c.artifacts?.high || null;
-    const serverActiveJob = getServerActiveJob(c);
-    if (serverActiveJob && c.id != null) {
-      state.localPendingByCase.delete(c.id);
-    }
-    const activeJob = serverActiveJob || getLocalPendingJob(c);
-    const latestFailedJob = getLatestFailedJob(c);
-    const videoUrl = highArtifact?.video_url || draftArtifact?.video_url || null;
-
-    if (videoUrl) {
-      setVideoSource(DOM.mVideo, videoUrl);
-      DOM.mQueueMsg.style.display = state.playbackMode === "video" && activeJob ? "flex" : "none";
-      DOM.mQueueMsg.textContent = activeJob ? `Render queued (${activeJob.quality})...` : "";
-    } else {
-      clearVideoSource(DOM.mVideo);
-      DOM.mQueueMsg.style.display = state.playbackMode === "video" ? "flex" : "none";
-      if (activeJob) {
-        DOM.mQueueMsg.textContent = `Render queued (${activeJob.quality})...`;
-      } else if (latestFailedJob) {
-        DOM.mQueueMsg.textContent = "Render failed. Check worker logs and retry.";
-      } else {
-        DOM.mQueueMsg.textContent = "Video not rendered yet...";
-      }
-    }
-
     DOM.mStatusGroup.querySelectorAll(".status-btn[data-status]").forEach((btn) => {
       btn.disabled = false;
       btn.classList.toggle("active", btn.dataset.status === c.status);
     });
 
-    DOM.mRenderDraftBtn.disabled = Boolean(activeJob) || !c.active_algorithm_id;
-    DOM.mRenderBtn.disabled = Boolean(activeJob) || !draftArtifact || Boolean(highArtifact) || !c.active_algorithm_id;
-    DOM.mRenderDraftBtn.classList.remove("render-busy");
-    DOM.mRenderBtn.classList.remove("render-busy");
-
-    if (activeJob?.quality === "draft") {
-      DOM.mRenderDraftBtn.textContent = "Draft Queued...";
-      DOM.mRenderDraftBtn.classList.add("render-busy");
-    } else {
-      DOM.mRenderDraftBtn.textContent = "Generate Draft";
-    }
-
-    if (highArtifact) {
-      DOM.mRenderBtn.textContent = "HD Ready";
-    } else if (activeJob?.quality === "high") {
-      DOM.mRenderBtn.textContent = "HD Queued...";
-      DOM.mRenderBtn.classList.add("render-busy");
-    } else {
-      DOM.mRenderBtn.textContent = "Request HD Render";
-    }
+    const hasSandbox = Boolean(state.sandboxData);
+    DOM.mQueueMsg.style.display = hasSandbox ? "none" : "flex";
+    DOM.mQueueMsg.textContent = hasSandbox ? "" : "Sandbox data not ready yet...";
 
     if (!lockCustomPreview) {
       setActiveDisplayFormula(c.active_formula || "", "algorithm");
     }
 
     renderAlgorithmsList(c);
+    updateSandboxOverlay(c);
   }
 
   function renderAlgorithmsList(c) {
@@ -1065,20 +1363,11 @@
     }
 
     try {
-      const status = await apiGet(`/api/cases/${c.id}/renders/status`);
-      const previousActiveJob = getActiveJob(c);
-      const nextActiveJob = (status.jobs || []).find((job) => job.status === "PENDING" || job.status === "RUNNING") || null;
-      const justCompleted = previousActiveJob && !nextActiveJob;
-
       const updated = await apiGet(`/api/cases/${c.id}`);
       state.activeCase = updated;
       patchCaseInState(updated);
       renderCatalog();
       updateDetailsPaneState();
-
-      if (justCompleted) {
-        showToast("Render finished");
-      }
       markPollSuccess();
     } catch (error) {
       markPollFailure();
@@ -1087,20 +1376,6 @@
   }
 
   function setupEventListeners() {
-    DOM.modeVideoBtn?.addEventListener("click", () => {
-      setPlaybackMode("video");
-      updateDetailsPaneState();
-    });
-    DOM.modeSandboxBtn?.addEventListener("click", () => {
-      if (!state.sandboxData) {
-        showToast("Sandbox data not ready yet");
-        return;
-      }
-      setPlaybackMode("sandbox");
-      updateDetailsPaneState();
-      // Always enter sandbox from the canonical starting position.
-      sandboxSetStep(0);
-    });
     DOM.sandboxToStartBtn?.addEventListener("click", () => {
       stopSandboxPlayback({ silent: true });
       sandboxToStart();
@@ -1114,6 +1389,25 @@
     DOM.sandboxNextBtn?.addEventListener("click", () => {
       void sandboxStepForward();
     });
+    if (DOM.sandboxTimelineSlider) {
+      const finishScrub = () => {
+        if (!state.sandboxScrubbing) return;
+        void finishSandboxScrubbing(DOM.sandboxTimelineSlider.value);
+      };
+      DOM.sandboxTimelineSlider.addEventListener("pointerdown", () => {
+        beginSandboxScrubbing();
+      });
+      DOM.sandboxTimelineSlider.addEventListener("input", (event) => {
+        const target = event.currentTarget;
+        if (!(target instanceof HTMLInputElement)) return;
+        if (!state.sandboxScrubbing) {
+          beginSandboxScrubbing();
+        }
+        queueTimelinePreview(target.value);
+      });
+      DOM.sandboxTimelineSlider.addEventListener("change", finishScrub);
+      window.addEventListener("pointerup", finishScrub);
+    }
     const onSpeedClick = (event) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
@@ -1159,28 +1453,41 @@
       });
     });
 
-    DOM.mRenderDraftBtn.addEventListener("click", async () => {
-      try {
-        await queueRender("draft");
-      } catch (error) {
-        showToast(String(error.message || error));
+    document.addEventListener("keydown", (event) => {
+      const target = event.target;
+      if (
+        target instanceof HTMLElement &&
+        (target.closest("input[type='text']") || target.closest("textarea") || target.isContentEditable)
+      ) {
+        return;
+      }
+      if (!state.sandboxData) return;
+      if (event.repeat && event.code === "Space") return;
+
+      if (event.code === "Space") {
+        event.preventDefault();
+        toggleSandboxPlayback();
+        return;
+      }
+      if (event.code === "ArrowLeft") {
+        event.preventDefault();
+        stopSandboxPlayback({ silent: true, forceUpdate: true });
+        void sandboxStepBackward();
+        return;
+      }
+      if (event.code === "ArrowRight") {
+        event.preventDefault();
+        stopSandboxPlayback({ silent: true, forceUpdate: true });
+        void sandboxStepForward();
+        return;
+      }
+      if (event.code === "KeyR") {
+        event.preventDefault();
+        stopSandboxPlayback({ silent: true, forceUpdate: true });
+        sandboxToStart();
       }
     });
 
-    DOM.mRenderBtn.addEventListener("click", async () => {
-      const c = currentCase();
-      if (!c?.artifacts?.draft) {
-        showToast("Draft is required before HD render");
-        return;
-      }
-      const confirmed = window.confirm("Start HD render?");
-      if (!confirmed) return;
-      try {
-        await queueRender("high");
-      } catch (error) {
-        showToast(String(error.message || error));
-      }
-    });
   }
 
   async function init() {
@@ -1192,7 +1499,7 @@
     }
     setActiveTab(state.category);
     setupEventListeners();
-    setPlaybackMode("video");
+    setPlaybackMode();
     updateSandboxControls();
     syncProgressSortToggle();
     await loadCatalog();

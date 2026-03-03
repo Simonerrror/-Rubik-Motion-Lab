@@ -26,6 +26,18 @@ def test_build_sandbox_timeline_keeps_plus_as_single_beat() -> None:
     assert len(timeline.states_by_step) == 4
 
 
+def test_build_sandbox_timeline_auto_merges_ud_prime_pairs() -> None:
+    timeline = build_sandbox_timeline("U D' R U' D", "PLL")
+    assert timeline.move_steps == [["U", "D'"], ["R"], ["U'", "D"]]
+    assert timeline.highlight_by_step == ["U+D'", "R", "U'+D"]
+    assert len(timeline.states_by_step) == len(timeline.move_steps) + 1
+
+
+def test_build_sandbox_timeline_does_not_merge_other_ud_pairs() -> None:
+    timeline = build_sandbox_timeline("U D U2 D2", "PLL")
+    assert timeline.move_steps == [["U"], ["D"], ["U2"], ["D2"]]
+
+
 def test_build_sandbox_timeline_uses_oll_start_resolver() -> None:
     timeline = build_sandbox_timeline("R' F R U R' F' R (y') R U' R'", "OLL")
     validate_oll_f2l_start_state(timeline.initial_state)

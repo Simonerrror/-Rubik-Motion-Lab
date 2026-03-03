@@ -1,11 +1,11 @@
 (() => {
   const FACE_COLORS = {
-    U: 0xf5df00,
-    R: 0xcc1f2f,
-    F: 0x21b457,
-    D: 0xf7f8fb,
-    L: 0xff5e00,
-    B: 0x2d62e3,
+    U: 0xfdff00,
+    R: 0xc1121f,
+    F: 0x2dbe4a,
+    D: 0xf4f4f4,
+    L: 0xe06a00,
+    B: 0x2b63e8,
   };
 
   const BASE_TO_AXIS = {
@@ -145,15 +145,34 @@
     return easeInOutSine(t);
   }
 
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function parseColorToHex(raw, fallback) {
+    if (typeof raw === "number" && Number.isFinite(raw)) {
+      return raw >>> 0;
+    }
+    if (typeof raw === "string") {
+      const normalized = raw.trim().replace(/^#/, "");
+      if (/^[0-9a-fA-F]{6}$/.test(normalized)) {
+        return Number.parseInt(normalized, 16);
+      }
+    }
+    return fallback;
+  }
+
   function createSandbox3D(canvasEl) {
     const hasThree = Boolean(window.THREE);
     const cell = 1.04;
     const cubieSize = 0.9;
     const stickerSize = 0.74;
     const stickerOffset = (cubieSize * 0.5) + 0.014;
+    const BASE_CAMERA_POSITION = { x: 4.8, y: 5.6, z: 6.4 };
 
     let slots = [];
     let currentState = "";
+    let faceColors = { ...FACE_COLORS };
     let disposed = false;
     let isAnimating = false;
     let animationRaf = 0;
@@ -183,11 +202,10 @@
       if (!normal) return null;
 
       const geom = new THREE.PlaneGeometry(stickerSize, stickerSize);
-      const material = new THREE.MeshStandardMaterial({
+      const material = new THREE.MeshBasicMaterial({
         color: 0x334155,
-        roughness: 0.78,
-        metalness: 0,
       });
+      material.toneMapped = false;
       const mesh = new THREE.Mesh(geom, material);
       mesh.position.set(
         normal[0] * stickerOffset,
@@ -214,9 +232,9 @@
       const body = new THREE.Mesh(
         new THREE.BoxGeometry(cubieSize, cubieSize, cubieSize),
         new THREE.MeshStandardMaterial({
-          color: 0x223043,
-          roughness: 0.78,
-          metalness: 0.03,
+          color: 0x0b1220,
+          roughness: 0.86,
+          metalness: 0.02,
         }),
       );
       body.castShadow = true;
@@ -289,7 +307,7 @@
         const face = String(slot?.face || "");
         const position = Array.isArray(slot?.position) ? slot.position : [0, 0, 0];
         const colorCode = normalized[idx];
-        const colorHex = FACE_COLORS[colorCode] || 0x64748b;
+        const colorHex = faceColors[colorCode] || 0x64748b;
 
         const cubie = cubieFromStatePosition(position);
         const sticker = cubie?.userData?.stickers?.[face] || null;
@@ -353,6 +371,20 @@
       renderer.render(scene, camera);
     }
 
+    function applyCameraPose() {
+      if (!hasThree || disposed) return;
+      const dpr = Number(window.devicePixelRatio || 1);
+      const retinaScale = dpr >= 1.75 ? 1.14 : 1;
+      const cubeScale = 0.9;
+      const cameraScale = retinaScale * cubeScale;
+      camera.position.set(
+        BASE_CAMERA_POSITION.x * cameraScale,
+        BASE_CAMERA_POSITION.y * cameraScale,
+        BASE_CAMERA_POSITION.z * cameraScale,
+      );
+      camera.lookAt(0, 0, 0);
+    }
+
     function updateSize() {
       if (!hasThree || disposed) return;
       const rect = canvasEl.getBoundingClientRect();
@@ -362,6 +394,7 @@
       renderer.setSize(width, height, false);
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
+      applyCameraPose();
       render();
     }
 
@@ -391,37 +424,20 @@
       return new THREE.Vector3(raw[0], raw[1], raw[2]);
     }
 
-    function playStep(stepMoves, options = {}) {
-      if (!hasThree || disposed || isAnimating) {
-        return Promise.resolve(false);
-      }
-
+    function collectMoveParts(stepMoves, reverse = false) {
       const moves = Array.isArray(stepMoves) ? stepMoves : [];
-      if (!moves.length) {
-        return Promise.resolve(false);
-      }
-
-      const reverse = Boolean(options.reverse);
-      const durationMs = Math.max(80, Number(options.durationMs || 360));
-      const easing = String(options.easing || "ease_in_out_sine").trim();
       const parts = [];
       const seenCubies = new Set();
 
       for (const move of moves) {
         const parsed = parseMove(move, reverse);
-        if (!parsed) {
-          return Promise.resolve(false);
-        }
+        if (!parsed) return null;
 
         const picked = cubies.filter((cubie) => parsed.selector(getStatePositionForCubie(cubie)));
-        if (!picked.length) {
-          continue;
-        }
+        if (!picked.length) continue;
 
         for (const cubie of picked) {
-          if (seenCubies.has(cubie)) {
-            return Promise.resolve(false);
-          }
+          if (seenCubies.has(cubie)) return null;
           seenCubies.add(cubie);
         }
 
@@ -437,12 +453,53 @@
         });
       }
 
-      if (!parts.length) {
+      return parts;
+    }
+
+    function applyPartsProgress(parts, easedProgress) {
+      parts.forEach((part) => {
+        part.pivot.setRotationFromAxisAngle(part.axisVector, part.angleTarget * easedProgress);
+      });
+    }
+
+    function detachParts(parts) {
+      parts.forEach((part) => {
+        part.cubies.forEach((cubie) => {
+          scene.attach(cubie);
+        });
+        scene.remove(part.pivot);
+      });
+    }
+
+    function playStep(stepMoves, options = {}) {
+      if (!hasThree || disposed || isAnimating) {
+        return Promise.resolve(false);
+      }
+
+      const moves = Array.isArray(stepMoves) ? stepMoves : [];
+      if (!moves.length) {
+        return Promise.resolve(false);
+      }
+
+      const reverse = Boolean(options.reverse);
+      const durationMs = Math.max(80, Number(options.durationMs || 360));
+      const easing = String(options.easing || "ease_in_out_sine").trim();
+      const baseState = typeof options.baseState === "string" ? options.baseState : "";
+      const onProgress = typeof options.onProgress === "function" ? options.onProgress : null;
+      const startProgress = clamp(Number(options.startProgress) || 0, 0, 1);
+
+      if (baseState) {
+        resetFromState(baseState);
+      }
+
+      const parts = collectMoveParts(moves, reverse);
+      if (!parts || !parts.length) {
         return Promise.resolve(false);
       }
 
       isAnimating = true;
       let startTs = 0;
+      if (onProgress) onProgress(startProgress);
 
       return new Promise((resolve) => {
         const tick = (timestamp) => {
@@ -454,12 +511,12 @@
 
           if (!startTs) startTs = timestamp;
           const elapsed = timestamp - startTs;
-          const t = Math.max(0, Math.min(1, elapsed / durationMs));
+          const rawT = clamp(elapsed / durationMs, 0, 1);
+          const t = startProgress + ((1 - startProgress) * rawT);
           const eased = resolveEasingProgress(t, easing);
 
-          parts.forEach((part) => {
-            part.pivot.setRotationFromAxisAngle(part.axisVector, part.angleTarget * eased);
-          });
+          applyPartsProgress(parts, eased);
+          if (onProgress) onProgress(t);
           render();
 
           if (t < 1) {
@@ -467,22 +524,61 @@
             return;
           }
 
-          parts.forEach((part) => {
-            part.cubies.forEach((cubie) => {
-              scene.attach(cubie);
-            });
-            scene.remove(part.pivot);
-          });
-
+          detachParts(parts);
           snapCubiesToGrid();
           render();
           isAnimating = false;
           animationRaf = 0;
+          if (onProgress) onProgress(1);
           resolve(true);
         };
 
         animationRaf = requestAnimationFrame(tick);
       });
+    }
+
+    function previewStepFromState(baseState, stepMoves, options = {}) {
+      if (!hasThree || disposed || isAnimating) {
+        return false;
+      }
+
+      const base = String(baseState || "");
+      resetFromState(base);
+
+      const moves = Array.isArray(stepMoves) ? stepMoves : [];
+      if (!moves.length) {
+        return true;
+      }
+
+      const reverse = Boolean(options.reverse);
+      const easing = String(options.easing || "ease_in_out_sine").trim();
+      const progress = clamp(Number(options.progress) || 0, 0, 1);
+      if (progress <= 0) return true;
+
+      const parts = collectMoveParts(moves, reverse);
+      if (!parts || !parts.length) {
+        return false;
+      }
+
+      const eased = resolveEasingProgress(progress, easing);
+      applyPartsProgress(parts, eased);
+      detachParts(parts);
+      render();
+      return true;
+    }
+
+    function setFaceColors(faceColorMap) {
+      if (!faceColorMap || typeof faceColorMap !== "object") return;
+      faceColors = {
+        U: parseColorToHex(faceColorMap.U, faceColors.U),
+        R: parseColorToHex(faceColorMap.R, faceColors.R),
+        F: parseColorToHex(faceColorMap.F, faceColors.F),
+        D: parseColorToHex(faceColorMap.D, faceColors.D),
+        L: parseColorToHex(faceColorMap.L, faceColors.L),
+        B: parseColorToHex(faceColorMap.B, faceColors.B),
+      };
+      applyStateColors(currentState);
+      render();
     }
 
     function setState(state) {
@@ -506,38 +602,37 @@
     }
 
     if (hasThree) {
-      renderer.setClearColor(0xc7d1dd, 1);
+      renderer.setClearColor(0xd8dadf, 1);
       if ("outputColorSpace" in renderer && THREE.SRGBColorSpace) {
         renderer.outputColorSpace = THREE.SRGBColorSpace;
       } else if ("outputEncoding" in renderer && THREE.sRGBEncoding) {
         renderer.outputEncoding = THREE.sRGBEncoding;
       }
-      if ("toneMapping" in renderer && THREE.ACESFilmicToneMapping) {
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 0.92;
+      if ("toneMapping" in renderer && THREE.NoToneMapping != null) {
+        renderer.toneMapping = THREE.NoToneMapping;
+        renderer.toneMappingExposure = 1;
       }
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-      const ambient = new THREE.AmbientLight(0xffffff, 0.62);
+      const ambient = new THREE.AmbientLight(0xffffff, 0.32);
       scene.add(ambient);
 
-      const keyLight = new THREE.DirectionalLight(0xffffff, 0.92);
+      const keyLight = new THREE.DirectionalLight(0xffffff, 0.58);
       keyLight.position.set(6.2, 8.6, 7.1);
       keyLight.castShadow = true;
       keyLight.shadow.mapSize.set(1024, 1024);
       scene.add(keyLight);
 
-      const fillLight = new THREE.DirectionalLight(0xa7c8ff, 0.28);
+      const fillLight = new THREE.DirectionalLight(0xffffff, 0.12);
       fillLight.position.set(-4.8, 3.8, -5.7);
       scene.add(fillLight);
 
-      const rimLight = new THREE.DirectionalLight(0xffffff, 0.2);
+      const rimLight = new THREE.DirectionalLight(0xffffff, 0.08);
       rimLight.position.set(-1.5, 6.4, 6.8);
       scene.add(rimLight);
 
-      camera.position.set(4.8, 5.6, 6.4);
-      camera.lookAt(0, 0, 0);
+      applyCameraPose();
 
       buildSolvedGeometry();
       applyStateColors(currentState);
@@ -548,6 +643,8 @@
     return {
       setSlots,
       setState,
+      setFaceColors,
+      previewStepFromState,
       resize,
       dispose,
       playStep,

@@ -11,7 +11,7 @@ CONTRAST_SAFE_CUBE_COLORS: tuple[str, ...] = (
     "#C1121F",  # R - red (deeper crimson to separate from orange)
     "#2DBE4A",  # F - green
     "#F4F4F4",  # D - white
-    "#FF7A00",  # L - orange (warmer, less red overlap)
+    "#E06A00",  # L - orange (darker to separate from yellow while keeping red contrast)
     "#2B63E8",  # B - blue
 )
 
