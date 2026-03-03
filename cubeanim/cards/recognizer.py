@@ -417,10 +417,9 @@ def _build_f2l_svg(case_code: str, formula: str) -> str:
     color_by_face_and_pos = _state_color_by_face_and_pos(start_state)
     masked_positions: set[tuple[int, int, int]] = set()
     for (position, _face), color_code in zip(state_slots_metadata(), start_state, strict=True):
-        pos = (int(position[0]), int(position[1]), int(position[2]))
-        if color_code != "U" and pos[2] != 1:
+        if color_code != "U":
             continue
-        masked_positions.add(pos)
+        masked_positions.add((int(position[0]), int(position[1]), int(position[2])))
 
     colors = _face_color_map()
     stickerless_u = "#0B1220"
@@ -509,7 +508,7 @@ def _build_f2l_svg(case_code: str, formula: str) -> str:
                     continue
                 lines.append(polygon(points, face_color("R", (x_idx, -1, z_idx))))
 
-    lines = _base_svg_lines(version="v8-f2l", category="F2L", case_code=case_code)
+    lines = _base_svg_lines(version="v7-f2l", category="F2L", case_code=case_code)
     body_fill = stickerless_u
     lines.append(
         polygon(
