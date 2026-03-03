@@ -78,7 +78,7 @@ def seed_defaults(repo_root: Path | None = None, db_path: Path | None = None) ->
 
 
 def _materialize_runtime_from_canonical(conn: sqlite3.Connection, run_dir: Path) -> None:
-    rows = conn.execute(
+    case_rows = conn.execute(
         """
         SELECT
             cc.id AS canonical_case_id,
@@ -90,25 +90,48 @@ def _materialize_runtime_from_canonical(conn: sqlite3.Connection, run_dir: Path)
             cc.probability_text,
             cc.orientation_front,
             cc.orientation_auf,
-            cc.sort_order,
-            ca.name AS canonical_algorithm_name,
-            ca.formula AS canonical_formula
+            cc.sort_order
         FROM canonical_cases cc
-        LEFT JOIN canonical_algorithms ca ON ca.id = (
-            SELECT cca.id
-            FROM canonical_algorithms cca
-            WHERE cca.canonical_case_id = cc.id
-            ORDER BY cca.is_primary DESC, cca.sort_order ASC, cca.id ASC
-            LIMIT 1
-        )
         ORDER BY cc.category_code ASC, cc.sort_order ASC, cc.case_number ASC, cc.case_code ASC
         """
     ).fetchall()
-    if not rows:
+    if not case_rows:
         raise ValueError("canonical_cases is empty; check db/cards_seed.sql")
 
     now = utc_now_iso()
-    for row in rows:
+
+    canonical_f2l_codes = {
+        str(row["case_code"])
+        for row in case_rows
+        if str(row["category_code"]) == "F2L"
+    }
+    if canonical_f2l_codes:
+        placeholders = ",".join(["?"] * len(canonical_f2l_codes))
+        params = ("F2L", *sorted(canonical_f2l_codes))
+        stale_cases_sql = f"SELECT id FROM cases WHERE category_code = ? AND case_code NOT IN ({placeholders})"
+        stale_algorithms_sql = f"SELECT id FROM algorithms WHERE case_id IN ({stale_cases_sql})"
+        conn.execute(
+            f"DELETE FROM render_jobs WHERE algorithm_id IN ({stale_algorithms_sql})",
+            params,
+        )
+        conn.execute(
+            f"DELETE FROM render_artifacts WHERE algorithm_id IN ({stale_algorithms_sql})",
+            params,
+        )
+        conn.execute(
+            f"UPDATE cases SET selected_algorithm_id = NULL WHERE id IN ({stale_cases_sql})",
+            params,
+        )
+        conn.execute(
+            f"DELETE FROM algorithms WHERE id IN ({stale_algorithms_sql})",
+            params,
+        )
+        conn.execute(
+            f"DELETE FROM cases WHERE id IN ({stale_cases_sql})",
+            params,
+        )
+
+    for row in case_rows:
         category = str(row["category_code"])
         case_code = str(row["case_code"])
         title = str(row["title"])
@@ -117,15 +140,37 @@ def _materialize_runtime_from_canonical(conn: sqlite3.Connection, run_dir: Path)
         probability_text = row["probability_text"]
         orientation_front = str(row["orientation_front"] or "F")
         orientation_auf = int(row["orientation_auf"] or 0)
-        canonical_name = str(row["canonical_algorithm_name"] or case_code)
-        canonical_formula = " ".join(str(row["canonical_formula"] or "").split())
+        canonical_case_id = int(row["canonical_case_id"])
 
-        recognizer = ensure_recognizer_assets(
-            run_dir,
-            category,
-            case_code,
-            formula=canonical_formula,
-        )
+        algo_rows = conn.execute(
+            """
+            SELECT
+                name,
+                formula,
+                is_primary,
+                sort_order
+            FROM canonical_algorithms
+            WHERE canonical_case_id = ?
+            ORDER BY is_primary DESC, sort_order ASC, id ASC
+            """,
+            (canonical_case_id,),
+        ).fetchall()
+
+        canonical_algorithms: list[tuple[str, str, bool, int]] = []
+        for algo_row in algo_rows:
+            name = str(algo_row["name"] or case_code).strip() or case_code
+            formula = " ".join(str(algo_row["formula"] or "").split())
+            is_primary = bool(algo_row["is_primary"])
+            sort_order = int(algo_row["sort_order"] or 0)
+            canonical_algorithms.append((name, formula, is_primary, sort_order))
+
+        if not canonical_algorithms:
+            canonical_algorithms = [(case_code, "", True, 1)]
+
+        primary = next((item for item in canonical_algorithms if item[2]), canonical_algorithms[0])
+        primary_name, primary_formula, _, _ = primary
+
+        recognizer = ensure_recognizer_assets(run_dir, category, case_code, formula=primary_formula)
 
         conn.execute(
             """
@@ -193,53 +238,109 @@ def _materialize_runtime_from_canonical(conn: sqlite3.Connection, run_dir: Path)
             raise RuntimeError(f"Could not resolve case: {category}:{case_code}")
         case_id = int(case_row["id"])
 
-        conn.execute(
-            """
-            INSERT OR IGNORE INTO algorithms (
-                case_id,
-                name,
-                formula,
-                progress_status,
-                is_custom,
-                created_at,
-                updated_at
+        canonical_names = [name for name, _, _, _ in canonical_algorithms]
+        for name, formula, _, _ in canonical_algorithms:
+            conn.execute(
+                """
+                INSERT OR IGNORE INTO algorithms (
+                    case_id,
+                    name,
+                    formula,
+                    progress_status,
+                    is_custom,
+                    created_at,
+                    updated_at
+                )
+                VALUES (?, ?, ?, 'NEW', 0, ?, ?)
+                """,
+                (case_id, name, formula, now, now),
             )
-            VALUES (?, ?, ?, 'NEW', 0, ?, ?)
-            """,
-            (case_id, canonical_name, canonical_formula, now, now),
-        )
+            conn.execute(
+                """
+                UPDATE algorithms
+                SET formula = ?, updated_at = ?
+                WHERE case_id = ? AND name = ? AND is_custom = 0
+                """,
+                (formula, now, case_id, name),
+            )
 
-        conn.execute(
+        keep_placeholders = ",".join(["?"] * len(canonical_names))
+        stale_rows = conn.execute(
+            f"""
+            SELECT id
+            FROM algorithms
+            WHERE case_id = ? AND is_custom = 0 AND name NOT IN ({keep_placeholders})
+            """,
+            (case_id, *canonical_names),
+        ).fetchall()
+        stale_ids = [int(item["id"]) for item in stale_rows]
+        if stale_ids:
+            id_placeholders = ",".join(["?"] * len(stale_ids))
+            conn.execute(
+                f"DELETE FROM render_jobs WHERE algorithm_id IN ({id_placeholders})",
+                tuple(stale_ids),
+            )
+            conn.execute(
+                f"DELETE FROM render_artifacts WHERE algorithm_id IN ({id_placeholders})",
+                tuple(stale_ids),
+            )
+            conn.execute(
+                f"""
+                UPDATE cases
+                SET selected_algorithm_id = NULL
+                WHERE id = ? AND selected_algorithm_id IN ({id_placeholders})
+                """,
+                (case_id, *stale_ids),
+            )
+            conn.execute(
+                f"DELETE FROM algorithms WHERE id IN ({id_placeholders})",
+                tuple(stale_ids),
+            )
+
+        primary_row = conn.execute(
             """
-            UPDATE algorithms
-            SET formula = ?, updated_at = ?
+            SELECT id
+            FROM algorithms
             WHERE case_id = ? AND name = ? AND is_custom = 0
             """,
-            (canonical_formula, now, case_id, canonical_name),
-        )
+            (case_id, primary_name),
+        ).fetchone()
+        primary_algorithm_id = int(primary_row["id"]) if primary_row is not None else None
 
-        canonical_runtime_id = _cleanup_stale_noncustom_algorithms(
-            conn,
-            case_id=case_id,
-            canonical_name=canonical_name,
-        )
-        if canonical_runtime_id is None:
-            raise RuntimeError(f"Could not resolve canonical runtime algorithm for {case_code}")
+        selected_row = conn.execute(
+            "SELECT selected_algorithm_id FROM cases WHERE id = ?",
+            (case_id,),
+        ).fetchone()
+        selected_algorithm_id = selected_row["selected_algorithm_id"] if selected_row is not None else None
+        selected_valid = False
+        if selected_algorithm_id is not None:
+            existing = conn.execute(
+                "SELECT 1 FROM algorithms WHERE id = ? AND case_id = ?",
+                (int(selected_algorithm_id), case_id),
+            ).fetchone()
+            selected_valid = existing is not None
 
-        conn.execute(
-            """
-            UPDATE cases
-            SET selected_algorithm_id = COALESCE(selected_algorithm_id, ?)
-            WHERE id = ?
-            """,
-            (canonical_runtime_id, case_id),
-        )
-
-        _cleanup_stale_artifacts_for_formula(
-            conn,
-            algorithm_id=canonical_runtime_id,
-            formula=canonical_formula,
-        )
+        if primary_algorithm_id is not None and (selected_algorithm_id is None or not selected_valid):
+            conn.execute(
+                "UPDATE cases SET selected_algorithm_id = ? WHERE id = ?",
+                (primary_algorithm_id, case_id),
+            )
+        for name, formula, _, _ in canonical_algorithms:
+            algo_row = conn.execute(
+                """
+                SELECT id
+                FROM algorithms
+                WHERE case_id = ? AND name = ? AND is_custom = 0
+                """,
+                (case_id, name),
+            ).fetchone()
+            if algo_row is None:
+                continue
+            _cleanup_stale_artifacts_for_formula(
+                conn,
+                algorithm_id=int(algo_row["id"]),
+                formula=formula,
+            )
 
         _refresh_case_recognizer_by_active(conn, run_dir, case_id)
 

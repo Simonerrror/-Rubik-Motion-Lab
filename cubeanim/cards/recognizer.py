@@ -20,6 +20,7 @@ from cubeanim.pll import (
     build_pll_top_view_data,
     resolve_valid_pll_start_state,
 )
+from cubeanim.state import state_slots_metadata, state_string_from_moves
 
 
 @dataclass(frozen=True)
@@ -215,6 +216,10 @@ def _resolve_formula_for_recognizer(
     formula: str | None,
 ) -> str:
     normalized = _norm_formula(formula or "")
+    if category == "F2L":
+        # F2L cards should be stable per case: do not depend on selected/custom formula.
+        preset = _canonical_presets_by_case(runtime_dir, category).get(case_code)
+        return _norm_formula(preset or normalized)
     if category == "PLL":
         # PLL top cards are canonical per case: never depend on currently selected/custom formula.
         preset = _canonical_presets_by_case(runtime_dir, category).get(case_code)
@@ -394,6 +399,83 @@ def _build_oll_svg(case_code: str, formula: str) -> str:
     return "\n".join(lines)
 
 
+def _state_color_by_face_and_pos(state: str) -> dict[tuple[str, tuple[int, int, int]], str]:
+    if len(state) != 54:
+        raise ValueError(f"State must contain exactly 54 facelets, got {len(state)}")
+    lookup: dict[tuple[str, tuple[int, int, int]], str] = {}
+    for (position, face), color in zip(state_slots_metadata(), state, strict=True):
+        x, y, z = position
+        lookup[(face, (int(x), int(y), int(z)))] = str(color)
+    return lookup
+
+
+def _build_f2l_svg(case_code: str, formula: str) -> str:
+    move_steps = FormulaConverter.convert_steps(formula, repeat=1)
+    inverse_steps = FormulaConverter.invert_steps(move_steps)
+    inverse_flat = [move for step in inverse_steps for move in step]
+    start_state = state_string_from_moves(inverse_flat)
+    color_by_face_and_pos = _state_color_by_face_and_pos(start_state)
+
+    colors = _face_color_map()
+    stickerless_u = "#0B1220"
+
+    cell = 16
+    grid = cell * 3
+    stroke = _GRID_STROKE
+    cell_stroke_w = 1.4
+    border_stroke_w = 1.9
+
+    def face_color(face: str, pos: tuple[int, int, int]) -> str:
+        code = color_by_face_and_pos[(face, pos)]
+        if code == "U":
+            return stickerless_u
+        return colors.get(code, _GRID_CELL_GRAY)
+
+    def draw_grid_at(origin_x: int, origin_y: int, cells: list[list[str]]) -> None:
+        for row in range(3):
+            for col in range(3):
+                x = origin_x + col * cell
+                y = origin_y + row * cell
+                lines.append(
+                    (
+                        f'<rect x="{x}" y="{y}" width="{cell}" height="{cell}" '
+                        f'fill="{cells[row][col]}" stroke="{stroke}" stroke-width="{cell_stroke_w:.1f}"/>'
+                    )
+                )
+        lines.append(
+            (
+                f'<rect x="{origin_x}" y="{origin_y}" width="{grid}" height="{grid}" '
+                f'fill="none" stroke="{stroke}" stroke-width="{border_stroke_w:.1f}"/>'
+            )
+        )
+
+    # Layout: U on top-left, F bottom-left, R bottom-right.
+    u_x, u_y = 12, 8
+    f_x, f_y = 12, 60
+    r_x, r_y = 64, 60
+
+    # Orientation: keep U consistent with existing OLL/PLL overlays.
+    x_order_u = (1, 0, -1)  # B -> F
+    y_order_u = (1, 0, -1)  # L -> R
+    u_cells = [[face_color("U", (x, y, 1)) for y in y_order_u] for x in x_order_u]
+
+    # F face: z=+1..-1 top-down, y=+1..-1 left-right.
+    z_order = (1, 0, -1)
+    y_order = (1, 0, -1)
+    f_cells = [[face_color("F", (-1, y, z)) for y in y_order] for z in z_order]
+
+    # R face: z=+1..-1 top-down, x=-1..+1 left-right.
+    x_order_r = (-1, 0, 1)
+    r_cells = [[face_color("R", (x, -1, z)) for x in x_order_r] for z in z_order]
+
+    lines = _base_svg_lines(version="v5-f2l", category="F2L", case_code=case_code)
+    draw_grid_at(u_x, u_y, u_cells)
+    draw_grid_at(f_x, f_y, f_cells)
+    draw_grid_at(r_x, r_y, r_cells)
+    lines.append("</svg>")
+    return "\n".join(lines)
+
+
 def _build_fallback_svg(category: str, case_code: str) -> str:
     bits = _pattern_bits(category, case_code)
     lines = _base_svg_lines(version="v4-fallback", category=category, case_code=case_code)
@@ -444,6 +526,11 @@ def _build_fallback_svg(category: str, case_code: str) -> str:
 
 def _build_svg(category: str, case_code: str, formula: str | None = None) -> str:
     normalized_formula = _norm_formula(formula or "")
+    if category == "F2L" and normalized_formula:
+        try:
+            return _build_f2l_svg(case_code=case_code, formula=normalized_formula)
+        except Exception:
+            pass
     if category == "PLL" and normalized_formula:
         try:
             return _build_pll_svg(case_code=case_code, formula=normalized_formula)

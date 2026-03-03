@@ -1,0 +1,1959 @@
+{
+  "version": 1,
+  "source_pdf": "Best F2L Algorithms.pdf",
+  "cases": [
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B01",
+      "case_number": 1,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U2 (R U R') U (R U' R')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y F R U2 R' F'",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B02",
+      "case_number": 2,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y U2 (L' U' L) U' (L' U L)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "F' L' U2 L F",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B03",
+      "case_number": 3,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U (R U2 R') U (R U' R')",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B04",
+      "case_number": 4,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y U' (L' U2 L) U' (L' U L)",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B05",
+      "case_number": 5,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U (R U' R') U' (R U' R' U R U' R')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "U (F R' F' R) U (R U R')",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "U2 (L F' L' F) (R U R')",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "y U L' U' (L2 F' L' F) (L' U L)",
+          "primary": false
+        },
+        {
+          "name": "Alt 4",
+          "formula": "y F' (U' L' U L) F (L' U L)",
+          "primary": false
+        },
+        {
+          "name": "Alt 5",
+          "formula": "y' U2 R U' R' U' S R' S'",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B06",
+      "case_number": 6,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y U' (L' U L) U (L' U L U' L' U L)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y U' (F' L F L') U' (L' U' L)",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y U2 (R F' R' F) (L' U' L)",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "U' R U (R2 F R F') (R U' R')",
+          "primary": false
+        },
+        {
+          "name": "Alt 4",
+          "formula": "F (U R U' R') F' (R U' R')",
+          "primary": false
+        },
+        {
+          "name": "Alt 5",
+          "formula": "y2 U2 L' U L U S' L S",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B07",
+      "case_number": 7,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "(R U2 R') U' (R U R')",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B08",
+      "case_number": 8,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y (L' U2 L) U (L' U' L)",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B09",
+      "case_number": 9,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "(R U R')",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B10",
+      "case_number": 10,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y (L' U' L)",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B11",
+      "case_number": 11,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U' (R U R') U (R U R')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "U2 (R U' R') U' (R U R')",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "R' U R2 U R'",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B12",
+      "case_number": 12,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y U (L' U' L) U' (L' U' L)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y U2 (L' U L) U (L' U' L)",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y L U' L2 U' L",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B13",
+      "case_number": 13,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "R' U2 R2 U R2 U R",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "(R U' R') U (R U' R') U2 (R U' R')",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "R' U2 R2 U R'",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "y U L' U2 L U' y' R U R'",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B14",
+      "case_number": 14,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y L U2 L2 U' L2 U' L'",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y (L' U L) U' (L' U L) U2 (L' U L)",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y L U2 L2 U' L",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "U' (R U2 R') U y (L' U' L)",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B15",
+      "case_number": 15,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U' (R U' R') U (R U R')",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B16",
+      "case_number": 16,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y U (L' U L) U' (L' U' L)",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B17",
+      "case_number": 17,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y U' (L' U L)",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B18",
+      "case_number": 18,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U (R U' R')",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B19",
+      "case_number": 19,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y U (L' U2 L) U2 (L' U L)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "r' U2 R2 U R2 U r",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B20",
+      "case_number": 20,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U' (R U2 R') U2 (R U' R')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y l U2 L2 U' L2 U' l'",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B21",
+      "case_number": 21,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U' (R U R') U2 (R U' R')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y U l' U L U' L' U' l",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B22",
+      "case_number": 22,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y U (L' U' L) U2 (L' U L)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "U' r U' R' U R U r'",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B23",
+      "case_number": 23,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "M U (L F' L') U' M'",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "U' (R' U R) U' (R U R')",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y (L' U L) y' U2 (R U R')",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "y' (R2 F R F' R) U2 (R' U R)",
+          "primary": false
+        },
+        {
+          "name": "Alt 4",
+          "formula": "y2 (f' L f) U2 (L U L')",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B24",
+      "case_number": 24,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y M U' (R' F R) U M'",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y U (L U' L') U (L' U' L)",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "(R U' R') y U2 (L' U' L)",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "y2 (L2 F' L' F L') U2 (L U' L')",
+          "primary": false
+        },
+        {
+          "name": "Alt 4",
+          "formula": "y' (f R' f') U2 R' U' R",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B25",
+      "case_number": 25,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U (R U R') U2 (R U R')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "U' (R U2 R') U (R U R')",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y U (L' U L) U2 (L' U L)",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B26",
+      "case_number": 26,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y U' (L' U' L) U2 (L' U' L)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y U (L' U2 L) U' (L' U' L)",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "U' R U' R' U2 R U' R'",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B27",
+      "case_number": 27,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U (F' U' F) U' (R U R')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y U2 (L' U' L) (F' L F L')",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y U' M' (U' L' U l) (L' U L)",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "y U' (L U F' L' F) (L' U L)",
+          "primary": false
+        },
+        {
+          "name": "Alt 4",
+          "formula": "y' U2 (R' U' R) y U (R U' R')",
+          "primary": false
+        },
+        {
+          "name": "Alt 5",
+          "formula": "y' U2 R' U' M U' R U M'",
+          "primary": false
+        },
+        {
+          "name": "Alt 6",
+          "formula": "y2 U (f' L' f) U' (L U L')",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B28",
+      "case_number": 28,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y U' (F U F') U (L' U' L)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "U2 (R U R') (F R' F' R)",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "U M' (U R U' r') (R U' R')",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "U (R' U' F R F') (R U' R')",
+          "primary": false
+        },
+        {
+          "name": "Alt 4",
+          "formula": "y2 U2 (L U L') y' U' (L' U L)",
+          "primary": false
+        },
+        {
+          "name": "Alt 5",
+          "formula": "y2 U2 L U M U L' U' M'",
+          "primary": false
+        },
+        {
+          "name": "Alt 6",
+          "formula": "y' U' (f R f') U (R' U' R)",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B29",
+      "case_number": 29,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "(U R U' R')^3",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B30",
+      "case_number": 30,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U' (R' F R F') (R U' R')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "(R U' R') (F' U2 F)",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y' R' U R' F R F' R",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "y' U' (R' U2 R) (f R f')",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B31",
+      "case_number": 31,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "(R U R') U' (R U R')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y M' (U' L' U L) (U' L' U l)",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y (L F' L' F)^2",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B32",
+      "case_number": 32,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y (L' U' L) U (L' U' L)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "M' (U R U' R') (U R U' r')",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "(R' F R F')^2",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B33",
+      "case_number": 33,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "(R U' R') U (R U' R')",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B34",
+      "case_number": 34,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y (L' U L) U' (L' U L)",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B35",
+      "case_number": 35,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U' (R' F R F') (R U R')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "(R' F' R) (U R U' R') F",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "U' F' (R U R' U') (R' F R)",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "y U' (L' U L) (F' L F L')",
+          "primary": false
+        },
+        {
+          "name": "Alt 4",
+          "formula": "y2 U' M U L U' M' U L'",
+          "primary": false
+        },
+        {
+          "name": "Alt 5",
+          "formula": "y' U' R' U M U' R U M'",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B36",
+      "case_number": 36,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y U (L F' L' F) (L' U' L)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y (L F L') (U' L' U L) F'",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y U F (L' U' L U) (L F' L')",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "U (R U' R') (F R' F' R)",
+          "primary": false
+        },
+        {
+          "name": "Alt 4",
+          "formula": "y' U M U' R' U M' U' R",
+          "primary": false
+        },
+        {
+          "name": "Alt 5",
+          "formula": "y2 U L U' M U L' U' M'",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B37",
+      "case_number": 37,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "(R U' R') U (R U2 R' U R U' R')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y' (L' U L) U (L' U' L U2 L' U L)",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B38",
+      "case_number": 38,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y' (L' U L) U' (L' U2 L U' L' U L)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "(R U' R') U' (R U R' U2 R U' R')",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B39",
+      "case_number": 39,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "(R U' R') (F' L' U2 L F)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y (F R U2 R' F') (L' U' L)",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y2 L2 F U F' U' L' U L'",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "y' R' U R' U' F' U F R2",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B40",
+      "case_number": 40,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y (L' U L) (F R U2 R' F')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "(F' L' U2 L F) (R U R')",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y' R2 F' U' F U R U' R",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "y2 L U' L U F U' F' L2",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Basic F2L",
+      "case_code": "B41",
+      "case_number": 41,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "R2 U2 F R2 F' U2 R' U R'",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y L2 U2 F' L2 F U2 L U' L",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y' (f R' f') U (R' U2 R) U (R' U2 R)",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "y2 (f' L f) U' (L U2 L') U' (L U2 L')",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A01",
+      "case_number": 42,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U' R' U R2 U' R'",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A02",
+      "case_number": 43,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y U L U' L2 U L",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A03",
+      "case_number": 44,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U2 (R' U R) U' (S R S')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y R' F R2 U' R' U2 F'",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y2 U2 (L F' L' F) (L U L')",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A04",
+      "case_number": 45,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y U2 (L U' L') U (S' L' S)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "L F' L2 U L U2 F",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y' U2 (R' F R F') (R' U' R)",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A05",
+      "case_number": 46,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U2 L2 u L2 u' L2",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y U2 R2 u' R2 u R2",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y' U2 L2 u' L2 u L2",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "y2 U2 R2 u R2 u' R2",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A06",
+      "case_number": 47,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "L F' U F L'",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y R' F U' F' R",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y' (L' u' L) U' (L' u L)",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "y2 (R u R') U (R u' R')",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A07",
+      "case_number": 48,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "R' U' R2 U R'",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A08",
+      "case_number": 49,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y L U L2 U' L",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A09",
+      "case_number": 50,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "F D R D' F'",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y R (F U F') R'",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y2 F (L U L') F'",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "y' R u R u' R'",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A10",
+      "case_number": 51,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y F' D' L' D F",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "L' (F' U' F) L",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y' F' (R' U' R) F",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "y2 L' u' L' u L",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A11",
+      "case_number": 52,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U' (L' U' L) (R U' R')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y U2 L' U' L2 U L2 U' L",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A12",
+      "case_number": 53,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U (R U R') (L' U L)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y' U2 R U R2 U' R2 U R'",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A13",
+      "case_number": 54,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "(F U2 F') (R U R')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y L U2 L' F U F'",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y' R U2 R' f R f'",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A14",
+      "case_number": 55,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y (F' U2 F) (L' U' L)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "R' U2 R F' U' F",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y2 L' U2 L f' L' f",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A15",
+      "case_number": 56,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U (R U R') (L U L')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "U' (R U2 R') U' (L U L')",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y U (L' U L) (R' U R)",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A16",
+      "case_number": 57,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y U' (L' U' L) (R' U' R)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y U (L' U2 L) U (R' U' R)",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "U' (R U' R') (L U' L')",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A17",
+      "case_number": 58,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U2 F' (L U L') F",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y U2 L' (B U B') L",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y' U2 R' (F U F') R",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "y2 f' U L U' f",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A18",
+      "case_number": 59,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y U2 F (R' U' R) F'",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "U2 R (B' U' B) R'",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y2 U2 L (F' U' F) L'",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "y' f U' R' U f'",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A19",
+      "case_number": 60,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U (R U' R') (L' U L)",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A20",
+      "case_number": 61,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y (L' U2 L) U' (L U L')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y U2 (L' U L) U' (L U2 L')",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A21",
+      "case_number": 62,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U2 (R U' R') U (L' U' L)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y (F' L F L') U' (L U2 L')",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A22",
+      "case_number": 63,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y U' L' U' L2 U2 L'",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A23",
+      "case_number": 64,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "(R U R') U' (L' U L)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y (S' L S)",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A24",
+      "case_number": 65,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U' (R U R') (F U F')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y U (L' U L) U (L U L')",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y U' (F U F') (L U L')",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A25",
+      "case_number": 66,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y U' (L' U L) (R U' R')",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A26",
+      "case_number": 67,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "(R U2 R') U (R' U' R)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "U2 (R U' R') U (R' U2 R)",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A27",
+      "case_number": 68,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "(F R' F' R) U (R' U2 R)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y U2 (L' U L) U' (R U R')",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A28",
+      "case_number": 69,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U R U R2 U2 R",
+          "primary": true
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A29",
+      "case_number": 70,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "(S R' S')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y (L' U' L) U (R U' R')",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A30",
+      "case_number": 71,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U (F U' F') (R' U' R)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "U' (R U' R') U' (R' U R)",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y U (L' U' L) (F' U' F)",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A31",
+      "case_number": 72,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U' (F' U F) (L U2 L')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y U' (L' U L) U' (f R' f')",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A32",
+      "case_number": 73,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "U (R U' R') U (f' L f)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y U (F U' F') (R' U2 R)",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A33",
+      "case_number": 74,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "(R U' R') (L U2 L')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y (L' U' L) (f R' f')",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A34",
+      "case_number": 75,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "(R U R') (f' L f)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y (L' U L) (R' U2 R)",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A35",
+      "case_number": 76,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "(R U' R') U (L U L')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y (L F' L' F) (R' U2 R)",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Advanced F2L",
+      "case_code": "A36",
+      "case_number": 77,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "(R' F R F') (L U2 L')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y (L' U' L) U' (R' U' R)",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Expert F2L",
+      "case_code": "E01",
+      "case_number": 78,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "R2 U' R2 U R2",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y2 L2 U' L2 U L2",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y F' R' F2 R F",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Expert F2L",
+      "case_code": "E02",
+      "case_number": 79,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "f' R' U R f",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y R' u' R u R",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y' L' u' L u L",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "y2 f' D' L D f",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Expert F2L",
+      "case_code": "E03",
+      "case_number": 80,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y L2 U L2 U' L2",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y' R2 U R2 U' R2",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "F L F2 L' F'",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Expert F2L",
+      "case_code": "E04",
+      "case_number": 81,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y f L U' L' f'",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "L u L' u' L'",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y2 R u R' u' R'",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "y' f D R' D' f'",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Expert F2L",
+      "case_code": "E05",
+      "case_number": 82,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "L2 u' L2 u L2",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y' R2 u R2 u' R2",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y L2 u L2 u' L2",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "y2 R2 u' R2 u R2",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Expert F2L",
+      "case_code": "E06",
+      "case_number": 83,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "(L' u' L) U (L' u L)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y' (R u R') U' (R u' R')",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y (L u L') U' (L u' L')",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "y2 (R' u' R) U (R' u R)",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Expert F2L",
+      "case_code": "E07",
+      "case_number": 84,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "R' F R2 U' R2 F' R",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "L F' L2 U' L2 F L'",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y (f' L' f) U' (L' U L)",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "y' (R U R') U' (f R' f')",
+          "primary": false
+        },
+        {
+          "name": "Alt 4",
+          "formula": "y2 (f R f') (L U2 L')",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Expert F2L",
+      "case_code": "E08",
+      "case_number": 85,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y L F' L2 U L2 F L'",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y R' F R2 U R2 F' R",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "(f R f') U (R U' R')",
+          "primary": false
+        },
+        {
+          "name": "Alt 3",
+          "formula": "y2 (L' U' L) U (f' L f)",
+          "primary": false
+        },
+        {
+          "name": "Alt 4",
+          "formula": "y' (f' L' f) (R' U2 R)",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Expert F2L",
+      "case_code": "E09",
+      "case_number": 86,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "R (L U2 L') R'",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y L' (R' U2 R) L",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Expert F2L",
+      "case_code": "E10",
+      "case_number": 87,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "L F2 L' F U' F",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "(L F' L' U' F) U' (R U R')",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y (L U' F' L' F) (L' U L)",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Expert F2L",
+      "case_code": "E11",
+      "case_number": 88,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y R' F2 R F' U F'",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y (R' F R U F') U (L' U' L)",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "(R' U F R F') (R U' R')",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Expert F2L",
+      "case_code": "E12",
+      "case_number": 89,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "(R' F R U' F') (R U' R')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y (L' U' L) U (S' L' S)",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Expert F2L",
+      "case_code": "E13",
+      "case_number": 90,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y (L F' L' U F) (L' U L)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "(R U R') U' (S R S')",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Expert F2L",
+      "case_code": "E14",
+      "case_number": 91,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "(L' U L) (M' U R U' r') (R U' R')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y (L U F' L' F) U2 (L' U' L)",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y (L U L') (F U F') U' (L' U L)",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Expert F2L",
+      "case_code": "E15",
+      "case_number": 92,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y (R U' R') (M' U' L' U l) (L' U L)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "(R' U' F R F') U2 (R U R')",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "(R' U' R) (F' U' F) U (R U' R')",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Expert F2L",
+      "case_code": "E16",
+      "case_number": 93,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "(R' F R U' F') U (R U' R')",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "R U' R2 u' R' u R",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y2 L U' L2 u' L' u L",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "subgroup": "Expert F2L",
+      "case_code": "E17",
+      "case_number": 94,
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "y (L F' L' U F) U' (L' U L)",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y L' U L2 u L u' L'",
+          "primary": false
+        },
+        {
+          "name": "Alt 2",
+          "formula": "y' R' U R2 u R u' R'",
+          "primary": false
+        }
+      ]
+    }
+  ]
+}
