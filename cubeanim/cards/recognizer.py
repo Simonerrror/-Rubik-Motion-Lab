@@ -466,8 +466,6 @@ def _build_f2l_svg(case_code: str, formula: str) -> str:
                     project(x_lo, y_lo, 1.0),
                     project(x_lo, y_hi, 1.0),
                 ]
-                if (x_idx, y_idx, 1) in masked_positions:
-                    continue
                 lines.append(polygon(points, face_color("U", (x_idx, y_idx, 1))))
 
     def draw_f_face() -> None:
@@ -485,8 +483,6 @@ def _build_f2l_svg(case_code: str, formula: str) -> str:
                     project(-1.0, y_lo, z_lo),
                     project(-1.0, y_hi, z_lo),
                 ]
-                if (-1, y_idx, z_idx) in masked_positions:
-                    continue
                 lines.append(polygon(points, face_color("F", (-1, y_idx, z_idx))))
 
     def draw_r_face() -> None:
@@ -504,11 +500,9 @@ def _build_f2l_svg(case_code: str, formula: str) -> str:
                     project(x_hi, -1.0, z_lo),
                     project(x_lo, -1.0, z_lo),
                 ]
-                if (x_idx, -1, z_idx) in masked_positions:
-                    continue
                 lines.append(polygon(points, face_color("R", (x_idx, -1, z_idx))))
 
-    lines = _base_svg_lines(version="v7-f2l", category="F2L", case_code=case_code)
+    lines = _base_svg_lines(version="v8-f2l", category="F2L", case_code=case_code)
     body_fill = stickerless_u
     lines.append(
         polygon(
