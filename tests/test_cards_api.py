@@ -110,11 +110,11 @@ def test_api_alternatives_crud_flow(tmp_path: Path) -> None:
 
     custom_resp = client.post(
         f"/api/cases/{case_id}/alternatives",
-        json={"formula": "R U R' U'", "activate": True},
+        json={"formula": "R U R' U R U2 R'", "activate": True},
     )
     assert custom_resp.status_code == 200
     custom_payload = custom_resp.json()["data"]
-    assert custom_payload["active_formula"] == "R U R' U'"
+    assert custom_payload["active_formula"] == "R U R' U R U2 R'"
     new_active_id = int(custom_payload["active_algorithm_id"])
     assert new_active_id != previous_active_id
 
@@ -231,6 +231,18 @@ def test_api_activate_does_not_reorder_algorithms(tmp_path: Path) -> None:
 
     assert order_with_default_active == order_with_custom_active
     assert int(activate_payload["active_algorithm_id"]) == default_algo_id
+
+
+def test_api_rejects_invalid_oll_alternative_formula(tmp_path: Path) -> None:
+    client = _build_client(tmp_path)
+    case_id = int(client.get("/api/cases", params={"group": "OLL"}).json()["data"][0]["id"])
+
+    response = client.post(
+        f"/api/cases/{case_id}/alternatives",
+        json={"formula": "M U (R U R' U') M2 (U R U' R') U' M", "activate": True},
+    )
+    assert response.status_code == 400
+    assert "Invalid OLL start state" in response.json()["detail"]
 
 
 def test_api_oll_recognizer_url_is_stable_on_custom_and_activate(tmp_path: Path) -> None:

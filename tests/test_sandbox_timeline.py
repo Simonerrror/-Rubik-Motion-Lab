@@ -43,6 +43,11 @@ def test_build_sandbox_timeline_uses_oll_start_resolver() -> None:
     validate_oll_f2l_start_state(timeline.initial_state)
 
 
+def test_build_sandbox_timeline_rejects_invalid_oll_start_formula() -> None:
+    with pytest.raises(ValueError, match="Invalid OLL start state"):
+        build_sandbox_timeline("M U (R U R' U') M2 (U R U' R') U' M", "OLL")
+
+
 def test_build_sandbox_timeline_uses_pll_start_resolver() -> None:
     timeline = build_sandbox_timeline("x' L2 D2 L U L' D2 L U' L", "PLL")
     validate_pll_start_state(timeline.initial_state)
