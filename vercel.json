@@ -1,0 +1,20 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "routes": [
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "^/$",
+      "dest": "/trainer/index.html"
+    },
+    {
+      "src": "^/trainer$",
+      "dest": "/trainer/index.html"
+    },
+    {
+      "src": "^/(.*)$",
+      "dest": "/trainer/index.html"
+    }
+  ]
+}
