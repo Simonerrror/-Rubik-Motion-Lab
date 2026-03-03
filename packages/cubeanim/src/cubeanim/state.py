@@ -3,8 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable
 
-import numpy as np
-
 _FACE_ORDER = "URFDLB"
 
 _NORMAL_TO_FACE = {
@@ -160,19 +158,49 @@ def _apply_move(stickers: list[_Sticker], move: str) -> None:
 
 def _state_slots() -> list[tuple[tuple[int, int, int], str]]:
     # Keep set_state slot order compatible with RubikCube3D.set_state.
-    cube_idx = np.empty((3, 3, 3), dtype=object)
+    cube_idx: list[list[list[tuple[int, int, int]]]] = [
+        [[(-1, -1, -1) for _ in range(3)] for _ in range(3)]
+        for _ in range(3)
+    ]
     for x in range(3):
         for y in range(3):
             for z in range(3):
-                cube_idx[x, y, z] = (x - 1, y - 1, z - 1)
+                cube_idx[x][y][z] = (x - 1, y - 1, z - 1)
+
+    def _flip(matrix: list[list[tuple[int, int, int]]], axes: tuple[int, ...]) -> list[list[tuple[int, int, int]]]:
+        flipped = [list(row) for row in matrix]
+        if 0 in axes:
+            flipped = list(reversed(flipped))
+        if 1 in axes:
+            flipped = [list(reversed(row)) for row in flipped]
+        return flipped
+
+    def _rot90(matrix: list[list[tuple[int, int, int]]], k: int = 1) -> list[list[tuple[int, int, int]]]:
+        turns = k % 4
+        rotated = [list(row) for row in matrix]
+        for _ in range(turns):
+            rotated = [list(row) for row in zip(*rotated[::-1], strict=True)]
+        return rotated
+
+    def _flatten(matrix: list[list[tuple[int, int, int]]]) -> list[tuple[int, int, int]]:
+        return [item for row in matrix for item in row]
+
+    def _slice_xy(z_index: int) -> list[list[tuple[int, int, int]]]:
+        return [[cube_idx[x][y][z_index] for y in range(3)] for x in range(3)]
+
+    def _slice_xz(y_index: int) -> list[list[tuple[int, int, int]]]:
+        return [[cube_idx[x][y_index][z] for z in range(3)] for x in range(3)]
+
+    def _slice_yz(x_index: int) -> list[list[tuple[int, int, int]]]:
+        return [[cube_idx[x_index][y][z] for z in range(3)] for y in range(3)]
 
     slots: list[tuple[tuple[int, int, int], str]] = []
-    slots.extend((p, "U") for p in np.rot90(cube_idx[:, :, 2], 2).flatten())
-    slots.extend((p, "R") for p in np.rot90(np.flip(cube_idx[:, 0, :], (0, 1)), -1).flatten())
-    slots.extend((p, "F") for p in np.rot90(np.flip(cube_idx[0, :, :], 0)).flatten())
-    slots.extend((p, "D") for p in np.rot90(np.flip(cube_idx[:, :, 0], 0), 2).flatten())
-    slots.extend((p, "L") for p in np.rot90(np.flip(cube_idx[:, 2, :], 0)).flatten())
-    slots.extend((p, "B") for p in np.rot90(np.flip(cube_idx[2, :, :], (0, 1)), -1).flatten())
+    slots.extend((p, "U") for p in _flatten(_rot90(_slice_xy(2), 2)))
+    slots.extend((p, "R") for p in _flatten(_rot90(_flip(_slice_xz(0), (0, 1)), -1)))
+    slots.extend((p, "F") for p in _flatten(_rot90(_flip(_slice_yz(0), (0,)))))
+    slots.extend((p, "D") for p in _flatten(_rot90(_flip(_slice_xy(0), (0,)), 2)))
+    slots.extend((p, "L") for p in _flatten(_rot90(_flip(_slice_xz(2), (0,)))))
+    slots.extend((p, "B") for p in _flatten(_rot90(_flip(_slice_yz(2), (0, 1)), -1)))
     return slots
 
 
