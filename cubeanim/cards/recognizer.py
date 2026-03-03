@@ -424,7 +424,10 @@ def _build_f2l_svg(case_code: str, formula: str) -> str:
     colors = _face_color_map()
     stickerless_u = "#0B1220"
     stroke = _GRID_STROKE
-    stroke_w = 1.25
+    stroke_w = 1.15
+    cubie_fill = "#3F516D"
+    cubie_stroke = "#344660"
+    sticker_inset = 0.22
 
     center_x = _CANVAS_SIZE / 2.0
     center_y = _CANVAS_SIZE / 2.0
@@ -444,12 +447,38 @@ def _build_f2l_svg(case_code: str, formula: str) -> str:
             center_y + (x + y) * proj_ay - z * proj_az,
         )
 
-    def polygon(points: list[tuple[float, float]], fill: str, stroke_color: str = stroke) -> str:
+    def polygon(
+        points: list[tuple[float, float]],
+        fill: str,
+        stroke_color: str = stroke,
+        stroke_width: float | None = None,
+    ) -> str:
         points_attr = " ".join(f"{x:.2f},{y:.2f}" for x, y in points)
+        width = stroke_w if stroke_width is None else stroke_width
         return (
             f'<polygon points="{points_attr}" fill="{fill}" '
-            f'stroke="{stroke_color}" stroke-width="{stroke_w:.2f}" stroke-linejoin="round"/>'
+            f'stroke="{stroke_color}" stroke-width="{width:.2f}" stroke-linejoin="round"/>'
         )
+
+    def inset_polygon(points: list[tuple[float, float]], ratio: float) -> list[tuple[float, float]]:
+        center_x = sum(x for x, _ in points) / len(points)
+        center_y = sum(y for _, y in points) / len(points)
+        return [
+            (
+                x + (center_x - x) * ratio,
+                y + (center_y - y) * ratio,
+            )
+            for x, y in points
+        ]
+
+    def draw_sticker_cell(
+        face: str,
+        pos: tuple[int, int, int],
+        points: list[tuple[float, float]],
+    ) -> None:
+        lines.append(polygon(points, cubie_fill, stroke_color=cubie_stroke, stroke_width=1.05))
+        sticker_points = inset_polygon(points, sticker_inset)
+        lines.append(polygon(sticker_points, face_color(face, pos), stroke_color=stroke, stroke_width=1.05))
 
     def draw_u_face() -> None:
         for row in range(3):  # B -> F
@@ -466,7 +495,7 @@ def _build_f2l_svg(case_code: str, formula: str) -> str:
                     project(x_lo, y_lo, 1.0),
                     project(x_lo, y_hi, 1.0),
                 ]
-                lines.append(polygon(points, face_color("U", (x_idx, y_idx, 1))))
+                draw_sticker_cell("U", (x_idx, y_idx, 1), points)
 
     def draw_f_face() -> None:
         for row in range(3):  # z=+1 -> -1
@@ -483,7 +512,7 @@ def _build_f2l_svg(case_code: str, formula: str) -> str:
                     project(-1.0, y_lo, z_lo),
                     project(-1.0, y_hi, z_lo),
                 ]
-                lines.append(polygon(points, face_color("F", (-1, y_idx, z_idx))))
+                draw_sticker_cell("F", (-1, y_idx, z_idx), points)
 
     def draw_r_face() -> None:
         for row in range(3):  # z=+1 -> -1
@@ -500,9 +529,9 @@ def _build_f2l_svg(case_code: str, formula: str) -> str:
                     project(x_hi, -1.0, z_lo),
                     project(x_lo, -1.0, z_lo),
                 ]
-                lines.append(polygon(points, face_color("R", (x_idx, -1, z_idx))))
+                draw_sticker_cell("R", (x_idx, -1, z_idx), points)
 
-    lines = _base_svg_lines(version="v8-f2l", category="F2L", case_code=case_code)
+    lines = _base_svg_lines(version="v9-f2l", category="F2L", case_code=case_code)
     body_fill = stickerless_u
     lines.append(
         polygon(
