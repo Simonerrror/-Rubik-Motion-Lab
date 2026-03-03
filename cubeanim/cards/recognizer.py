@@ -418,12 +418,14 @@ def _build_f2l_svg(case_code: str, formula: str) -> str:
 
     colors = _face_color_map()
     stickerless_u = "#0B1220"
-
-    cell = 16
-    grid = cell * 3
     stroke = _GRID_STROKE
-    cell_stroke_w = 1.4
-    border_stroke_w = 1.9
+    stroke_w = 1.25
+
+    center_x = _CANVAS_SIZE / 2.0
+    center_y = _CANVAS_SIZE / 2.0
+    proj_ax = 20.0
+    proj_ay = 11.0
+    proj_az = 22.0
 
     def face_color(face: str, pos: tuple[int, int, int]) -> str:
         code = color_by_face_and_pos[(face, pos)]
@@ -431,47 +433,74 @@ def _build_f2l_svg(case_code: str, formula: str) -> str:
             return stickerless_u
         return colors.get(code, _GRID_CELL_GRAY)
 
-    def draw_grid_at(origin_x: int, origin_y: int, cells: list[list[str]]) -> None:
-        for row in range(3):
-            for col in range(3):
-                x = origin_x + col * cell
-                y = origin_y + row * cell
-                lines.append(
-                    (
-                        f'<rect x="{x}" y="{y}" width="{cell}" height="{cell}" '
-                        f'fill="{cells[row][col]}" stroke="{stroke}" stroke-width="{cell_stroke_w:.1f}"/>'
-                    )
-                )
-        lines.append(
-            (
-                f'<rect x="{origin_x}" y="{origin_y}" width="{grid}" height="{grid}" '
-                f'fill="none" stroke="{stroke}" stroke-width="{border_stroke_w:.1f}"/>'
-            )
+    def project(x: float, y: float, z: float) -> tuple[float, float]:
+        return (
+            center_x + (x - y) * proj_ax,
+            center_y + (x + y) * proj_ay - z * proj_az,
         )
 
-    # Layout: U on top-left, F bottom-left, R bottom-right.
-    u_x, u_y = 12, 8
-    f_x, f_y = 12, 60
-    r_x, r_y = 64, 60
+    def polygon(points: list[tuple[float, float]], fill: str) -> str:
+        points_attr = " ".join(f"{x:.2f},{y:.2f}" for x, y in points)
+        return (
+            f'<polygon points="{points_attr}" fill="{fill}" '
+            f'stroke="{stroke}" stroke-width="{stroke_w:.2f}" stroke-linejoin="round"/>'
+        )
 
-    # Orientation: keep U consistent with existing OLL/PLL overlays.
-    x_order_u = (1, 0, -1)  # B -> F
-    y_order_u = (1, 0, -1)  # L -> R
-    u_cells = [[face_color("U", (x, y, 1)) for y in y_order_u] for x in x_order_u]
+    def draw_u_face() -> None:
+        for row in range(3):  # B -> F
+            x_hi = 1.0 - (2.0 * row) / 3.0
+            x_lo = 1.0 - (2.0 * (row + 1)) / 3.0
+            x_idx = 1 - row
+            for col in range(3):  # L -> R
+                y_hi = 1.0 - (2.0 * col) / 3.0
+                y_lo = 1.0 - (2.0 * (col + 1)) / 3.0
+                y_idx = 1 - col
+                points = [
+                    project(x_hi, y_hi, 1.0),
+                    project(x_hi, y_lo, 1.0),
+                    project(x_lo, y_lo, 1.0),
+                    project(x_lo, y_hi, 1.0),
+                ]
+                lines.append(polygon(points, face_color("U", (x_idx, y_idx, 1))))
 
-    # F face: z=+1..-1 top-down, y=+1..-1 left-right.
-    z_order = (1, 0, -1)
-    y_order = (1, 0, -1)
-    f_cells = [[face_color("F", (-1, y, z)) for y in y_order] for z in z_order]
+    def draw_f_face() -> None:
+        for row in range(3):  # z=+1 -> -1
+            z_hi = 1.0 - (2.0 * row) / 3.0
+            z_lo = 1.0 - (2.0 * (row + 1)) / 3.0
+            z_idx = 1 - row
+            for col in range(3):  # y=+1 -> -1
+                y_hi = 1.0 - (2.0 * col) / 3.0
+                y_lo = 1.0 - (2.0 * (col + 1)) / 3.0
+                y_idx = 1 - col
+                points = [
+                    project(-1.0, y_hi, z_hi),
+                    project(-1.0, y_lo, z_hi),
+                    project(-1.0, y_lo, z_lo),
+                    project(-1.0, y_hi, z_lo),
+                ]
+                lines.append(polygon(points, face_color("F", (-1, y_idx, z_idx))))
 
-    # R face: z=+1..-1 top-down, x=-1..+1 left-right.
-    x_order_r = (-1, 0, 1)
-    r_cells = [[face_color("R", (x, -1, z)) for x in x_order_r] for z in z_order]
+    def draw_r_face() -> None:
+        for row in range(3):  # z=+1 -> -1
+            z_hi = 1.0 - (2.0 * row) / 3.0
+            z_lo = 1.0 - (2.0 * (row + 1)) / 3.0
+            z_idx = 1 - row
+            for col in range(3):  # x=-1 -> +1
+                x_lo = -1.0 + (2.0 * col) / 3.0
+                x_hi = -1.0 + (2.0 * (col + 1)) / 3.0
+                x_idx = -1 + col
+                points = [
+                    project(x_lo, -1.0, z_hi),
+                    project(x_hi, -1.0, z_hi),
+                    project(x_hi, -1.0, z_lo),
+                    project(x_lo, -1.0, z_lo),
+                ]
+                lines.append(polygon(points, face_color("R", (x_idx, -1, z_idx))))
 
-    lines = _base_svg_lines(version="v5-f2l", category="F2L", case_code=case_code)
-    draw_grid_at(u_x, u_y, u_cells)
-    draw_grid_at(f_x, f_y, f_cells)
-    draw_grid_at(r_x, r_y, r_cells)
+    lines = _base_svg_lines(version="v6-f2l", category="F2L", case_code=case_code)
+    draw_f_face()
+    draw_r_face()
+    draw_u_face()
     lines.append("</svg>")
     return "\n".join(lines)
 

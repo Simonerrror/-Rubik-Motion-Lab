@@ -197,6 +197,19 @@ def test_oll_12_14_are_not_fallback_recognizers(tmp_path: Path) -> None:
         assert "recognizer:v4-fallback" not in content
 
 
+def test_f2l_recognizer_svg_is_start_cube_preview(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    db_path = tmp_path / "cards.db"
+    initialize_database(repo_root=repo_root, db_path=db_path)
+
+    svg_dir = tmp_path / "recognizers" / "f2l" / "svg"
+    content = (svg_dir / "f2l_b01.svg").read_text(encoding="utf-8")
+    assert "recognizer:v6-f2l category=F2L case=B01" in content
+    assert "recognizer:v4-fallback" not in content
+    assert content.count("<polygon ") >= 27
+    assert "#0B1220" in content
+
+
 def test_oll_recognizer_path_is_case_stable(tmp_path: Path) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     service = CardsService.create(repo_root=repo_root, db_path=tmp_path / "cards.db")
