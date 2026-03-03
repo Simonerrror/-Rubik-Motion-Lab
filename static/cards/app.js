@@ -72,6 +72,7 @@
     sandboxPendingTimelineProgress: null,
     sandboxCursorStepIndex: 0,
     sandboxCursorStepProgress: 0,
+    f2lSandboxPreviewByCaseId: new Map(),
   };
 
   const DOM = {
@@ -151,8 +152,16 @@
       DOM.sandboxOverlayFormula.title = formula || "";
     }
     if (DOM.sandboxOverlayTopImage) {
+      const caseGroup = String(caseItem?.group || "").toUpperCase();
+      const caseId = String(caseItem?.id || "");
+      const sandboxPreview = caseGroup === "F2L" && caseId
+        ? String(state.f2lSandboxPreviewByCaseId.get(caseId) || "")
+        : "";
       const recognizerUrl = caseItem ? String(caseItem.recognizer_url || "").trim() : "";
-      if (recognizerUrl) {
+      if (sandboxPreview) {
+        DOM.sandboxOverlayTopImage.src = sandboxPreview;
+        DOM.sandboxOverlayTopImage.style.visibility = "visible";
+      } else if (recognizerUrl) {
         const sep = recognizerUrl.includes("?") ? "&" : "?";
         DOM.sandboxOverlayTopImage.src = `${recognizerUrl}${sep}v=${RECOGNIZER_CACHE_BUSTER}`;
         DOM.sandboxOverlayTopImage.style.visibility = "visible";
@@ -161,6 +170,38 @@
         DOM.sandboxOverlayTopImage.style.visibility = "hidden";
       }
     }
+  }
+
+  function captureSandboxPreviewDataUrl() {
+    const source = DOM.sandboxCanvas;
+    if (!source || typeof source.toDataURL !== "function") return "";
+    const width = Number(source.width || source.clientWidth || 0);
+    const height = Number(source.height || source.clientHeight || 0);
+    if (!Number.isFinite(width) || !Number.isFinite(height) || width < 2 || height < 2) return "";
+    const size = Math.max(1, Math.floor(Math.min(width, height)));
+    const sx = Math.max(0, Math.floor((width - size) / 2));
+    const sy = Math.max(0, Math.floor((height - size) / 2));
+    const out = document.createElement("canvas");
+    out.width = 256;
+    out.height = 256;
+    const ctx = out.getContext("2d");
+    if (!ctx) return "";
+    try {
+      ctx.drawImage(source, sx, sy, size, size, 0, 0, out.width, out.height);
+      return out.toDataURL("image/png");
+    } catch {
+      return "";
+    }
+  }
+
+  function refreshF2LSandboxPreview(caseItem = currentCase()) {
+    const caseId = String(caseItem?.id || "");
+    const caseGroup = String(caseItem?.group || "").toUpperCase();
+    if (!caseId || caseGroup !== "F2L") return;
+    const dataUrl = captureSandboxPreviewDataUrl();
+    if (!dataUrl) return;
+    state.f2lSandboxPreviewByCaseId.set(caseId, dataUrl);
+    updateSandboxOverlay(caseItem);
   }
 
   function clearPollingTimer() {
@@ -487,6 +528,7 @@
     try {
       const sandbox = await apiGet(`/api/cases/${c.id}/sandbox`);
       if (requestToken !== state.sandboxRequestToken) return;
+      const isF2L = String(sandbox.group || "").toUpperCase() === "F2L";
 
       state.sandboxData = sandbox;
       state.sandboxStepIndex = 0;
@@ -499,7 +541,6 @@
       renderActiveAlgorithmDisplay(state.activeDisplayFormula);
       if (state.sandboxPlayer) {
         state.sandboxPlayer.setSlots(Array.isArray(sandbox.state_slots) ? sandbox.state_slots : []);
-        const isF2L = String(sandbox.group || "").toUpperCase() === "F2L";
         if (state.sandboxPlayer.setFaceColors) {
           state.sandboxPlayer.setFaceColors(null);
           if (sandbox.face_colors) {
@@ -516,10 +557,22 @@
           window.requestAnimationFrame(() => {
             state.sandboxPlayer?.resize();
             renderSandboxProgress({ progress: 0, syncState: true });
+            if (isF2L) {
+              window.requestAnimationFrame(() => {
+                if (String(currentCase()?.id || "") !== String(c.id || "")) return;
+                refreshF2LSandboxPreview(currentCase());
+              });
+            }
           });
         }
       }
       renderSandboxProgress({ progress: 0, syncState: true });
+      if (isF2L) {
+        window.requestAnimationFrame(() => {
+          if (String(currentCase()?.id || "") !== String(c.id || "")) return;
+          refreshF2LSandboxPreview(currentCase());
+        });
+      }
     } catch (error) {
       if (requestToken !== state.sandboxRequestToken) return;
       resetSandboxData();
