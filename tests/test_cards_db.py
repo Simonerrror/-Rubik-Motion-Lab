@@ -204,9 +204,9 @@ def test_f2l_recognizer_svg_is_start_cube_preview(tmp_path: Path) -> None:
 
     svg_dir = tmp_path / "recognizers" / "f2l" / "svg"
     content = (svg_dir / "f2l_b01.svg").read_text(encoding="utf-8")
-    assert "recognizer:v6-f2l category=F2L case=B01" in content
+    assert "recognizer:v7-f2l category=F2L case=B01" in content
     assert "recognizer:v4-fallback" not in content
-    assert content.count("<polygon ") >= 27
+    assert content.count("<polygon ") >= 12
     assert "#0B1220" in content
 
 
@@ -252,6 +252,34 @@ def test_pll_case_metadata_follows_pll_txt_names(tmp_path: Path) -> None:
     assert case["display_name"] == "Jb-perm"
     assert case["subgroup_title"] == "Adjacent Corner Swap"
     assert case["probability_text"] == "1/18"
+
+
+def test_f2l_default_order_is_basic_advanced_expert(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    service = CardsService.create(repo_root=repo_root, db_path=tmp_path / "cards.db")
+
+    cases = service.list_cases("F2L")
+    assert cases
+
+    case_codes = [str(item["case_code"]) for item in cases]
+    assert case_codes[0] == "B01"
+    assert case_codes[40] == "B41"
+    assert case_codes[41] == "A01"
+    assert case_codes[76] == "A36"
+    assert case_codes[77] == "E01"
+    assert case_codes[-1] == "E17"
+
+    algorithms = service.list_algorithms(group="F2L")
+    seen_case_codes: list[str] = []
+    seen_set: set[str] = set()
+    for item in algorithms:
+        code = str(item["case_code"])
+        if code in seen_set:
+            continue
+        seen_set.add(code)
+        seen_case_codes.append(code)
+    assert seen_case_codes[:5] == ["B01", "B02", "B03", "B04", "B05"]
+    assert seen_case_codes[-3:] == ["E15", "E16", "E17"]
 
 
 def test_oll_case_metadata_follows_oll_txt(tmp_path: Path) -> None:
