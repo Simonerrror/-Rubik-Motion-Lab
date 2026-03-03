@@ -1155,9 +1155,25 @@
 
   function renderActiveAlgorithmDisplay(formula) {
     DOM.activeAlgoDisplay.innerHTML = "";
+    const isMobileApp = Boolean(document.body?.classList.contains("mobile-app"));
     const timelineSteps = Array.isArray(state.sandboxData?.highlight_by_step)
       ? state.sandboxData.highlight_by_step.filter((step) => String(step || "").trim())
       : [];
+
+    if (isMobileApp) {
+      const fallbackFormula = timelineSteps.length ? timelineSteps.join(" ") : "";
+      const mobileFormula = String(formula || fallbackFormula || "").trim();
+      if (!mobileFormula) {
+        DOM.activeAlgoDisplay.innerHTML = '<div class="algo-placeholder">No algorithm selected</div>';
+        return;
+      }
+      const text = document.createElement("div");
+      text.className = "active-algo-mobile-text";
+      text.textContent = mobileFormula;
+      text.title = mobileFormula;
+      DOM.activeAlgoDisplay.appendChild(text);
+      return;
+    }
 
     if (timelineSteps.length) {
       const chunk = 8;
