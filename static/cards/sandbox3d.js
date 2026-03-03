@@ -568,7 +568,13 @@
     }
 
     function setFaceColors(faceColorMap) {
-      if (!faceColorMap || typeof faceColorMap !== "object") return;
+      if (faceColorMap == null) {
+        faceColors = { ...FACE_COLORS };
+        applyStateColors(currentState);
+        render();
+        return;
+      }
+      if (typeof faceColorMap !== "object") return;
       faceColors = {
         U: parseColorToHex(faceColorMap.U, faceColors.U),
         R: parseColorToHex(faceColorMap.R, faceColors.R),

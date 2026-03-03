@@ -1706,8 +1706,14 @@
 
       if (state.sandboxPlayer) {
         state.sandboxPlayer.setSlots(Array.isArray(sandbox.state_slots) ? sandbox.state_slots : []);
-        if (sandbox.face_colors && state.sandboxPlayer.setFaceColors) {
-          state.sandboxPlayer.setFaceColors(sandbox.face_colors);
+        if (state.sandboxPlayer.setFaceColors) {
+          state.sandboxPlayer.setFaceColors(null);
+          if (sandbox.face_colors) {
+            state.sandboxPlayer.setFaceColors(sandbox.face_colors);
+          }
+          if (String(sandbox.group || "").toUpperCase() === "F2L") {
+            state.sandboxPlayer.setFaceColors({ U: 0x0b1220 });
+          }
         }
         window.requestAnimationFrame(() => {
           state.sandboxPlayer?.resize();
