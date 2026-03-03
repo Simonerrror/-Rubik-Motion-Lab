@@ -21,7 +21,6 @@ from cubeanim.cards.models import RENDER_QUALITIES
 from cubeanim.cards.recognizer import ensure_recognizer_assets
 from cubeanim.cards.renderer_client import RendererClient, build_renderer_client_from_env
 from cubeanim.cards.sandbox import build_sandbox_timeline
-from cubeanim.executor import ExecutionConfig
 from cubeanim.palette import FACE_ORDER, CONTRAST_SAFE_CUBE_COLORS
 from cubeanim.render_service import RenderRequest
 
@@ -30,8 +29,15 @@ _MOVE_RUN_TIME_ENV = "CUBEANIM_MOVE_RUN_TIME"
 _SANDBOX_RATE_FUNC = "ease_in_out_sine"
 
 
-def _resolved_execution_config() -> ExecutionConfig:
-    config = ExecutionConfig()
+@dataclass(frozen=True)
+class _SandboxExecutionConfig:
+    run_time: float = 0.65
+    double_turn_multiplier: float = 1.7
+    inter_move_pause_ratio: float = 0.05
+
+
+def _resolved_execution_config() -> _SandboxExecutionConfig:
+    config = _SandboxExecutionConfig()
     raw_run_time = os.environ.get(_MOVE_RUN_TIME_ENV, "").strip()
     if not raw_run_time:
         return config

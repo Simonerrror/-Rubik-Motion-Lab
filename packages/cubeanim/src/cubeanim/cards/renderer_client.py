@@ -5,7 +5,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Protocol
 
-import httpx
+try:
+    import httpx
+except Exception:  # pragma: no cover - optional for local-only workflows
+    httpx = None
 
 from cubeanim.render_service import RenderPlan, RenderRequest, RenderResult, plan_formula_render, render_formula
 
@@ -78,6 +81,8 @@ class HttpRendererClient:
         return payload
 
     def _post(self, path: str, payload: dict[str, Any]) -> dict[str, Any]:
+        if httpx is None:
+            raise RuntimeError("httpx is required for CUBEANIM_RENDER_BACKEND=http")
         with httpx.Client(base_url=self.base_url, timeout=self.timeout_sec) as client:
             response = client.post(path, json=payload)
             response.raise_for_status()
