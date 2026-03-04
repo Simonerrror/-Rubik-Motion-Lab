@@ -105,10 +105,25 @@ def test_cards_trainer_smoke_static_no_api(tmp_path: Path) -> None:
                 expect(page.get_by_test_id("status-done")).to_have_class(re.compile(r".*active.*"), timeout=10000)
 
                 page.locator("#sandbox-play-pause-btn").click()
-                page.wait_for_timeout(700)
-                page.locator("#sandbox-play-pause-btn").click()
+                page.wait_for_timeout(250)
 
                 slider = page.locator("#sandbox-timeline-slider")
+                slider.evaluate(
+                    "el => { "
+                    "el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })); "
+                    "el.value = String(Math.min(1, Math.max(0.25, (Number(el.max) || 0) * 0.5))); "
+                    "el.dispatchEvent(new Event('input', { bubbles: true })); "
+                    "el.dispatchEvent(new Event('change', { bubbles: true })); "
+                    "}"
+                )
+                page.wait_for_timeout(250)
+                play_btn = page.locator("#sandbox-play-pause-btn")
+                play_btn.click()
+                page.wait_for_timeout(120)
+                if (play_btn.inner_text() or "").strip() != "▶":
+                    play_btn.click()
+                expect(play_btn).to_have_text("▶", timeout=10000)
+
                 expect(slider).to_be_enabled(timeout=10000)
                 slider.evaluate("el => { el.value = String(Math.min(1, Number(el.max) || 0)); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); }")
 
