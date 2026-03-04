@@ -1,0 +1,38 @@
+/**
+ * @param {Document} doc
+ */
+export function queryTrainerDom(doc) {
+  return {
+    catalog: doc.getElementById("catalog-container"),
+    sortProgressToggle: doc.getElementById("sort-progress-toggle"),
+    mName: doc.getElementById("m-name"),
+    mProb: doc.getElementById("m-prob"),
+    mCaseCode: doc.getElementById("m-case-code"),
+    sandboxCanvas: doc.getElementById("sandbox-canvas"),
+    sandboxToStartBtn: doc.getElementById("sandbox-to-start-btn"),
+    sandboxPrevBtn: doc.getElementById("sandbox-prev-btn"),
+    sandboxPlayPauseBtn: doc.getElementById("sandbox-play-pause-btn"),
+    sandboxNextBtn: doc.getElementById("sandbox-next-btn"),
+    sandboxSpeedButtons: Array.from(doc.querySelectorAll(".sandbox-speed-btn")),
+    sandboxTimelineSlider: doc.getElementById("sandbox-timeline-slider"),
+    sandboxTimelineLabel: doc.getElementById("sandbox-timeline-label"),
+    sandboxStepLabel: doc.getElementById("sandbox-step-label"),
+    sandboxOverlayTitle: doc.getElementById("sandbox-overlay-title"),
+    sandboxOverlaySubtitle: doc.getElementById("sandbox-overlay-subtitle"),
+    sandboxOverlayTopImage: doc.getElementById("sandbox-overlay-top-image"),
+    sandboxOverlayFormula: doc.getElementById("sandbox-overlay-formula"),
+    mStatusGroup: doc.getElementById("m-status-group"),
+    mAlgoList: doc.getElementById("m-algo-list"),
+    activeAlgoDisplay: doc.getElementById("active-algo-display"),
+    toast: doc.getElementById("toast"),
+
+    exportProfileBtn: doc.getElementById("export-profile-btn"),
+    importProfileBtn: doc.getElementById("import-profile-btn"),
+    profileModal: doc.getElementById("profile-modal"),
+    profileData: doc.getElementById("profile-data"),
+    profileMsg: doc.getElementById("profile-msg"),
+    profileApplyBtn: doc.getElementById("profile-apply-btn"),
+    profileCopyBtn: doc.getElementById("profile-copy-btn"),
+    profileCloseBtn: doc.getElementById("profile-close-btn"),
+  };
+}
