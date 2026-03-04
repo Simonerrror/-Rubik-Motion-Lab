@@ -145,6 +145,7 @@ def test_oll_formulas_seeded_from_oll_txt(tmp_path: Path) -> None:
 
     oll_by_case = {item["case_code"]: item for item in oll_items}
     assert oll_by_case["OLL_1"]["formula"] == "R U2 R2 F R F' U2 R' F R F'"
+    assert oll_by_case["OLL_2"]["formula"] == "r U r' U2 r U2 R' U2 R U' r'"
     assert oll_by_case["OLL_12"]["formula"] == "F R U R' U' F' U F R U R' U' F'"
     assert oll_by_case["OLL_14"]["formula"] == "R' F R U R' F' R F U' F'"
     assert oll_by_case["OLL_20"]["formula"] == "M U (R U R' U') M2 (U R U' R') M"
