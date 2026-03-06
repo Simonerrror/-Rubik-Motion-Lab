@@ -11,6 +11,9 @@ import { normalizeSandboxPlaybackConfig } from "../domain/timeline-builder.js";
  */
 export function createSandboxController(deps) {
   const { state, dom, machine, onRenderActiveAlgorithmDisplay, onUpdateActiveAlgorithmStepHighlight } = deps;
+  const PLAY_ICON =
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon class="fill-icon" points="8,6 18,12 8,18"></polygon></svg>';
+  const PAUSE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6V18"></path><path d="M15 6V18"></path></svg>';
 
   function transition(event, payload = {}) {
     machine.send(event, payload);
@@ -190,7 +193,7 @@ export function createSandboxController(deps) {
     }
     if (dom.sandboxPlayPauseBtn) {
       dom.sandboxPlayPauseBtn.disabled = !hasTimeline || total === 0;
-      dom.sandboxPlayPauseBtn.textContent = isPlaying() ? "⏸" : "▶";
+      dom.sandboxPlayPauseBtn.innerHTML = isPlaying() ? PAUSE_ICON : PLAY_ICON;
       dom.sandboxPlayPauseBtn.title = isPlaying() ? "Pause" : "Play";
       dom.sandboxPlayPauseBtn.setAttribute("aria-label", isPlaying() ? "Pause" : "Play");
     }
