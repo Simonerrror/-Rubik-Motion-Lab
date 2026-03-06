@@ -4,11 +4,12 @@
 export function queryTrainerDom(doc) {
   return {
     shellRoot: doc.body,
-    appHeader: doc.querySelector(".app-header"),
     sidebar: doc.getElementById("catalog-sidebar"),
     detailsPane: doc.getElementById("details-pane"),
     detailsSide: doc.getElementById("details-side"),
-    shellViewTitle: doc.getElementById("shell-view-title"),
+    utilityRail: doc.getElementById("utility-rail"),
+    sidebarUtilitySlot: doc.getElementById("sidebar-utility-slot"),
+    mobileUtilitySlot: doc.getElementById("mobile-utility-slot"),
     shellBackBtn: doc.getElementById("shell-back-btn"),
     shellSettingsBtn: doc.getElementById("shell-settings-btn"),
     settingsCloseBtn: doc.getElementById("mobile-settings-close-btn"),
@@ -24,7 +25,7 @@ export function queryTrainerDom(doc) {
     sandboxPrevBtn: doc.getElementById("sandbox-prev-btn"),
     sandboxPlayPauseBtn: doc.getElementById("sandbox-play-pause-btn"),
     sandboxNextBtn: doc.getElementById("sandbox-next-btn"),
-    sandboxSpeedButtons: Array.from(doc.querySelectorAll(".sandbox-speed-btn")),
+    sandboxSpeedToggleBtn: doc.getElementById("sandbox-speed-toggle-btn"),
     sandboxTimelineSlider: doc.getElementById("sandbox-timeline-slider"),
     sandboxTimelineLabel: doc.getElementById("sandbox-timeline-label"),
     sandboxStepLabel: doc.getElementById("sandbox-step-label"),

@@ -10,26 +10,22 @@
 </head>
 <body>
   <div class="app-shell">
-    <header class="app-header">
-      <div class="app-brand">
-        <div class="app-kicker">Rubik Motion Lab</div>
-        <div class="app-title-row">
-          <h1 class="app-title">Trainer</h1>
-          <div id="shell-view-title" class="app-view-title">PLL Catalog</div>
-        </div>
-      </div>
-      <div class="app-header-actions">
-        <button id="shell-back-btn" class="trainer-btn trainer-btn-ghost" type="button" aria-label="Back to catalog">Catalog</button>
-        <button id="shell-settings-btn" class="trainer-btn" type="button" aria-label="Open settings" data-testid="open-settings">Settings</button>
-        <button id="help-open-btn" class="trainer-btn trainer-btn-accent" type="button" aria-label="Open help" data-testid="help-open">Help</button>
-        <button id="export-profile-btn" class="trainer-btn" type="button" data-testid="export-profile">Экспорт</button>
-        <button id="import-profile-btn" class="trainer-btn" type="button" data-testid="import-profile">Импорт</button>
-      </div>
-    </header>
-
     <div class="app-layout">
       <aside id="catalog-sidebar" class="sidebar">
         <div class="sidebar-header">
+          <div class="sidebar-brand-row">
+            <div class="sidebar-brand">
+              <div class="app-kicker">Rubik Motion Lab</div>
+              <div class="sidebar-brand-title">Trainer</div>
+            </div>
+            <div id="sidebar-utility-slot" class="sidebar-utility-slot">
+              <div id="utility-rail" class="utility-rail">
+                <button id="help-open-btn" class="trainer-btn trainer-btn-accent utility-btn" type="button" aria-label="Open help" data-testid="help-open">Help</button>
+                <button id="export-profile-btn" class="trainer-btn utility-btn" type="button" data-testid="export-profile">Экспорт</button>
+                <button id="import-profile-btn" class="trainer-btn utility-btn" type="button" data-testid="import-profile">Импорт</button>
+              </div>
+            </div>
+          </div>
           <div class="sidebar-topbar">
             <div class="sidebar-tabs">
               <button class="nav-tab" data-category="F2L" data-testid="tab-f2l">F2L</button>
@@ -53,6 +49,10 @@
                 <h2 id="m-name" class="case-title">Select Case</h2>
                 <div id="m-case-code" class="case-meta">-</div>
                 <div id="m-prob" class="case-meta">Probability: n/a</div>
+              </div>
+              <div class="details-heading-actions">
+                <button id="shell-back-btn" class="trainer-btn trainer-btn-ghost" type="button" aria-label="Back to catalog">Catalog</button>
+                <button id="shell-settings-btn" class="trainer-btn" type="button" aria-label="Open settings" data-testid="open-settings">Settings</button>
               </div>
             </div>
 
@@ -92,16 +92,14 @@
                       </svg>
                     </button>
                   </div>
-                  <div class="sandbox-speed-group" role="group" aria-label="Sandbox speed">
-                    <button id="sandbox-speed-x1" class="sandbox-btn sandbox-speed-btn active" type="button" data-speed="1">x1</button>
-                    <button id="sandbox-speed-x15" class="sandbox-btn sandbox-speed-btn" type="button" data-speed="1.5">x1.5</button>
-                    <button id="sandbox-speed-x2" class="sandbox-btn sandbox-speed-btn" type="button" data-speed="2">x2</button>
-                  </div>
+                  <button id="sandbox-speed-toggle-btn" class="sandbox-btn sandbox-speed-toggle" type="button" aria-label="Playback speed">×1</button>
                   <div class="sandbox-timeline" role="group" aria-label="Sandbox timeline">
                     <input id="sandbox-timeline-slider" class="sandbox-timeline-slider" type="range" min="0" max="0" step="0.001" value="0" />
-                    <div id="sandbox-timeline-label" class="sandbox-timeline-label">0.00 / 0</div>
                   </div>
-                  <div id="sandbox-step-label" class="sandbox-step-label">Step 0/0</div>
+                  <div class="sandbox-info-group" aria-live="polite">
+                    <div id="sandbox-timeline-label" class="sandbox-info-slot sandbox-timeline-label">0.00 / 0</div>
+                    <div id="sandbox-step-label" class="sandbox-info-slot sandbox-step-label">0/0</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -118,6 +116,7 @@
                 <div class="mobile-sheet-kicker">Case Controls</div>
                 <div class="mobile-sheet-title">Status + Algorithms</div>
               </div>
+              <div id="mobile-utility-slot" class="mobile-utility-slot"></div>
               <button id="mobile-settings-close-btn" class="trainer-btn trainer-btn-ghost" type="button" aria-label="Close settings">Close</button>
             </div>
 

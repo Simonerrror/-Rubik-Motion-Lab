@@ -15,6 +15,11 @@ export function createSandboxController(deps) {
     '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon class="fill-icon" points="8,6 18,12 8,18"></polygon></svg>';
   const PAUSE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6V18"></path><path d="M15 6V18"></path></svg>';
 
+  function formatPlaybackSpeed(value) {
+    const numeric = Number(value);
+    return Number.isInteger(numeric) ? `×${numeric}` : `×${numeric.toFixed(1)}`;
+  }
+
   function transition(event, payload = {}) {
     machine.send(event, payload);
     state.sandboxMachineState = machine.getState();
@@ -93,18 +98,10 @@ export function createSandboxController(deps) {
     const total = currentSandboxStepCount();
     const stepIndex = state.sandboxCursorStepIndex;
     const stepProgress = state.sandboxCursorStepProgress;
-    if (!total) return "Step 0/0";
-    if (stepIndex >= total && stepProgress <= 0) return `Step ${total}/${total} · Done`;
-    if (stepProgress > 0 && stepIndex < total) {
-      const label = state.sandboxData?.highlight_by_step?.[stepIndex] || "";
-      const percent = Math.round(stepProgress * 100);
-      return label
-        ? `Step ${stepIndex + 1}/${total} · ${label} (${percent}%)`
-        : `Step ${stepIndex + 1}/${total} (${percent}%)`;
-    }
-    if (stepIndex === 0) return `Step 0/${total} · Start`;
-    const label = state.sandboxData?.highlight_by_step?.[stepIndex - 1] || "";
-    return label ? `Step ${stepIndex}/${total} · ${label}` : `Step ${stepIndex}/${total}`;
+    if (!total) return "0/0";
+    if (stepIndex >= total && stepProgress <= 0) return `${total}/${total}`;
+    if (stepProgress > 0 && stepIndex < total) return `${stepIndex + 1}/${total}`;
+    return `${Math.min(stepIndex, total)}/${total}`;
   }
 
   function updateTimelineDisplay() {
@@ -135,9 +132,13 @@ export function createSandboxController(deps) {
     return machine.is("SCRUBBING");
   }
 
+  function isTransportLocked() {
+    return isStepping() || isScrubbing();
+  }
+
   function renderSandboxProgress(options = {}) {
     if (!state.sandboxData) {
-      dom.sandboxStepLabel.textContent = "Step 0/0";
+      dom.sandboxStepLabel.textContent = "0/0";
       state.sandboxTimelineProgress = 0;
       updateTimelineDisplay();
       updateActiveAlgorithmStepHighlight();
@@ -179,7 +180,7 @@ export function createSandboxController(deps) {
     const progress = normalizeTimelineProgress(state.sandboxTimelineProgress);
     const atStart = progress <= 0.000001;
     const atEnd = progress >= total - 0.000001;
-    const locked = isStepping() || isPlaying() || isScrubbing();
+    const locked = isTransportLocked();
 
     if (dom.sandboxToStartBtn) {
       dom.sandboxToStartBtn.disabled = !hasTimeline || atStart || locked;
@@ -202,21 +203,19 @@ export function createSandboxController(deps) {
       dom.sandboxNextBtn.title = "Step forward";
       dom.sandboxNextBtn.setAttribute("aria-label", "Step forward");
     }
+    if (dom.sandboxSpeedToggleBtn) {
+      dom.sandboxSpeedToggleBtn.disabled = !hasTimeline || total === 0;
+      const label = formatPlaybackSpeed(state.sandboxPlaybackSpeed);
+      dom.sandboxSpeedToggleBtn.textContent = label;
+      dom.sandboxSpeedToggleBtn.title = `Playback speed ${label}`;
+      dom.sandboxSpeedToggleBtn.setAttribute("aria-label", `Playback speed ${label}`);
+    }
     if (dom.sandboxTimelineSlider) {
       dom.sandboxTimelineSlider.disabled = !hasTimeline || total === 0;
     }
 
-    const speedButtons = Array.from(document.querySelectorAll(".sandbox-speed-btn"));
-    if (speedButtons.length) {
-      speedButtons.forEach((btn) => {
-        const speedValue = Number(btn.dataset.speed || "1");
-        btn.classList.toggle("active", speedValue === state.sandboxPlaybackSpeed);
-        btn.disabled = !hasTimeline || total === 0;
-      });
-    }
-
     if (!hasTimeline) {
-      dom.sandboxStepLabel.textContent = "Step 0/0";
+      dom.sandboxStepLabel.textContent = "0/0";
     }
 
     updateTimelineDisplay();
@@ -227,6 +226,12 @@ export function createSandboxController(deps) {
     const parsed = Number(rawSpeed);
     state.sandboxPlaybackSpeed = SANDBOX_PLAYBACK_SPEEDS.includes(parsed) ? parsed : 1;
     updateSandboxControls();
+  }
+
+  function cyclePlaybackSpeed() {
+    const currentIndex = Math.max(0, SANDBOX_PLAYBACK_SPEEDS.indexOf(Number(state.sandboxPlaybackSpeed)));
+    const nextSpeed = SANDBOX_PLAYBACK_SPEEDS[(currentIndex + 1) % SANDBOX_PLAYBACK_SPEEDS.length] || 1;
+    setPlaybackSpeed(nextSpeed);
   }
 
   function sleepWithToken(delayMs, token) {
@@ -243,11 +248,14 @@ export function createSandboxController(deps) {
 
   function stopPlayback(options = {}) {
     const hadPlayback = isPlaying();
+    const hadStepAnimation = isStepping();
     if (hadPlayback) {
       transition("PLAY_TOGGLE");
+    } else if (hadStepAnimation) {
+      transition("ANIM_DONE", { resumePlaying: false });
     }
     state.sandboxPlaybackToken += 1;
-    if (!options.silent && (hadPlayback || options.forceUpdate)) {
+    if (!options.silent && (hadPlayback || hadStepAnimation || options.forceUpdate)) {
       updateSandboxControls();
     }
   }
@@ -422,7 +430,7 @@ export function createSandboxController(deps) {
   }
 
   function togglePlayback() {
-    if (isPlaying()) {
+    if (isPlaying() || isStepping()) {
       stopPlayback();
       return;
     }
@@ -446,12 +454,12 @@ export function createSandboxController(deps) {
   }
 
   async function stepBackward() {
-    if (!state.sandboxData || isStepping() || isPlaying() || isScrubbing()) return;
+    if (!state.sandboxData || isTransportLocked()) return;
     await moveBy(-1, { animate: true, resumePlaying: false });
   }
 
   async function stepForward() {
-    if (!state.sandboxData || isStepping() || isPlaying() || isScrubbing()) return;
+    if (!state.sandboxData || isTransportLocked()) return;
     await moveBy(1, { animate: true, resumePlaying: false });
   }
 
@@ -540,6 +548,7 @@ export function createSandboxController(deps) {
     updateSandboxControls,
     renderSandboxProgress,
     setPlaybackSpeed,
+    cyclePlaybackSpeed,
     stopPlayback,
     hardResetOnSwitch,
     resetSandboxData,
