@@ -27,6 +27,9 @@ smoke-ui:
 trainer-build output="apps/trainer":
   PYTHONPATH=packages/cubeanim/src uv run python tools/trainer/build_trainer_catalog.py --output {{output}} --assets-dir {{output}}/assets --base-catalog-url ./assets
 
+trainer-manual:
+  uv run python tools/trainer/build_manual_doc.py
+
 trainer-serve port="8011":
   cd apps/trainer && python3 -m http.server {{port}}
 

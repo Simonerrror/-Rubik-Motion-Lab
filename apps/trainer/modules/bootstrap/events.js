@@ -14,6 +14,8 @@ export function bindGlobalEvents(deps) {
     loadCatalog,
     setCaseStatus,
     profileModal,
+    manual,
+    shell,
     sandbox,
   } = deps;
 
@@ -92,6 +94,7 @@ export function bindGlobalEvents(deps) {
       setActiveTab(category);
       syncProgressSortToggle();
       await loadCatalog();
+      shell.openCatalog();
     });
   });
 
@@ -130,9 +133,35 @@ export function bindGlobalEvents(deps) {
     }
   });
 
+  dom.shellBackBtn?.addEventListener("click", () => {
+    shell.openCatalog();
+  });
+
+  dom.shellSettingsBtn?.addEventListener("click", () => {
+    shell.toggleSettings();
+  });
+
+  dom.settingsCloseBtn?.addEventListener("click", () => {
+    shell.closeSettings();
+  });
+
+  dom.settingsBackdrop?.addEventListener("click", () => {
+    shell.closeSettings();
+  });
+
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && profileModal.isOpen()) {
       profileModal.close();
+      return;
+    }
+
+    if (event.key === "Escape" && manual?.isOpen()) {
+      manual.close();
+      return;
+    }
+
+    if (event.key === "Escape" && shell.isSettingsOpen()) {
+      shell.closeSettings();
       return;
     }
 
@@ -141,6 +170,17 @@ export function bindGlobalEvents(deps) {
       target instanceof HTMLElement &&
       (target.closest("input[type='text']") || target.closest("textarea") || target.isContentEditable)
     ) {
+      return;
+    }
+
+    if (event.key === "?" || (event.key === "/" && event.shiftKey)) {
+      event.preventDefault();
+      void manual?.open();
+      return;
+    }
+
+    if (event.key === "Escape" && shell.canReturnToCatalog()) {
+      shell.openCatalog();
       return;
     }
 

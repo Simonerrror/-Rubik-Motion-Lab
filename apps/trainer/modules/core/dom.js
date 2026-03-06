@@ -3,6 +3,17 @@
  */
 export function queryTrainerDom(doc) {
   return {
+    shellRoot: doc.body,
+    appHeader: doc.querySelector(".app-header"),
+    sidebar: doc.getElementById("catalog-sidebar"),
+    detailsPane: doc.getElementById("details-pane"),
+    detailsSide: doc.getElementById("details-side"),
+    shellViewTitle: doc.getElementById("shell-view-title"),
+    shellBackBtn: doc.getElementById("shell-back-btn"),
+    shellSettingsBtn: doc.getElementById("shell-settings-btn"),
+    settingsCloseBtn: doc.getElementById("mobile-settings-close-btn"),
+    settingsBackdrop: doc.getElementById("settings-backdrop"),
+    helpOpenBtn: doc.getElementById("help-open-btn"),
     catalog: doc.getElementById("catalog-container"),
     sortProgressToggle: doc.getElementById("sort-progress-toggle"),
     mName: doc.getElementById("m-name"),
@@ -34,5 +45,12 @@ export function queryTrainerDom(doc) {
     profileApplyBtn: doc.getElementById("profile-apply-btn"),
     profileCopyBtn: doc.getElementById("profile-copy-btn"),
     profileCloseBtn: doc.getElementById("profile-close-btn"),
+
+    manualModal: doc.getElementById("manual-modal"),
+    manualCloseBtn: doc.getElementById("manual-close-btn"),
+    manualLangRuBtn: doc.getElementById("manual-lang-ru"),
+    manualLangEnBtn: doc.getElementById("manual-lang-en"),
+    manualToc: doc.getElementById("manual-toc"),
+    manualContent: doc.getElementById("manual-content"),
   };
 }

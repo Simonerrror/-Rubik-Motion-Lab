@@ -5,6 +5,22 @@ import { DEFAULT_SANDBOX_PLAYBACK_CONFIG } from "./constants.js";
  */
 
 /**
+ * @typedef {"auto"|"desktop"|"mobile"} LayoutPreference
+ */
+
+/**
+ * @typedef {"desktop"|"tablet"|"mobile"} LayoutMode
+ */
+
+/**
+ * @typedef {"catalog"|"details"} ShellView
+ */
+
+/**
+ * @typedef {"none"|"settings"|"manual"} ShellSheet
+ */
+
+/**
  * @typedef {"IDLE"|"PLAYING"|"STEPPING"|"SCRUBBING"|"ERROR"} SandboxMachineState
  */
 
@@ -33,6 +49,12 @@ import { DEFAULT_SANDBOX_PLAYBACK_CONFIG } from "./constants.js";
  * @property {boolean} sandboxWasPlayingBeforeScrub
  * @property {ActiveDisplayMode} activeDisplayMode
  * @property {string} activeDisplayFormula
+ * @property {LayoutPreference} layoutPreference
+ * @property {LayoutMode} layout
+ * @property {ShellView} view
+ * @property {ShellSheet} sheet
+ * @property {string} manualLanguage
+ * @property {Object|null} manualContent
  * @property {Map<string, Object>} customTimelineCache
  * @property {number|undefined} _toastTimer
  */
@@ -68,6 +90,12 @@ export function createInitialState(progressSortByGroup) {
 
     activeDisplayMode: "algorithm",
     activeDisplayFormula: "",
+    layoutPreference: "auto",
+    layout: "desktop",
+    view: "details",
+    sheet: "none",
+    manualLanguage: "ru",
+    manualContent: null,
 
     customTimelineCache: new Map(),
   };

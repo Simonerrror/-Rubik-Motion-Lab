@@ -3,6 +3,7 @@ export const PROFILE_STORAGE_KEY = "cards_trainer_profile_v1";
 export const PROFILE_SCHEMA_VERSION = 1;
 export const CATALOG_SCHEMA_VERSION = "trainer-catalog-v1";
 export const CATALOG_URL = "./data/catalog-v1.json";
+export const MANUAL_CONTENT_URL = "./data/manual-content.json";
 export const PROGRESS_SORT_STORAGE_KEY = "cards_progress_sort_by_group_v1";
 export const STATUS_SORT_RANK = {
   IN_PROGRESS: 0,
@@ -20,6 +21,8 @@ export const DEFAULT_SANDBOX_PLAYBACK_CONFIG = {
   rate_func: "ease_in_out_sine",
 };
 export const SANDBOX_RESTART_DELAY_MS = 500;
+export const MOBILE_LAYOUT_MAX_WIDTH = 860;
+export const DESKTOP_LAYOUT_MIN_WIDTH = 1280;
 
 export const AUTO_MERGE_UD_PAIRS = new Set([
   "U|D'",
