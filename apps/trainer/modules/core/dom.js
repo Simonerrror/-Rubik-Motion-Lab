@@ -28,8 +28,6 @@ export function queryTrainerDom(doc) {
     sandboxTimelineSlider: doc.getElementById("sandbox-timeline-slider"),
     sandboxTimelineLabel: doc.getElementById("sandbox-timeline-label"),
     sandboxStepLabel: doc.getElementById("sandbox-step-label"),
-    sandboxOverlayTitle: doc.getElementById("sandbox-overlay-title"),
-    sandboxOverlaySubtitle: doc.getElementById("sandbox-overlay-subtitle"),
     sandboxOverlayTopImage: doc.getElementById("sandbox-overlay-top-image"),
     mStatusGroup: doc.getElementById("m-status-group"),
     mAlgoList: doc.getElementById("m-algo-list"),

@@ -4,198 +4,177 @@
     {
       "id": "overview",
       "title": {
-        "ru": "1. Что это за тренажер",
-        "en": "1. What This Trainer Is"
+        "ru": "1. С чего начать",
+        "en": "1. Getting Started"
       },
       "lead": {
-        "ru": "Rubik Motion Trainer объединяет каталог кейсов, 3D-плеер алгоритмов и быстрые инструменты обучения в одном адаптивном интерфейсе.",
-        "en": "Rubik Motion Trainer combines a case catalog, a 3D algorithm player, and learning controls in one adaptive interface."
+        "ru": "Тренажер нужен для одного простого цикла: выбрать кейс, посмотреть алгоритм, прокрутить его в 3D и отметить прогресс.",
+        "en": "The trainer is built around one simple loop: pick a case, inspect the algorithm, play it in 3D, and track your progress."
       },
       "items": {
         "ru": [
-          "Desktop и mobile больше не разделены по разным интерфейсам: используется один entrypoint и один набор экранов.",
-          "Каталог кейсов всегда остается источником выбора, а правая часть интерфейса отвечает за разбор и проигрывание алгоритма.",
-          "Справка доступна прямо из интерфейса через кнопку Help или по горячей клавише '?'."
+          "Сначала выберите группу: F2L, OLL или PLL.",
+          "Затем кликните по карточке нужного кейса в каталоге слева.",
+          "После этого справа откроется анимация и список доступных алгоритмов для выбранного кейса.",
+          "Если нужен свой вариант, введите формулу в поле `Enter custom algorithm...` и нажмите `Use`."
         ],
         "en": [
-          "Desktop and mobile are no longer separate interfaces: the trainer now uses one entrypoint and one screen system.",
-          "The catalog remains the source of case selection, while the detail area handles playback and algorithm inspection.",
-          "Help is available directly inside the trainer through the Help button or the '?' shortcut."
-        ]
-      }
-    },
-    {
-      "id": "layout",
-      "title": {
-        "ru": "2. Адаптивный layout",
-        "en": "2. Adaptive Layout"
-      },
-      "lead": {
-        "ru": "Интерфейс автоматически перестраивается под ширину экрана, но режим можно зафиксировать query-параметром `?layout=`.",
-        "en": "The interface adapts to the viewport automatically, but you can pin the mode with the `?layout=` query parameter."
-      },
-      "items": {
-        "ru": [
-          "Desktop: каталог и детали видны одновременно.",
-          "Tablet: каталог и детали остаются на одном экране, но layout становится более вертикальным.",
-          "Mobile: каталог и детали переключаются как отдельные представления; панель статуса и алгоритмов открывается через Settings.",
-          "Для принудительной проверки интерфейса используйте `?layout=desktop`, `?layout=mobile` или оставьте `?layout=auto`."
-        ],
-        "en": [
-          "Desktop: the catalog and detail pane are visible at the same time.",
-          "Tablet: both areas stay on screen, but the layout becomes more vertical.",
-          "Mobile: catalog and details switch as separate views, while status and algorithm controls move into the Settings sheet.",
-          "For forced verification use `?layout=desktop`, `?layout=mobile`, or keep `?layout=auto`."
+          "First choose a group: F2L, OLL, or PLL.",
+          "Then click the case card you want in the catalog on the left.",
+          "The right side will open the animation and the list of available algorithms for that case.",
+          "If you want your own version, type the formula into `Enter custom algorithm...` and press `Use`."
         ]
       }
     },
     {
       "id": "catalog",
       "title": {
-        "ru": "3. Работа с каталогом",
-        "en": "3. Working with the Catalog"
+        "ru": "2. Каталог карточек",
+        "en": "2. The Card Catalog"
       },
       "lead": {
-        "ru": "Каталог показывает кейсы выбранной группы и позволяет быстро менять приоритеты обучения.",
-        "en": "The catalog shows cases for the selected group and lets you update learning priorities quickly."
+        "ru": "Каталог нужен для быстрого выбора кейса и управления тем, что вы сейчас учите.",
+        "en": "The catalog is for fast case selection and for managing what you are currently learning."
       },
       "items": {
         "ru": [
-          "Вкладки F2L / OLL / PLL переключают активную группу без перезагрузки страницы.",
-          "Progress Sort меняет порядок карточек так, чтобы сначала шли кейсы в работе.",
-          "Нажатие на цветную точку карточки циклически переключает статус NEW -> IN_PROGRESS -> LEARNED.",
-          "Нажатие на саму карточку открывает детали кейса и загружает текущий активный алгоритм в sandbox."
+          "Клик по карточке открывает кейс и загружает его активный алгоритм в плеер.",
+          "Клик по маленькой цветной точке в углу карточки меняет статус: `NEW` -> `WORK` -> `DONE`.",
+          "Переключатель `Progress Sort` поднимает наверх кейсы, которые сейчас в работе.",
+          "Если карточек много, сначала переключите группу, а потом уже ищите нужный кейс внутри нее."
         ],
         "en": [
-          "The F2L / OLL / PLL tabs switch the active group without reloading the page.",
-          "Progress Sort reorders cards so in-progress cases appear first.",
-          "Clicking the colored dot cycles the status through NEW -> IN_PROGRESS -> LEARNED.",
-          "Clicking the card itself opens the case details and loads the currently active algorithm into the sandbox."
+          "Clicking a card opens the case and loads its active algorithm into the player.",
+          "Clicking the small colored dot in the corner changes the status: `NEW` -> `WORK` -> `DONE`.",
+          "`Progress Sort` pushes the cases you are actively working on to the top.",
+          "If there are too many cards, switch the group first and then look for the case inside it."
         ]
       }
     },
     {
       "id": "sandbox",
       "title": {
-        "ru": "4. Управление 3D-плеером",
-        "en": "4. Controlling the 3D Player"
+        "ru": "3. Как управлять анимацией",
+        "en": "3. How to Control the Animation"
       },
       "lead": {
-        "ru": "Sandbox воспроизводит алгоритм пошагово и позволяет разбирать формулу как непрерывную timeline-анимацию.",
-        "en": "The sandbox plays the algorithm step by step and lets you inspect the formula as a continuous timeline animation."
+        "ru": "3D-плеер позволяет смотреть алгоритм целиком, шагать по нему вручную и быстро перематывать нужный момент.",
+        "en": "The 3D player lets you watch the whole algorithm, step through it manually, and jump to the exact moment you need."
       },
       "items": {
         "ru": [
-          "Кнопки ⏮, ⏪, ▶, ⏩ возвращают в начало, двигают по шагам и запускают/останавливают проигрывание.",
-          "Скорость `x1`, `x1.5`, `x2` меняет tempo проигрывания без смены активного алгоритма.",
-          "Timeline slider позволяет быстро перейти к произвольному моменту внутри последовательности.",
-          "Активный шаг подсвечивается и в плеере, и в блоке Active Algorithm под видео."
+          "`Play` запускает автопроигрывание алгоритма.",
+          "Кнопки шагают по формуле вручную: назад к началу, шаг назад, шаг вперед.",
+          "Кнопки `x1`, `x1.5`, `x2` меняют скорость воспроизведения.",
+          "Ползунок позволяет быстро перемотать алгоритм на любой момент.",
+          "Если удобнее работать от формулы, кликните по нужному ходу в блоке `Active Algorithm` под плеером и переходите сразу к этому месту."
         ],
         "en": [
-          "The ⏮, ⏪, ▶, and ⏩ buttons jump to start, move by steps, and start or stop playback.",
-          "The `x1`, `x1.5`, and `x2` buttons change playback tempo without changing the selected algorithm.",
-          "The timeline slider lets you jump to any point inside the sequence.",
-          "The current step is highlighted both in the player and in the Active Algorithm block below the video."
+          "`Play` starts automatic playback.",
+          "The transport buttons move through the formula manually: back to start, one step back, one step forward.",
+          "The `x1`, `x1.5`, and `x2` buttons change playback speed.",
+          "The slider lets you scrub to any point in the algorithm.",
+          "If you prefer working from the formula, click the move you need in the `Active Algorithm` block below the player and jump straight there."
         ]
       }
     },
     {
       "id": "algorithms",
       "title": {
-        "ru": "5. Выбор и добавление алгоритмов",
-        "en": "5. Selecting and Adding Algorithms"
+        "ru": "4. Выбор и свой алгоритм",
+        "en": "4. Picking or Typing an Algorithm"
       },
       "lead": {
-        "ru": "Для каждого кейса можно переключать предзагруженные алгоритмы и добавлять собственные варианты.",
-        "en": "For each case you can switch between bundled algorithms and add your own custom variants."
+        "ru": "У каждого кейса можно выбрать один из готовых алгоритмов или подставить свой собственный.",
+        "en": "Each case can use one of the built-in algorithms or your own custom formula."
       },
       "items": {
         "ru": [
-          "Radio-переключатель делает выбранный алгоритм активным и сразу перезагружает timeline.",
-          "Собственные алгоритмы вводятся в поле `Enter custom algorithm...` и применяются кнопкой Use.",
-          "Во время ввода кастомной формулы preview в overlay и Active Algorithm показывают draft-формулу до сохранения.",
-          "Удалять можно только пользовательские алгоритмы; встроенные варианты остаются защищенными."
+          "В списке `Algorithm Selection` выберите нужный готовый вариант через radio-кнопку.",
+          "Если стандартный вариант не нравится, введите свою формулу и нажмите `Use`.",
+          "После применения кастомного алгоритма плеер и блок `Active Algorithm` сразу обновятся.",
+          "Пользовательские алгоритмы можно удалять, встроенные остаются как базовые варианты."
         ],
         "en": [
-          "The radio control makes the selected algorithm active and immediately reloads the timeline.",
-          "Custom algorithms are entered in the `Enter custom algorithm...` field and applied with the Use button.",
-          "While typing a custom formula, the overlay and Active Algorithm preview show the draft formula before it is saved.",
-          "Only custom algorithms can be deleted; bundled variants stay protected."
+          "In `Algorithm Selection`, choose the built-in option you want with the radio button.",
+          "If you do not like the default version, type your own formula and press `Use`.",
+          "After applying a custom algorithm, the player and the `Active Algorithm` block update immediately.",
+          "Custom algorithms can be deleted; built-in ones remain as the base options."
         ]
       }
     },
     {
       "id": "progress",
       "title": {
-        "ru": "6. Статусы обучения",
-        "en": "6. Learning Statuses"
+        "ru": "5. Как вести прогресс",
+        "en": "5. Tracking Progress"
       },
       "lead": {
-        "ru": "Статусы хранятся в локальном профиле и помогают отделять новые кейсы от тех, которые уже закреплены.",
-        "en": "Statuses are stored in the local profile and separate new cases from the ones that are already mastered."
+        "ru": "Статусы нужны не для красоты, а чтобы быстро отделять новые кейсы от тех, что вы уже доводите до автоматизма.",
+        "en": "Statuses are not decorative; they help you separate new cases from the ones you are actively drilling or already know."
       },
       "items": {
         "ru": [
-          "NEW означает, что кейс еще не прорабатывался системно.",
-          "IN_PROGRESS удобно использовать для текущих приоритетов и ежедневной тренировки.",
-          "LEARNED подходит для кейсов, которые уже закреплены, но остаются в каталоге для периодической проверки.",
-          "Статус можно менять как в карточке каталога, так и в панели деталей кейса."
+          "`NEW` оставляйте для кейсов, которые еще не начали учить всерьез.",
+          "`WORK` ставьте на то, что сейчас гоняете регулярно.",
+          "`DONE` удобно использовать для кейсов, которые уже уверенно узнаются и исполняются.",
+          "Менять статус можно либо в каталоге по точке на карточке, либо справа в панели деталей."
         ],
         "en": [
-          "NEW means the case has not been studied in a structured way yet.",
-          "IN_PROGRESS works well for current priorities and daily practice.",
-          "LEARNED is useful for cases that feel stable but should remain in the catalog for periodic review.",
-          "You can change the status either from the catalog card or from the case detail panel."
+          "Use `NEW` for cases you have not really started yet.",
+          "Use `WORK` for the cases you are currently drilling.",
+          "Use `DONE` for cases you can already recognize and execute confidently.",
+          "You can change the status either from the card dot in the catalog or from the detail panel on the right."
         ]
       }
     },
     {
       "id": "profile-transfer",
       "title": {
-        "ru": "7. Экспорт и импорт профиля",
-        "en": "7. Exporting and Importing the Profile"
+        "ru": "6. Экспорт и импорт",
+        "en": "6. Export and Import"
       },
       "lead": {
-        "ru": "Профиль содержит прогресс, выбранные алгоритмы и пользовательские варианты; его можно переносить между устройствами как код.",
-        "en": "The profile stores progress, selected algorithms, and custom variants; you can move it between devices as a code payload."
+        "ru": "Если хотите перенести прогресс и свои алгоритмы в другой браузер или на другое устройство, используйте экспорт и импорт профиля.",
+        "en": "If you want to move your progress and custom algorithms to another browser or another device, use profile export and import."
       },
       "items": {
         "ru": [
-          "Экспорт открывает модал и формирует Base64URL payload, готовый к копированию.",
-          "Импорт ожидает тот же payload и сливает его с текущим профилем без ручного редактирования storage.",
-          "После успешного импорта UI сразу перестраивается под обновленный профиль.",
-          "Этот механизм полезен для синхронизации между desktop и mobile браузером."
+          "`Экспорт` создает код со всем вашим локальным прогрессом и выбранными алгоритмами.",
+          "Скопируйте этот код и вставьте его через `Импорт` там, куда хотите перенести профиль.",
+          "После импорта интерфейс сразу перестроится под новые данные.",
+          "Это самый простой способ держать одинаковый прогресс на ноутбуке и телефоне."
         ],
         "en": [
-          "Export opens a modal and generates a Base64URL payload that is ready to copy.",
-          "Import expects the same payload and merges it into the current profile without manual storage edits.",
-          "After a successful import, the UI immediately refreshes against the updated profile.",
-          "This is the main way to sync state between desktop and mobile browsers."
+          "`Export` creates a code payload with your local progress and selected algorithms.",
+          "Copy that code and paste it through `Import` wherever you want to restore the profile.",
+          "After import, the interface refreshes immediately with the new data.",
+          "This is the easiest way to keep the same progress on your laptop and phone."
         ]
       }
     },
     {
       "id": "shortcuts",
       "title": {
-        "ru": "8. Горячие клавиши и deep links",
-        "en": "8. Shortcuts and Deep Links"
+        "ru": "7. Быстрые действия",
+        "en": "7. Quick Actions"
       },
       "lead": {
-        "ru": "Несколько клавиш и URL-режимов ускоряют навигацию, тестирование и демонстрацию интерфейса.",
-        "en": "A few shortcuts and URL modes make navigation, testing, and demos faster."
+        "ru": "Несколько клавиш помогают не тянуться каждый раз к кнопкам плеера и окна справки.",
+        "en": "A few keys help you avoid reaching for the player buttons and the help window every time."
       },
       "items": {
         "ru": [
-          "`Space` запускает или ставит на паузу проигрывание.",
-          "`ArrowLeft` и `ArrowRight` двигают timeline по шагам, `R` возвращает в начало.",
-          "`?` открывает manual, `Esc` закрывает manual, settings sheet или profile modal.",
-          "`#manual` открывает справку напрямую, а `#manual/<section-id>` ведет сразу к конкретному разделу."
+          "`Space` запускает или ставит на паузу автоплей.",
+          "`ArrowLeft` и `ArrowRight` двигают алгоритм по шагам.",
+          "`R` возвращает анимацию в начало.",
+          "`?` открывает справку, `Esc` закрывает справку и модальные окна."
         ],
         "en": [
-          "`Space` starts or pauses playback.",
-          "`ArrowLeft` and `ArrowRight` move the timeline by steps, while `R` returns to the start.",
-          "`?` opens the manual, and `Esc` closes the manual, the settings sheet, or the profile modal.",
-          "`#manual` opens the guide directly, and `#manual/<section-id>` jumps to a specific section."
+          "`Space` starts or pauses autoplay.",
+          "`ArrowLeft` and `ArrowRight` move the algorithm step by step.",
+          "`R` returns the animation to the beginning.",
+          "`?` opens the guide, and `Esc` closes the guide and modal windows."
         ]
       }
     }
