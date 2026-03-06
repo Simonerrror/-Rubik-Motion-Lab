@@ -38,14 +38,6 @@ export function appendRecognizerPreview(container, item) {
 }
 
 export function updateSandboxOverlay(dom, state, caseItem) {
-  if (dom.sandboxOverlayTitle) {
-    dom.sandboxOverlayTitle.textContent = caseItem ? detailTitle(caseItem) : "Select Case";
-  }
-  if (dom.sandboxOverlaySubtitle) {
-    dom.sandboxOverlaySubtitle.textContent = caseItem
-      ? [caseShortLabel(caseItem), caseItem.subgroup_title].filter(Boolean).join(" · ")
-      : "-";
-  }
   if (dom.sandboxOverlayTopImage) {
     const recognizerUrl = caseItem ? String(caseItem.recognizer_url || "").trim() : "";
     if (recognizerUrl) {
