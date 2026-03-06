@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from cubeanim.formula import FormulaConverter
-from cubeanim.state import solved_state_string, state_string_from_moves
+from cubeanim.state import solved_state_string, state_string_after_moves, state_string_from_moves
 
 
 def test_solved_state_string_layout() -> None:
@@ -23,4 +23,12 @@ def test_moves_followed_by_inverse_return_solved_for_extended_notation() -> None
     moves = FormulaConverter.convert("R U f r2 M E' x y' z2")
     inverse = FormulaConverter.invert_moves(moves)
     state = state_string_from_moves(moves + inverse)
+    assert state == solved_state_string()
+
+
+def test_state_after_moves_applies_sequence_to_existing_state() -> None:
+    base_moves = FormulaConverter.convert("R U")
+    next_moves = FormulaConverter.invert_moves(base_moves)
+    base_state = state_string_from_moves(base_moves)
+    state = state_string_after_moves(base_state, next_moves)
     assert state == solved_state_string()
