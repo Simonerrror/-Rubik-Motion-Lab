@@ -20,9 +20,9 @@ from cubeanim.cards.db import (
 from cubeanim.cards.models import RENDER_QUALITIES
 from cubeanim.cards.recognizer import ensure_recognizer_assets
 from cubeanim.cards.renderer_client import RendererClient, build_renderer_client_from_env
-from cubeanim.cards.sandbox import build_sandbox_timeline
+from cubeanim_domain.sandbox import build_sandbox_timeline
 from cubeanim.palette import FACE_ORDER, CONTRAST_SAFE_CUBE_COLORS
-from cubeanim.render_service import RenderRequest
+from cubeanim_domain.render_contracts import RenderRequest
 
 GROUPS = {"F2L", "OLL", "PLL"}
 _MOVE_RUN_TIME_ENV = "CUBEANIM_MOVE_RUN_TIME"

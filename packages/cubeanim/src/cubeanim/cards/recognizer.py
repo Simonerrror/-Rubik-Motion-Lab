@@ -6,21 +6,21 @@ from functools import lru_cache
 from dataclasses import dataclass
 from pathlib import Path
 
-from cubeanim.formula import FormulaConverter
-from cubeanim.oll import (
+from cubeanim_domain.formula import FormulaConverter
+from cubeanim_domain.oll import (
     OLLTopViewData,
     build_oll_top_view_data,
     resolve_valid_oll_start_state,
     validate_oll_f2l_start_state,
 )
 from cubeanim.palette import CONTRAST_SAFE_CUBE_COLORS, FACE_ORDER
-from cubeanim.pll import (
+from cubeanim_domain.pll import (
     PLLTopViewData,
     balance_pll_formula_rotations,
     build_pll_top_view_data,
     resolve_valid_pll_start_state,
 )
-from cubeanim.state import state_slots_metadata, state_string_from_moves
+from cubeanim_domain.state import state_slots_metadata, state_string_from_moves
 
 
 @dataclass(frozen=True)

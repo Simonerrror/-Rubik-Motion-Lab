@@ -11,6 +11,8 @@ apps/
 
 packages/
   cubeanim/src/cubeanim/
+  cubeanim/src/cubeanim_domain/
+  cubeanim/src/cubeanim_renderer/
 
 tools/
   render_algo.py
@@ -28,6 +30,7 @@ db/
 data/
   f2l/best_f2l_from_pdf.yaml
   cards/runtime/   # generated runtime DB/assets (gitignored)
+  local-renderer/  # local-only render artifacts/catalog (gitignored or runtime)
 
 legacy/
   cards-web/
@@ -38,6 +41,9 @@ legacy/
 - Single active trainer source is `apps/trainer`.
 - `legacy/cards-web` is frozen/deprecated and not part of default workflows.
 - `packages/cubeanim/src` is the only Python package root for runtime and tests.
+- `cubeanim_domain` is the shared source of truth for Python-side formula/timeline/start-state logic.
+- `cubeanim_renderer` is private local-renderer runtime and should not leak into trainer-web files.
+- `cubeanim` is a transitional facade for backward-compatible imports.
 - cards-api root endpoint is service JSON, not legacy HTML.
 - Recognizer assets in `apps/trainer/assets/recognizers` are release-snapshot only:
   - build catalog

@@ -1,72 +1,38 @@
-# Renderer Split Guide
+# Local Renderer Split Guide
 
-This repository now supports renderer backend decoupling for cards workflow.
+Manim is now treated as a private local authoring tool, not as a trainer backend or remote service.
 
-## 1) New boundary
+## 1) Runtime boundary
 
-Cards pipeline talks only to `RendererClient`:
+- `apps/trainer` stays independent from Manim.
+- `packages/cubeanim/src/cubeanim_domain` contains the shared cube/domain logic:
+  - formula parsing
+  - move normalization and inversion
+  - sandbox timeline assembly
+  - F2L/OLL/PLL start-state resolution
+- `packages/cubeanim/src/cubeanim_renderer` contains the Manim-only stack:
+  - scene setup
+  - executor
+  - render orchestration
+  - Rubik 3D Manim primitives
+- `packages/cubeanim/src/cubeanim` remains a compatibility facade for legacy imports during migration.
 
-- local implementation: `LocalRendererClient`
-- remote implementation: `HttpRendererClient`
+## 2) Local renderer workflow
 
-Implementation location: `packages/cubeanim/src/cubeanim/cards/renderer_client.py`.
+- GUI-first entrypoint: `uv run python apps/render-ui/main.py`
+- Optional CLI smoke wrapper: `uv run python tools/render_algo.py --formula "R U R' U'" --name MyAlgo --group PLL --quality draft`
+- Artifacts are written under `data/local-renderer/` and are not part of web runtime assets.
 
-`CardsService` no longer imports `plan_formula_render` / `render_formula` directly.
+## 3) Removed service model
 
-## 2) Env configuration
+- Remote renderer backends are removed.
+- HTTP `/plan` and `/render` are removed from the active architecture.
+- `CUBEANIM_RENDER_BACKEND=http`, `CUBEANIM_RENDER_API_URL`, and `CUBEANIM_RENDER_API_TIMEOUT_SEC` are no longer supported.
+- `cards/*` no longer import the old render service module directly.
 
-Local mode (default):
+## 4) Verification model
 
-```bash
-export CUBEANIM_RENDER_BACKEND=local
-```
-
-Remote mode:
-
-```bash
-export CUBEANIM_RENDER_BACKEND=http
-export CUBEANIM_RENDER_API_URL=http://127.0.0.1:9010
-export CUBEANIM_RENDER_API_TIMEOUT_SEC=60
-```
-
-## 3) Remote API contract
-
-`POST /plan`
-
-- request:
-  - `request`: render request fields (`formula`, `name`, `display_name`, `group`, `quality`, `repeat`, `play`, `manim_*`)
-  - `repo_root`: absolute path as string
-- response body (or `data` wrapper):
-  - `action`
-  - `output_name`
-  - `final_path`
-  - `reason`
-
-`POST /render`
-
-- request:
-  - `request`: same object as above
-  - `repo_root`
-  - `allow_rerender`
-- response body (or `data` wrapper):
-  - `output_name`
-  - `final_path`
-  - `action`
-
-## 4) Extraction recommendation
-
-For dedicated renderer repository, move:
-
-- `packages/cubeanim/src/cubeanim/render_base.py`
-- `packages/cubeanim/src/cubeanim/render_service.py`
-- `packages/cubeanim/src/cubeanim/models.py`
-- `packages/cubeanim/src/cubeanim/utils.py`
-- `cubist.py`
-- optional CLI wrapper: `tools/render_algo.py`
-
-Keep in cards repository:
-
-- `apps/cards-api/main.py`
-- `apps/cards-worker/main.py`
-- `packages/cubeanim/src/cubeanim/cards/*`
-- frontend and DB schema/seed.
+- Canonical domain fixtures live in `tests/fixtures/domain/formula_golden.json`.
+- Python domain tests validate full `formula -> timeline -> states` parity.
+- Trainer JS tests validate parser/beat parity against the same fixture set.
+- Product-facing files are protected by architecture guardrail tests against direct renderer/Manim imports.
