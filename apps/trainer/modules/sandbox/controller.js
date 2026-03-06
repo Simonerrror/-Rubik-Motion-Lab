@@ -94,16 +94,6 @@ export function createSandboxController(deps) {
     return `${progress.toFixed(2)} / ${total}`;
   }
 
-  function stepLabelText() {
-    const total = currentSandboxStepCount();
-    const stepIndex = state.sandboxCursorStepIndex;
-    const stepProgress = state.sandboxCursorStepProgress;
-    if (!total) return "0/0";
-    if (stepIndex >= total && stepProgress <= 0) return `${total}/${total}`;
-    if (stepProgress > 0 && stepIndex < total) return `${stepIndex + 1}/${total}`;
-    return `${Math.min(stepIndex, total)}/${total}`;
-  }
-
   function updateTimelineDisplay() {
     const total = currentSandboxStepCount();
     if (dom.sandboxTimelineSlider) {
@@ -138,7 +128,6 @@ export function createSandboxController(deps) {
 
   function renderSandboxProgress(options = {}) {
     if (!state.sandboxData) {
-      dom.sandboxStepLabel.textContent = "0/0";
       state.sandboxTimelineProgress = 0;
       updateTimelineDisplay();
       updateActiveAlgorithmStepHighlight();
@@ -167,7 +156,6 @@ export function createSandboxController(deps) {
       }
     }
 
-    dom.sandboxStepLabel.textContent = stepLabelText();
     updateTimelineDisplay();
     updateActiveAlgorithmStepHighlight();
     updateSandboxControls();
@@ -215,7 +203,7 @@ export function createSandboxController(deps) {
     }
 
     if (!hasTimeline) {
-      dom.sandboxStepLabel.textContent = "0/0";
+      updateTimelineDisplay();
     }
 
     updateTimelineDisplay();
@@ -299,6 +287,7 @@ export function createSandboxController(deps) {
         transition("STEP_PREV");
         const rendered = renderSandboxProgress({ progress: state.sandboxCursorStepIndex, syncState: true });
         transition("ANIM_DONE", { resumePlaying });
+        updateSandboxControls();
         return rendered;
       }
 
@@ -324,12 +313,14 @@ export function createSandboxController(deps) {
         if (animated) {
           const rendered = renderSandboxProgress({ progress: targetStep, syncState: false });
           transition("ANIM_DONE", { resumePlaying });
+          updateSandboxControls();
           return rendered;
         }
       }
 
       const rendered = renderSandboxProgress({ progress: targetStep, syncState: true });
       transition("ANIM_DONE", { resumePlaying });
+      updateSandboxControls();
       return rendered;
     }
 
@@ -354,7 +345,6 @@ export function createSandboxController(deps) {
             startProgress: stepProgress,
             onProgress: (progress01) => {
               setCursorFromTimelineProgress(stepIndex + progress01);
-              dom.sandboxStepLabel.textContent = stepLabelText();
               updateTimelineDisplay();
               updateActiveAlgorithmStepHighlight();
             },
@@ -367,12 +357,14 @@ export function createSandboxController(deps) {
         if (animated) {
           const rendered = renderSandboxProgress({ progress: Math.min(stepIndex + 1, total), syncState: false });
           transition("ANIM_DONE", { resumePlaying });
+          updateSandboxControls();
           return rendered;
         }
       }
 
       const rendered = renderSandboxProgress({ progress: Math.min(stepIndex + 1, total), syncState: true });
       transition("ANIM_DONE", { resumePlaying });
+      updateSandboxControls();
       return rendered;
     }
 
@@ -455,12 +447,12 @@ export function createSandboxController(deps) {
 
   async function stepBackward() {
     if (!state.sandboxData || isTransportLocked()) return;
-    await moveBy(-1, { animate: true, resumePlaying: false });
+    await moveBy(-1, { animate: false, resumePlaying: false });
   }
 
   async function stepForward() {
     if (!state.sandboxData || isTransportLocked()) return;
-    await moveBy(1, { animate: true, resumePlaying: false });
+    await moveBy(1, { animate: false, resumePlaying: false });
   }
 
   function queueTimelinePreview(progress) {

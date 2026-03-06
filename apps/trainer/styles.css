@@ -537,7 +537,7 @@ body::before {
 
 .sandbox-controls {
   display: grid;
-  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  grid-template-columns: auto auto minmax(0, 1fr);
   align-items: center;
   column-gap: 0.65rem;
   min-height: 4.05rem;
@@ -572,33 +572,6 @@ body::before {
 .sandbox-timeline-slider {
   width: 100%;
   min-width: 0;
-}
-
-.sandbox-info-group {
-  display: grid;
-  grid-template-columns: 9ch 6ch;
-  gap: 0.55rem;
-  align-items: center;
-  justify-content: end;
-  flex-shrink: 0;
-}
-
-.sandbox-info-slot {
-  color: #d9ebff;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 0.72rem;
-  line-height: 1;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums lining-nums;
-  font-feature-settings: "tnum" 1, "lnum" 1;
-}
-
-.sandbox-timeline-label {
-  text-align: right;
-}
-
-.sandbox-step-label {
-  text-align: right;
 }
 
 .sandbox-btn {
@@ -1268,18 +1241,6 @@ body[data-layout="mobile"] .sandbox-timeline {
   order: 3;
   min-width: 0;
   justify-self: stretch;
-}
-
-body[data-layout="mobile"] .sandbox-info-group {
-  order: 4;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  justify-self: stretch;
-  width: 100%;
-}
-
-body[data-layout="mobile"] .sandbox-timeline-label,
-body[data-layout="mobile"] .sandbox-step-label {
-  text-align: left;
 }
 
 body[data-layout="mobile"] .active-algo-display {
