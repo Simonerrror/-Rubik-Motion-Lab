@@ -18,11 +18,14 @@ import { createSandboxController } from "./modules/sandbox/controller.js";
 import { createSandboxMachine } from "./modules/sandbox/machine.js";
 import { setActiveTab, renderCatalog, syncProgressSortToggle } from "./modules/ui/catalog-view.js";
 import { createDetailsView } from "./modules/ui/details-view.js";
+import { createManualController } from "./modules/ui/manual-controller.js";
 import { createProfileModalController } from "./modules/ui/profile-modal-controller.js";
+import { createShellController } from "./modules/ui/shell-controller.js";
 import { updateSandboxOverlay } from "./modules/ui/sandbox-overlay-view.js";
 
 const dom = queryTrainerDom(document);
 const state = createInitialState(loadProgressSortMap());
+const shell = createShellController({ state, dom });
 
 function showToast(message) {
   dom.toast.textContent = String(message || "");
@@ -80,6 +83,7 @@ async function loadCatalogPayload() {
 let detailsView = null;
 let sandbox = null;
 let profileModal = null;
+let manualController = null;
 
 function renderCatalogUI() {
   renderCatalog({
@@ -113,6 +117,7 @@ async function updateCatalogCaseProgress(caseKey, currentStatus) {
   refreshCaseCache();
   renderCatalogUI();
   detailsView.updateDetailsPaneState();
+  shell.syncTitle();
 }
 
 async function selectCase(caseKey) {
@@ -126,6 +131,7 @@ async function selectCase(caseKey) {
   refreshCaseCache();
   renderCatalogUI();
   detailsView.updateDetailsPaneState();
+  shell.openDetails();
 }
 
 function setCaseStatus(status) {
@@ -135,6 +141,7 @@ function setCaseStatus(status) {
   refreshCaseCache();
   renderCatalogUI();
   detailsView.updateDetailsPaneState();
+  shell.syncTitle();
 }
 
 async function loadCatalog() {
@@ -143,6 +150,7 @@ async function loadCatalog() {
     detailsView.setDetailsDisabled();
     sandbox.resetSandboxData();
     renderCatalogUI();
+    shell.openCatalog();
     return;
   }
 
@@ -155,10 +163,13 @@ async function loadCatalog() {
   refreshCaseCache();
   renderCatalogUI();
   detailsView.updateDetailsPaneState();
+  shell.syncLayout();
 }
 
 async function init() {
   try {
+    shell.init();
+
     if (window.CubeSandbox3D?.createSandbox3D && dom.sandboxCanvas) {
       state.sandboxPlayer = window.CubeSandbox3D.createSandbox3D(dom.sandboxCanvas);
       window.addEventListener("resize", () => {
@@ -272,6 +283,14 @@ async function init() {
       showToast,
     });
 
+    manualController = createManualController({
+      state,
+      dom,
+      shell,
+      showToast,
+    });
+    manualController.init();
+
     setActiveTab(state.category);
     bindGlobalEvents({
       state,
@@ -283,12 +302,15 @@ async function init() {
       loadCatalog,
       setCaseStatus,
       profileModal,
+      manual: manualController,
+      shell,
       sandbox,
     });
 
     sandbox.updateSandboxControls();
     syncProgressSortToggle(state, dom);
     await loadCatalog();
+    shell.syncTitle();
   } catch (error) {
     showToast(String(error.message || error));
     console.error(error);

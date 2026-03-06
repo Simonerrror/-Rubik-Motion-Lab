@@ -14,6 +14,7 @@ Repository for Rubik animation/render tooling and static trainer cards.
 - `db/cards/{schema.sql,seed.sql}` — DB schema/seed source
 
 Detailed structure and migration notes: `docs/REPO_LAYOUT.md`.
+Trainer UX manual: `docs/TRAINER_MANUAL.md`.
 
 ## Install
 
@@ -51,6 +52,7 @@ just worker
 
 ```bash
 just trainer-build
+just trainer-manual
 just trainer-serve port=8011
 ```
 
