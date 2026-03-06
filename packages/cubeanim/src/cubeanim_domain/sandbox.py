@@ -43,6 +43,13 @@ def _resolve_initial_state(group: str, inverse_moves: list[str]) -> str:
     return state_string_from_moves(inverse_moves)
 
 
+def resolve_start_state(group: str, inverse_moves: list[str]) -> str:
+    normalized_group = group.strip().upper()
+    if normalized_group not in _SUPPORTED_GROUPS:
+        raise ValueError(f"group must be one of {sorted(_SUPPORTED_GROUPS)}")
+    return _resolve_initial_state(normalized_group, inverse_moves)
+
+
 def _serialize_state_slots() -> list[dict[str, Any]]:
     serialized: list[dict[str, Any]] = []
     for position, face in state_slots_metadata():
@@ -87,7 +94,7 @@ def build_sandbox_timeline(formula: str, group: str) -> SandboxTimeline:
     moves_flat = [move for step in move_steps for move in step]
     inverse_steps = FormulaConverter.invert_steps(move_steps)
     inverse_flat = [move for step in inverse_steps for move in step]
-    initial_state = _resolve_initial_state(normalized_group, inverse_flat)
+    initial_state = resolve_start_state(normalized_group, inverse_flat)
 
     states_by_step = [initial_state]
     current_state = initial_state
