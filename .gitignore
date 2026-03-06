@@ -20,6 +20,7 @@ media/*
 # Cards runtime
 data/cards/runtime/*.db
 data/cards/runtime/recognizers/**
+data/local-renderer/**
 
 # Browser smoke artifacts
 output/playwright/

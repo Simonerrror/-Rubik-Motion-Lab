@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import json
+import subprocess
 import sys
 import threading
 from pathlib import Path
@@ -15,8 +17,9 @@ for entry in (REPO_ROOT, PACKAGE_SRC):
     if token not in sys.path:
         sys.path.insert(0, token)
 
-from cubeanim.models import RenderGroup
-from cubeanim.render_service import RenderRequest, plan_formula_render, render_formula
+from cubeanim_domain.models import RenderGroup
+from cubeanim_domain.render_contracts import RenderRequest
+from cubeanim_renderer.render_service import plan_formula_render, render_formula
 
 QUALITY_OPTIONS = [
     ("Draft (fast)", "draft"),
@@ -27,18 +30,40 @@ QUALITY_OPTIONS = [
 QUALITY_LABEL_TO_VALUE = dict(QUALITY_OPTIONS)
 
 
+def _workspace_root() -> Path:
+    return REPO_ROOT / "data" / "local-renderer"
+
+
+def _catalog_path() -> Path:
+    return _workspace_root() / "render_catalog.json"
+
+
 class RenderUI:
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
-        self.root.title("Rubik Motion Lab")
-        self.root.geometry("820x560")
+        self.root.title("Rubik Local Renderer")
+        self.root.geometry("1080x680")
+        self.last_output_path: Path | None = None
+        self.recent_records: list[dict[str, str]] = []
 
         self._build_form()
         self._setup_clipboard_shortcuts()
+        self._refresh_recent_records()
 
     def _build_form(self) -> None:
-        frame = ttk.Frame(self.root, padding=16)
-        frame.pack(fill=tk.BOTH, expand=True)
+        shell = ttk.Frame(self.root, padding=16)
+        shell.pack(fill=tk.BOTH, expand=True)
+        shell.columnconfigure(0, weight=3)
+        shell.columnconfigure(1, weight=2)
+        shell.rowconfigure(0, weight=1)
+
+        frame = ttk.Frame(shell)
+        frame.grid(row=0, column=0, sticky="nsew", padx=(0, 14))
+        frame.columnconfigure(0, weight=1)
+        frame.columnconfigure(1, weight=0)
+        frame.columnconfigure(2, weight=0)
+        frame.columnconfigure(3, weight=0)
+        frame.rowconfigure(8, weight=1)
 
         ttk.Label(frame, text="Formula (moves)").grid(row=0, column=0, sticky="w")
         self.formula_input = tk.Text(frame, height=5, width=90)
@@ -88,10 +113,15 @@ class RenderUI:
         buttons = ttk.Frame(frame)
         buttons.grid(row=5, column=0, columnspan=4, sticky="w", pady=(8, 8))
 
+        self.plan_button = ttk.Button(buttons, text="Preview / Plan", command=self.on_plan)
+        self.plan_button.grid(row=0, column=0, padx=(0, 10))
         self.render_button = ttk.Button(buttons, text="Render", command=self.on_render)
-        self.render_button.grid(row=0, column=0, padx=(0, 10))
-
-        ttk.Button(buttons, text="Clear", command=self.on_clear).grid(row=0, column=1)
+        self.render_button.grid(row=0, column=1, padx=(0, 10))
+        self.rerender_button = ttk.Button(buttons, text="Re-render", command=self.on_rerender)
+        self.rerender_button.grid(row=0, column=2, padx=(0, 10))
+        self.open_button = ttk.Button(buttons, text="Open output", command=self.on_open_output)
+        self.open_button.grid(row=0, column=3, padx=(0, 10))
+        ttk.Button(buttons, text="Clear", command=self.on_clear).grid(row=0, column=4)
 
         self.status_var = tk.StringVar(value="Ready")
         ttk.Label(frame, textvariable=self.status_var, foreground="#444").grid(
@@ -103,14 +133,25 @@ class RenderUI:
         )
 
         ttk.Label(frame, text="Render log").grid(row=7, column=0, sticky="w")
-        self.log_output = tk.Text(frame, height=14, width=90, state=tk.DISABLED)
+        self.log_output = tk.Text(frame, height=16, width=90, state=tk.DISABLED)
         self.log_output.grid(row=8, column=0, columnspan=4, sticky="nsew")
 
-        frame.columnconfigure(0, weight=1)
-        frame.columnconfigure(1, weight=0)
-        frame.columnconfigure(2, weight=0)
-        frame.columnconfigure(3, weight=0)
-        frame.rowconfigure(8, weight=1)
+        side = ttk.Frame(shell)
+        side.grid(row=0, column=1, sticky="nsew")
+        side.columnconfigure(0, weight=1)
+        side.rowconfigure(1, weight=1)
+
+        ttk.Label(side, text="Recent renders").grid(row=0, column=0, sticky="w")
+        self.recent_list = tk.Listbox(side, height=24)
+        self.recent_list.grid(row=1, column=0, sticky="nsew", pady=(4, 8))
+        self.recent_list.bind("<<ListboxSelect>>", self._on_recent_select)
+
+        self.recent_meta_var = tk.StringVar(value="No recent renders")
+        ttk.Label(side, textvariable=self.recent_meta_var, wraplength=320, foreground="#444").grid(
+            row=2,
+            column=0,
+            sticky="ew",
+        )
 
     def _setup_clipboard_shortcuts(self) -> None:
         for seq, handler in (
@@ -253,6 +294,24 @@ class RenderUI:
             return "break"
         return ""
 
+    def _build_request(self) -> RenderRequest:
+        formula = self.formula_input.get("1.0", tk.END).strip()
+        if not formula:
+            raise ValueError("Formula is required")
+
+        repeat = int(self.repeat_var.get().strip())
+        if repeat < 1:
+            raise ValueError("Repeat must be >= 1")
+
+        return RenderRequest(
+            formula=formula,
+            name=self.name_var.get().strip() or None,
+            group=self.group_var.get().strip(),
+            quality=QUALITY_LABEL_TO_VALUE[self.quality_var.get().strip()],
+            repeat=repeat,
+            play=self.play_var.get(),
+        )
+
     def on_clear(self) -> None:
         self.formula_input.delete("1.0", tk.END)
         self.name_var.set("")
@@ -261,32 +320,33 @@ class RenderUI:
         self.repeat_var.set("1")
         self.play_var.set(False)
         self.status_var.set("Ready")
+        self.recent_list.selection_clear(0, tk.END)
+        self.recent_meta_var.set("No recent renders")
         self._append_log("Cleared form")
 
-    def on_render(self) -> None:
+    def on_plan(self) -> None:
         try:
-            formula = self.formula_input.get("1.0", tk.END).strip()
-            if not formula:
-                raise ValueError("Formula is required")
-
-            repeat = int(self.repeat_var.get().strip())
-            if repeat < 1:
-                raise ValueError("Repeat must be >= 1")
-
-            request = RenderRequest(
-                formula=formula,
-                name=self.name_var.get().strip() or None,
-                group=self.group_var.get().strip(),
-                quality=QUALITY_LABEL_TO_VALUE[self.quality_var.get().strip()],
-                repeat=repeat,
-                play=self.play_var.get(),
-            )
-
+            request = self._build_request()
             plan = plan_formula_render(request=request, repo_root=REPO_ROOT)
-            self._append_log(f"Plan: {plan.action} | {plan.reason}")
+            self._present_plan(plan)
+        except Exception as exc:
+            messagebox.showerror("Invalid input", str(exc))
 
-            if plan.action == "confirm_rerender":
-                should_render = messagebox.askyesno(
+    def on_render(self) -> None:
+        self._start_render(force_rerender=False)
+
+    def on_rerender(self) -> None:
+        self._start_render(force_rerender=True)
+
+    def _start_render(self, force_rerender: bool) -> None:
+        try:
+            request = self._build_request()
+            plan = plan_formula_render(request=request, repo_root=REPO_ROOT)
+            self._present_plan(plan)
+
+            allow_rerender = force_rerender
+            if plan.action == "confirm_rerender" and not force_rerender:
+                allow_rerender = messagebox.askyesno(
                     title="Render already exists",
                     message=(
                         "A render with the same name and formula already exists.\n\n"
@@ -294,25 +354,16 @@ class RenderUI:
                         "Render again and overwrite?"
                     ),
                 )
-                if not should_render:
+                if not allow_rerender:
                     self.status_var.set("Render cancelled")
                     self._append_log("Cancelled by user")
                     return
-
-            if plan.action == "render_alternative":
-                messagebox.showinfo(
-                    title="Saving as alternative",
-                    message=(
-                        "Found existing render with the same name but different formula.\n\n"
-                        f"Will save as: {plan.output_name}"
-                    ),
-                )
 
             self._set_busy(True)
             self.status_var.set("Rendering...")
             threading.Thread(
                 target=self._run_render,
-                args=(request, plan.action == "confirm_rerender"),
+                args=(request, allow_rerender),
                 daemon=True,
             ).start()
         except Exception as exc:
@@ -330,9 +381,11 @@ class RenderUI:
             self.root.after(0, lambda: self._on_render_failed(exc))
 
     def _on_render_done(self, path: Path, output_name: str, action: str) -> None:
+        self.last_output_path = path
         self._set_busy(False)
         self.status_var.set(f"Done: {path}")
         self._append_log(f"Rendered [{action}] -> {output_name}: {path}")
+        self._refresh_recent_records()
         messagebox.showinfo("Render finished", f"Rendered to:\n{path}")
 
     def _on_render_failed(self, error: Exception) -> None:
@@ -341,9 +394,85 @@ class RenderUI:
         self._append_log(f"ERROR: {error}")
         messagebox.showerror("Render failed", str(error))
 
+    def _present_plan(self, plan) -> None:
+        self.status_var.set(f"Plan: {plan.action}")
+        self._append_log(f"Plan: {plan.action} | {plan.reason} | {plan.final_path}")
+        if plan.action == "render_alternative":
+            messagebox.showinfo(
+                title="Saving as alternative",
+                message=(
+                    "Found existing render with the same name but different formula.\n\n"
+                    f"Will save as: {plan.output_name}"
+                ),
+            )
+
+    def on_open_output(self) -> None:
+        path = self._selected_recent_path() or self.last_output_path
+        if path is None:
+            messagebox.showinfo("Open output", "No render output selected yet")
+            return
+        if not path.exists():
+            messagebox.showerror("Open output", f"File does not exist:\n{path}")
+            return
+        subprocess.run(["open", str(path)], check=False)
+
+    def _refresh_recent_records(self) -> None:
+        self.recent_records = []
+        self.recent_list.delete(0, tk.END)
+        path = _catalog_path()
+        if not path.exists():
+            self.recent_meta_var.set("No recent renders")
+            return
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            self.recent_meta_var.set(f"Could not read history: {exc}")
+            return
+
+        records = payload.get("records") if isinstance(payload, dict) else None
+        if not isinstance(records, list) or not records:
+            self.recent_meta_var.set("No recent renders")
+            return
+
+        for record in reversed(records[-20:]):
+            output_path = str(record.get("path") or "").strip()
+            if not output_path:
+                continue
+            resolved = Path(output_path)
+            if not resolved.is_absolute():
+                resolved = REPO_ROOT / output_path
+            entry = {
+                "label": f"{record.get('group', 'NO_GROUP')} · {record.get('quality', 'draft')} · {record.get('display_name') or record.get('output_name')}",
+                "path": str(resolved),
+                "updated_at": str(record.get("updated_at") or ""),
+            }
+            self.recent_records.append(entry)
+            self.recent_list.insert(tk.END, entry["label"])
+
+        if self.recent_records:
+            self.recent_meta_var.set(self.recent_records[0]["path"])
+        else:
+            self.recent_meta_var.set("No recent renders")
+
+    def _on_recent_select(self, _event: tk.Event) -> None:
+        path = self._selected_recent_path()
+        self.recent_meta_var.set(str(path) if path else "No recent render selected")
+        if path is not None:
+            self.last_output_path = path
+
+    def _selected_recent_path(self) -> Path | None:
+        selection = self.recent_list.curselection()
+        if not selection:
+            return None
+        index = int(selection[0])
+        if index < 0 or index >= len(self.recent_records):
+            return None
+        return Path(self.recent_records[index]["path"])
+
     def _set_busy(self, busy: bool) -> None:
         state = tk.DISABLED if busy else tk.NORMAL
-        self.render_button.configure(state=state)
+        for button in (self.plan_button, self.render_button, self.rerender_button, self.open_button):
+            button.configure(state=state)
 
     def _append_log(self, text: str) -> None:
         self.log_output.configure(state=tk.NORMAL)
@@ -355,7 +484,7 @@ class RenderUI:
 def main() -> int:
     root = tk.Tk()
     app = RenderUI(root)
-    app._append_log("UI ready")
+    app._append_log(f"Local renderer ready | workspace: {_workspace_root()}")
     root.mainloop()
     return 0
 

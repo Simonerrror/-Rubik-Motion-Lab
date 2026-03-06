@@ -1,3 +1,1 @@
-from .cube3d import RubikCube3D
-
-__all__ = ["RubikCube3D"]
+from cubeanim_renderer.rubik_core import *  # noqa: F401,F403

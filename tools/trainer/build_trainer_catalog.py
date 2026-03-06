@@ -27,9 +27,9 @@ for entry in (REPO_ROOT, PACKAGE_SRC):
 
 from cubeanim.cards import repository
 from cubeanim.cards.db import connect
-from cubeanim.cards.sandbox import build_sandbox_timeline
+from cubeanim_domain.sandbox import build_sandbox_timeline
 from cubeanim.cards.services import CardsService
-from cubeanim.state import solved_state_string, state_slots_metadata
+from cubeanim_domain.state import solved_state_string, state_slots_metadata
 from tools.trainer.prune_trainer_assets import prune_trainer_assets
 
 

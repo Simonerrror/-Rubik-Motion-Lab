@@ -20,10 +20,11 @@ for entry in (REPO_ROOT, PACKAGE_SRC):
     if token not in sys.path:
         sys.path.insert(0, token)
 
-from cubeanim.models import RenderGroup
-from cubeanim.presets import get_preset
-from cubeanim.render_service import RenderRequest, render_formula
-from cubeanim.utils import slugify_formula
+from cubeanim_domain.models import RenderGroup
+from cubeanim_domain.presets import get_preset
+from cubeanim_domain.render_contracts import RenderRequest
+from cubeanim_renderer.render_service import render_formula
+from cubeanim_domain.utils import slugify_formula
 
 
 def _normalize_group(raw_group: str | None) -> str:
