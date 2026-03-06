@@ -659,6 +659,22 @@ body::before {
   cursor: pointer;
 }
 
+.sandbox-btn svg {
+  width: 0.98rem;
+  height: 0.98rem;
+  display: block;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.sandbox-btn svg .fill-icon {
+  fill: currentColor;
+  stroke: none;
+}
+
 .sandbox-btn:hover:not(:disabled),
 .manual-lang-btn:hover,
 .status-btn:hover:not(:disabled),
@@ -698,6 +714,11 @@ body::before {
   letter-spacing: 0;
   border-color: rgba(19, 141, 255, 0.9);
   background: linear-gradient(135deg, rgba(19, 141, 255, 0.95), rgba(76, 180, 255, 0.88));
+}
+
+.sandbox-btn-primary svg {
+  width: 1.02rem;
+  height: 1.02rem;
 }
 
 .sandbox-speed-btn.active {
