@@ -28,7 +28,7 @@ _Generated from `apps/trainer/data/manual-content.json`._
 
 - `Play` запускает автопроигрывание алгоритма.
 - Кнопки шагают по формуле вручную: назад к началу, шаг назад, шаг вперед.
-- Кнопки `x1`, `x1.5`, `x2` меняют скорость воспроизведения.
+- Кнопка скорости циклически переключает режимы `0.5`, `1`, `1.5`, `2`.
 - Ползунок позволяет быстро перемотать алгоритм на любой момент.
 - Если удобнее работать от формулы, кликните по нужному ходу в блоке `Active Algorithm` под плеером и переходите сразу к этому месту.
 
@@ -94,7 +94,7 @@ The 3D player lets you watch the whole algorithm, step through it manually, and 
 
 - `Play` starts automatic playback.
 - The transport buttons move through the formula manually: back to start, one step back, one step forward.
-- The `x1`, `x1.5`, and `x2` buttons change playback speed.
+- The speed button cycles through `0.5`, `1`, `1.5`, and `2`.
 - The slider lets you scrub to any point in the algorithm.
 - If you prefer working from the formula, click the move you need in the `Active Algorithm` block below the player and jump straight there.
 

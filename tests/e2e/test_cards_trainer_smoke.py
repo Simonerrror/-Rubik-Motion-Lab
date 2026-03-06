@@ -91,6 +91,8 @@ def _assert_status_after_reload(page, is_mobile: bool) -> None:
 
 
 def _run_manual_checks(page, base_url: str, is_mobile: bool) -> None:
+    if is_mobile:
+        _open_settings(page)
     page.get_by_test_id("help-open").click()
     expect(page.locator("#manual-modal")).not_to_have_class(re.compile(r".*hidden.*"), timeout=10000)
     expect(page.locator("[data-testid='help-section-overview']")).to_be_visible(timeout=10000)
@@ -98,6 +100,8 @@ def _run_manual_checks(page, base_url: str, is_mobile: bool) -> None:
     expect(page.get_by_test_id("help-lang-en")).to_have_class(re.compile(r".*active.*"), timeout=10000)
     page.keyboard.press("Escape")
     expect(page.locator("#manual-modal")).to_have_class(re.compile(r".*hidden.*"), timeout=10000)
+    if is_mobile:
+        _close_settings(page)
 
     page.keyboard.press("Shift+/")
     expect(page.locator("#manual-modal")).not_to_have_class(re.compile(r".*hidden.*"), timeout=10000)
@@ -144,9 +148,20 @@ def _run_layout_flow(page, base_url: str, is_mobile: bool) -> None:
     play_btn = page.locator("#sandbox-play-pause-btn")
     play_btn.click()
     page.wait_for_timeout(120)
-    if (play_btn.inner_text() or "").strip() != "▶":
+    if (play_btn.get_attribute("aria-label") or "").strip().lower() != "play":
         play_btn.click()
-    expect(play_btn).to_have_text("▶", timeout=10000)
+    expect(play_btn).to_have_attribute("aria-label", "Play", timeout=10000)
+
+    speed_toggle = page.locator("#sandbox-speed-toggle-btn")
+    expect(speed_toggle).to_have_text("×1", timeout=10000)
+    speed_toggle.click()
+    expect(speed_toggle).to_have_text("×1.5", timeout=10000)
+    speed_toggle.click()
+    expect(speed_toggle).to_have_text("×2", timeout=10000)
+    speed_toggle.click()
+    expect(speed_toggle).to_have_text("×0.5", timeout=10000)
+    speed_toggle.click()
+    expect(speed_toggle).to_have_text("×1", timeout=10000)
 
     expect(slider).to_be_enabled(timeout=10000)
     slider.evaluate("el => { el.value = String(Math.min(1, Number(el.max) || 0)); el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); }")
@@ -174,7 +189,7 @@ def _run_layout_flow(page, base_url: str, is_mobile: bool) -> None:
         switch_target = all_algo_radios.nth(1)
     switch_target.click()
 
-    expect(page.locator("#sandbox-play-pause-btn")).to_have_text("▶", timeout=10000)
+    expect(page.locator("#sandbox-play-pause-btn")).to_have_attribute("aria-label", "Play", timeout=10000)
     expect(page.locator("#sandbox-timeline-slider")).to_have_value("0", timeout=10000)
 
     custom_option = page.locator(".algo-option", has_text=custom_formula).first
@@ -185,12 +200,16 @@ def _run_layout_flow(page, base_url: str, is_mobile: bool) -> None:
     if is_mobile:
         _close_settings(page)
 
+    if is_mobile:
+        _open_settings(page)
     page.get_by_test_id("export-profile").click()
     expect(page.locator("#profile-modal")).not_to_have_class(re.compile(r".*hidden.*"), timeout=10000)
     expect(page.locator("#profile-data")).to_have_value(re.compile(r".+"), timeout=10000)
     export_payload = (page.locator("#profile-data").input_value() or "").strip()
     assert export_payload
     page.locator("#profile-close-btn").click()
+    if is_mobile:
+        _close_settings(page)
 
     if is_mobile:
         _open_settings(page)
@@ -199,11 +218,15 @@ def _run_layout_flow(page, base_url: str, is_mobile: bool) -> None:
     if is_mobile:
         _close_settings(page)
 
+    if is_mobile:
+        _open_settings(page)
     page.get_by_test_id("import-profile").click()
     page.locator("#profile-data").fill(export_payload)
     page.locator("#profile-apply-btn").click()
     expect(page.locator("#profile-modal")).not_to_have_class(re.compile(r".*hidden.*"), timeout=10000)
     page.locator("#profile-close-btn").click()
+    if is_mobile:
+        _close_settings(page)
 
     page.reload(wait_until="domcontentloaded")
     expect(page.locator("[data-testid^='case-card-']").first).to_be_visible(timeout=10000)

@@ -25,6 +25,7 @@ export function bindGlobalEvents(deps) {
   });
 
   dom.sandboxPrevBtn?.addEventListener("click", () => {
+    sandbox.stopPlayback({ silent: true, forceUpdate: true });
     void sandbox.stepBackward();
   });
 
@@ -33,6 +34,7 @@ export function bindGlobalEvents(deps) {
   });
 
   dom.sandboxNextBtn?.addEventListener("click", () => {
+    sandbox.stopPlayback({ silent: true, forceUpdate: true });
     void sandbox.stepForward();
   });
 
@@ -59,16 +61,8 @@ export function bindGlobalEvents(deps) {
     window.addEventListener("pointerup", finishScrub);
   }
 
-  const onSpeedClick = (event) => {
-    const target = event.target;
-    if (!(target instanceof Element)) return;
-    const speedBtn = target.closest(".sandbox-speed-btn");
-    if (!speedBtn) return;
-    sandbox.setPlaybackSpeed(speedBtn.dataset.speed || "1");
-  };
-
-  document.querySelectorAll(".sandbox-speed-btn").forEach((btn) => {
-    btn.addEventListener("click", onSpeedClick);
+  dom.sandboxSpeedToggleBtn?.addEventListener("click", () => {
+    sandbox.cyclePlaybackSpeed();
   });
 
   if (dom.sortProgressToggle) {

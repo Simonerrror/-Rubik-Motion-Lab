@@ -13,7 +13,7 @@ export const STATUS_SORT_RANK = {
 export const STATUS_CYCLE = ["NEW", "IN_PROGRESS", "LEARNED"];
 export const RECOGNIZER_CACHE_BUSTER = `r${Date.now()}`;
 
-export const SANDBOX_PLAYBACK_SPEEDS = [1, 1.5, 2];
+export const SANDBOX_PLAYBACK_SPEEDS = [0.5, 1, 1.5, 2];
 export const DEFAULT_SANDBOX_PLAYBACK_CONFIG = {
   run_time_sec: 0.65,
   double_turn_multiplier: 1.7,

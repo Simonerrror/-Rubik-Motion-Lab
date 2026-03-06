@@ -29,13 +29,16 @@ export function createShellController(deps) {
   const { state, dom } = deps;
 
   function syncTitle() {
-    if (!dom.shellViewTitle) return;
-    const caseTitle = String(dom.mName?.textContent || "").trim();
-    if (state.layout === "mobile" && state.view === "details") {
-      dom.shellViewTitle.textContent = caseTitle || "Case Details";
-      return;
+    // Headerless shell: case/category titles live in the content panes.
+  }
+
+  function relocateUtilityRail() {
+    if (!dom.utilityRail) return;
+    const target =
+      state.layout === "mobile" && state.view === "details" ? dom.mobileUtilitySlot : dom.sidebarUtilitySlot;
+    if (target && dom.utilityRail.parentElement !== target) {
+      target.appendChild(dom.utilityRail);
     }
-    dom.shellViewTitle.textContent = `${state.category} Catalog`;
   }
 
   function applyShellState() {
@@ -63,6 +66,7 @@ export function createShellController(deps) {
     if (dom.settingsBackdrop) {
       dom.settingsBackdrop.setAttribute("aria-hidden", state.sheet === "settings" ? "false" : "true");
     }
+    relocateUtilityRail();
     syncTitle();
   }
 
