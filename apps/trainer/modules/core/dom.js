@@ -31,7 +31,6 @@ export function queryTrainerDom(doc) {
     sandboxOverlayTitle: doc.getElementById("sandbox-overlay-title"),
     sandboxOverlaySubtitle: doc.getElementById("sandbox-overlay-subtitle"),
     sandboxOverlayTopImage: doc.getElementById("sandbox-overlay-top-image"),
-    sandboxOverlayFormula: doc.getElementById("sandbox-overlay-formula"),
     mStatusGroup: doc.getElementById("m-status-group"),
     mAlgoList: doc.getElementById("m-algo-list"),
     activeAlgoDisplay: doc.getElementById("active-algo-display"),
