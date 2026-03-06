@@ -1,5 +1,4 @@
 import { RECOGNIZER_CACHE_BUSTER } from "../core/constants.js";
-import { tokenizeFormula } from "../domain/formula.js";
 
 export function caseShortLabel(item) {
   if (item.case_number != null) return `${item.group} #${item.case_number}`;
@@ -38,29 +37,6 @@ export function appendRecognizerPreview(container, item) {
   container.classList.add("catalog-preview-empty");
 }
 
-function formatSandboxFormulaOverlay(formula) {
-  const allMoves = tokenizeFormula(formula);
-  if (!allMoves.length) return "";
-  const maxMoves = 24;
-  const rowSize = 8;
-  const truncated = allMoves.length > maxMoves;
-  const moves = allMoves.slice(0, maxMoves);
-  const rows = [];
-  for (let index = 0; index < moves.length; index += rowSize) {
-    rows.push(moves.slice(index, index + rowSize).join(" "));
-  }
-  if (truncated && rows.length) {
-    rows[rows.length - 1] = `${rows[rows.length - 1]} ...`;
-  }
-  return rows.join("\n");
-}
-
-function sandboxOverlayFormula(state, caseItem) {
-  const active = String(state.activeDisplayFormula || "").trim();
-  if (state.activeDisplayMode === "custom" && active) return active;
-  return active || String(caseItem?.active_formula || "").trim();
-}
-
 export function updateSandboxOverlay(dom, state, caseItem) {
   if (dom.sandboxOverlayTitle) {
     dom.sandboxOverlayTitle.textContent = caseItem ? detailTitle(caseItem) : "Select Case";
@@ -69,12 +45,6 @@ export function updateSandboxOverlay(dom, state, caseItem) {
     dom.sandboxOverlaySubtitle.textContent = caseItem
       ? [caseShortLabel(caseItem), caseItem.subgroup_title].filter(Boolean).join(" · ")
       : "-";
-  }
-  if (dom.sandboxOverlayFormula) {
-    const formula = caseItem ? sandboxOverlayFormula(state, caseItem) : "";
-    const formatted = formatSandboxFormulaOverlay(formula);
-    dom.sandboxOverlayFormula.textContent = formatted || "-";
-    dom.sandboxOverlayFormula.title = formula || "";
   }
   if (dom.sandboxOverlayTopImage) {
     const recognizerUrl = caseItem ? String(caseItem.recognizer_url || "").trim() : "";

@@ -180,13 +180,13 @@ export function createSandboxController(deps) {
 
     if (dom.sandboxToStartBtn) {
       dom.sandboxToStartBtn.disabled = !hasTimeline || atStart || locked;
-      dom.sandboxToStartBtn.title = "Back to start";
-      dom.sandboxToStartBtn.setAttribute("aria-label", "Back to start");
+      dom.sandboxToStartBtn.title = "Reset to start";
+      dom.sandboxToStartBtn.setAttribute("aria-label", "Reset to start");
     }
     if (dom.sandboxPrevBtn) {
       dom.sandboxPrevBtn.disabled = !hasTimeline || atStart || locked;
-      dom.sandboxPrevBtn.title = "Previous step";
-      dom.sandboxPrevBtn.setAttribute("aria-label", "Previous step");
+      dom.sandboxPrevBtn.title = "Step back";
+      dom.sandboxPrevBtn.setAttribute("aria-label", "Step back");
     }
     if (dom.sandboxPlayPauseBtn) {
       dom.sandboxPlayPauseBtn.disabled = !hasTimeline || total === 0;
@@ -196,8 +196,8 @@ export function createSandboxController(deps) {
     }
     if (dom.sandboxNextBtn) {
       dom.sandboxNextBtn.disabled = !hasTimeline || atEnd || locked;
-      dom.sandboxNextBtn.title = "Next step";
-      dom.sandboxNextBtn.setAttribute("aria-label", "Next step");
+      dom.sandboxNextBtn.title = "Step forward";
+      dom.sandboxNextBtn.setAttribute("aria-label", "Step forward");
     }
     if (dom.sandboxTimelineSlider) {
       dom.sandboxTimelineSlider.disabled = !hasTimeline || total === 0;
