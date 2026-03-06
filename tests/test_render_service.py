@@ -20,11 +20,12 @@ def test_plan_render_for_new_name(tmp_path: Path) -> None:
 
 
 def test_plan_confirm_rerender_for_identical_formula(tmp_path: Path) -> None:
-    videos_dir = tmp_path / "media" / "videos" / "PLL" / "ql"
+    videos_dir = tmp_path / "data" / "local-renderer" / "videos" / "PLL" / "ql"
     videos_dir.mkdir(parents=True, exist_ok=True)
     (videos_dir / "MyAlgo.mp4").write_bytes(b"fake")
 
-    catalog = tmp_path / "media" / "videos" / "render_catalog.json"
+    catalog = tmp_path / "data" / "local-renderer" / "render_catalog.json"
+    catalog.parent.mkdir(parents=True, exist_ok=True)
     catalog.write_text(
         '{"version":1,"records":[{"group":"PLL","quality":"ql","output_name":"MyAlgo","formula":"R U","repeat":1}]}',
         encoding="utf-8",
@@ -43,11 +44,12 @@ def test_plan_confirm_rerender_for_identical_formula(tmp_path: Path) -> None:
 
 
 def test_plan_alternative_for_same_name_different_formula(tmp_path: Path) -> None:
-    videos_dir = tmp_path / "media" / "videos" / "PLL" / "ql"
+    videos_dir = tmp_path / "data" / "local-renderer" / "videos" / "PLL" / "ql"
     videos_dir.mkdir(parents=True, exist_ok=True)
     (videos_dir / "MyAlgo.mp4").write_bytes(b"fake")
 
-    catalog = tmp_path / "media" / "videos" / "render_catalog.json"
+    catalog = tmp_path / "data" / "local-renderer" / "render_catalog.json"
+    catalog.parent.mkdir(parents=True, exist_ok=True)
     catalog.write_text(
         '{"version":1,"records":[{"group":"PLL","quality":"ql","output_name":"MyAlgo","formula":"R U","repeat":1}]}',
         encoding="utf-8",
@@ -66,7 +68,7 @@ def test_plan_alternative_for_same_name_different_formula(tmp_path: Path) -> Non
 
 
 def test_plan_confirm_when_file_exists_without_catalog_record(tmp_path: Path) -> None:
-    videos_dir = tmp_path / "media" / "videos" / "PLL" / "ql"
+    videos_dir = tmp_path / "data" / "local-renderer" / "videos" / "PLL" / "ql"
     videos_dir.mkdir(parents=True, exist_ok=True)
     (videos_dir / "MyAlgo.mp4").write_bytes(b"fake")
 
@@ -91,7 +93,7 @@ def test_quality_alias_standard_maps_to_readable_path(tmp_path: Path) -> None:
 
     plan = plan_formula_render(request=request, repo_root=tmp_path)
     assert plan.action == "render"
-    assert "/PLL/standard/" in str(plan.final_path)
+    assert "/data/local-renderer/videos/PLL/standard/" in str(plan.final_path)
 
 
 def test_build_command_uses_display_name_for_overlay(tmp_path: Path) -> None:
@@ -160,3 +162,4 @@ def test_render_formula_supports_custom_renderer(tmp_path: Path) -> None:
     assert result.output_name == "custom_renderer_case"
     assert result.action == "render"
     assert result.final_path.exists()
+    assert "/data/local-renderer/videos/PLL/draft/" in str(result.final_path)

@@ -60,9 +60,4 @@ process.stdout.write(JSON.stringify(result));
         assert actual["move_steps"] == fixture["move_steps"]
         assert actual["moves_flat"] == fixture["moves_flat"]
         assert actual["highlight_by_step"] == fixture["highlight_by_step"]
-        has_cube_rotations = any(move[:1] in {"x", "y", "z"} for move in fixture["moves_flat"])
-        if not has_cube_rotations:
-            assert actual["states_by_step"] == fixture["states_by_step"]
-        else:
-            assert len(actual["states_by_step"]) == len(fixture["states_by_step"])
-            assert all(len(state) == 54 for state in actual["states_by_step"])
+        assert actual["states_by_step"] == fixture["states_by_step"]

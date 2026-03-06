@@ -138,6 +138,19 @@ def _solved_stickers() -> list[_Sticker]:
     return stickers
 
 
+def _stickers_from_state(state: str) -> list[_Sticker]:
+    if len(state) != 54:
+        raise ValueError(f"State must contain exactly 54 facelets, got {len(state)}")
+
+    stickers: list[_Sticker] = []
+    for (position, face), color in zip(_state_slots(), state, strict=True):
+        normal = next((normal for normal, mapped_face in _NORMAL_TO_FACE.items() if mapped_face == face), None)
+        if normal is None:
+            raise ValueError(f"Unsupported face in state slots: {face}")
+        stickers.append(_Sticker(p=position, n=normal, color=color))
+    return stickers
+
+
 def _apply_move(stickers: list[_Sticker], move: str) -> None:
     base, modifier = _split_move_modifier(move)
     axis = _axis_for_base(base)
@@ -214,6 +227,18 @@ def state_string_from_moves(moves: list[str]) -> str:
     for move in moves:
         _apply_move(stickers, move)
 
+    return _state_string_from_stickers(stickers)
+
+
+def state_string_after_moves(state: str, moves: list[str]) -> str:
+    stickers = _stickers_from_state(state)
+    for move in moves:
+        _apply_move(stickers, move)
+
+    return _state_string_from_stickers(stickers)
+
+
+def _state_string_from_stickers(stickers: list[_Sticker]) -> str:
     lookup: dict[tuple[tuple[int, int, int], str], str] = {}
     for sticker in stickers:
         face = _NORMAL_TO_FACE[sticker.n]

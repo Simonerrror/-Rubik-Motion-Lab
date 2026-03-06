@@ -6,7 +6,7 @@ from typing import Any
 from cubeanim_domain.formula import FormulaConverter
 from cubeanim_domain.oll import resolve_valid_oll_start_state, validate_oll_f2l_start_state
 from cubeanim_domain.pll import resolve_valid_pll_start_state
-from cubeanim_domain.state import state_slots_metadata, state_string_from_moves
+from cubeanim_domain.state import state_slots_metadata, state_string_after_moves, state_string_from_moves
 
 _SUPPORTED_GROUPS = {"F2L", "OLL", "PLL"}
 _AUTO_MERGE_UD_PAIRS = {
@@ -90,10 +90,10 @@ def build_sandbox_timeline(formula: str, group: str) -> SandboxTimeline:
     initial_state = _resolve_initial_state(normalized_group, inverse_flat)
 
     states_by_step = [initial_state]
-    executed_moves: list[str] = []
+    current_state = initial_state
     for step in move_steps:
-        executed_moves.extend(step)
-        states_by_step.append(state_string_from_moves(inverse_flat + executed_moves))
+        current_state = state_string_after_moves(current_state, step)
+        states_by_step.append(current_state)
 
     highlight_by_step = ["+".join(step) for step in move_steps]
 
