@@ -11,17 +11,16 @@ from cubeanim_domain.models import AlgorithmPreset, RenderGroup
 from cubeanim_domain.oll import (
     OLLTopViewData,
     build_oll_top_view_data,
-    resolve_valid_oll_start_state,
     validate_oll_f2l_start_state,
 )
 from cubeanim_domain.pll import (
     PLLTopViewData,
     balance_pll_formula_rotations,
     build_pll_top_view_data,
-    resolve_valid_pll_start_state,
     validate_pll_start_state,
 )
 from cubeanim_domain.presets import get_preset
+from cubeanim_domain.sandbox import resolve_start_state
 from cubeanim_renderer.setup import CubeVisualConfig, SceneSetup
 from cubeanim_domain.utils import normalize_formula_text
 
@@ -95,17 +94,15 @@ class BaseAlgorithmScene(ThreeDScene):
             formula_for_scene = balance_pll_formula_rotations(formula_for_scene)
         move_steps = FormulaConverter.convert_steps(formula_for_scene, repeat=preset.repeat)
         inverse_steps = FormulaConverter.invert_steps(move_steps)
+        inverse_flat = [move for step in inverse_steps for move in step]
+        start_state = resolve_start_state(preset.group.value, inverse_flat) if preset.group in {RenderGroup.F2L, RenderGroup.OLL, RenderGroup.PLL} else None
         oll_top_view_data: OLLTopViewData | None = None
         pll_top_view_data: PLLTopViewData | None = None
 
-        if preset.group == RenderGroup.OLL:
-            inverse_flat = [move for step in inverse_steps for move in step]
-            start_state = resolve_valid_oll_start_state(inverse_flat)
+        if preset.group == RenderGroup.OLL and start_state is not None:
             validate_oll_f2l_start_state(start_state)
             oll_top_view_data = build_oll_top_view_data(start_state)
-        elif preset.group == RenderGroup.PLL:
-            inverse_flat = [move for step in inverse_steps for move in step]
-            start_state = resolve_valid_pll_start_state(inverse_flat)
+        elif preset.group == RenderGroup.PLL and start_state is not None:
             try:
                 validate_pll_start_state(start_state)
                 pll_top_view_data = build_pll_top_view_data(start_state)
@@ -123,6 +120,7 @@ class BaseAlgorithmScene(ThreeDScene):
             execution_config,
             algorithm_name=preset.name,
             formula_text=display_formula,
+            initial_state=start_state,
             inverse_steps=inverse_steps,
             oll_top_view_data=oll_top_view_data,
             pll_top_view_data=pll_top_view_data,

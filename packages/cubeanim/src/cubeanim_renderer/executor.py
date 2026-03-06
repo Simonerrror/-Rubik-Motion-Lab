@@ -550,6 +550,7 @@ class MoveExecutor:
         config: ExecutionConfig,
         algorithm_name: str | None = None,
         formula_text: str | None = None,
+        initial_state: str | None = None,
         inverse_steps: list[list[str]] | None = None,
         oll_top_view_data: OLLTopViewData | None = None,
         pll_top_view_data: PLLTopViewData | None = None,
@@ -557,7 +558,9 @@ class MoveExecutor:
     ) -> None:
         mask_u_color = (config.mask_u_color or "").strip() or None
 
-        if config.prepare_case_from_inverse and inverse_steps:
+        if initial_state:
+            cube.set_state(initial_state)
+        elif config.prepare_case_from_inverse and inverse_steps:
             inverse_flat = [move for step in inverse_steps for move in step]
             cube.set_state(state_string_from_moves(inverse_flat))
 
