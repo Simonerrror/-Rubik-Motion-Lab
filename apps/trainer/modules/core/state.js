@@ -36,6 +36,7 @@ import { DEFAULT_SANDBOX_PLAYBACK_CONFIG } from "./constants.js";
  * @property {Record<string, boolean>} progressSortByGroup
  * @property {Object|null} sandboxData
  * @property {Object|null} sandboxPlayer
+ * @property {Object|null|undefined} sandboxStore
  * @property {number} sandboxStepIndex
  * @property {number} sandboxTimelineProgress
  * @property {number} sandboxCursorStepIndex
@@ -76,6 +77,7 @@ export function createInitialState(progressSortByGroup) {
 
     sandboxData: null,
     sandboxPlayer: null,
+    sandboxStore: null,
     sandboxStepIndex: 0,
     sandboxTimelineProgress: 0,
     sandboxCursorStepIndex: 0,
