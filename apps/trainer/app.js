@@ -15,7 +15,7 @@ import {
   saveProgressSortMap,
 } from "./modules/domain/profile-storage.js";
 import { createSandboxController } from "./modules/sandbox/controller.js";
-import { createSandboxMachine } from "./modules/sandbox/machine.js";
+import { createSandboxStore } from "./modules/sandbox/store.js";
 import { setActiveTab, renderCatalog, syncProgressSortToggle } from "./modules/ui/catalog-view.js";
 import { createDetailsView } from "./modules/ui/details-view.js";
 import { createManualController } from "./modules/ui/manual-controller.js";
@@ -196,10 +196,9 @@ async function init() {
     );
     state.profile = state.provider.getProfile();
 
-    const machine = createSandboxMachine("IDLE", ({ next }) => {
-      state.sandboxMachineState = next;
-    });
-    state.sandboxMachineState = machine.getState();
+    const sandboxStore = createSandboxStore();
+    state.sandboxStore = sandboxStore;
+    state.sandboxMachineState = sandboxStore.getState().playbackMode.toUpperCase();
 
     detailsView = createDetailsView({
       state,
@@ -257,7 +256,7 @@ async function init() {
     sandbox = createSandboxController({
       state,
       dom,
-      machine,
+      store: sandboxStore,
       onRenderActiveAlgorithmDisplay: (formula) => {
         detailsView.renderActiveAlgorithmDisplay(formula);
       },
