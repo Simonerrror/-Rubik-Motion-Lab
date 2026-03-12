@@ -48,7 +48,10 @@ function appendCatalogCard(grid, item, state, onSelectCase, onCycleStatus) {
   `;
 
   const preview = card.querySelector(".catalog-preview");
-  appendRecognizerPreview(preview, item);
+  appendRecognizerPreview(preview, item, {
+    loading: state.layout === "mobile" ? "lazy" : "eager",
+    fetchPriority: state.layout === "mobile" ? "low" : "auto",
+  });
 
   const statusDot = card.querySelector(".status-dot");
   if (statusDot) {
