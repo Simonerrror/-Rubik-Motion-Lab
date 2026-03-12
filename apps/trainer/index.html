@@ -5,7 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rubik Motion Trainer</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-  <link rel="preload" href="./assets/previews/trainer-preview-pll.png" as="image" fetchpriority="high" />
+  <link
+    rel="preload"
+    href="./assets/previews/trainer-preview-pll.png"
+    as="image"
+    fetchpriority="high"
+    imagesrcset="./assets/previews/trainer-preview-pll-384.jpg 384w, ./assets/previews/trainer-preview-pll-640.jpg 640w, ./assets/previews/trainer-preview-pll.png 960w"
+    imagesizes="(max-width: 860px) calc(100vw - 48px), (max-width: 1280px) calc(100vw - 420px), (max-width: 1720px) calc(100vw - 760px), 960px"
+  />
   <link rel="preload" href="./assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="./styles.css" />
 </head>
@@ -65,6 +72,8 @@
                       id="sandbox-preview-image"
                       class="sandbox-preview-image"
                       src="./assets/previews/trainer-preview-pll.png"
+                      srcset="./assets/previews/trainer-preview-pll-384.jpg 384w, ./assets/previews/trainer-preview-pll-640.jpg 640w, ./assets/previews/trainer-preview-pll.png 960w"
+                      sizes="(max-width: 860px) calc(100vw - 48px), (max-width: 1280px) calc(100vw - 420px), (max-width: 1720px) calc(100vw - 760px), 960px"
                       width="960"
                       height="540"
                       fetchpriority="high"

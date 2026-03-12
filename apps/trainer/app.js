@@ -35,6 +35,7 @@ const shell = createShellController({ state, dom });
 let sandboxResizeBound = false;
 let sandboxPreloadScheduled = false;
 let sandboxLoadToken = 0;
+let sandboxInteractionUnbind = null;
 
 function showToast(message) {
   dom.toast.textContent = String(message || "");
@@ -61,10 +62,12 @@ function setSandboxPreviewGroup(group) {
   const nextGroup = normalizePreviewGroup(group);
   state.sandboxPreviewGroup = nextGroup;
   if (dom.sandboxPreviewImage) {
-    const nextSrc = getSandboxPreviewAsset(nextGroup);
-    if (dom.sandboxPreviewImage.getAttribute("src") !== nextSrc) {
-      dom.sandboxPreviewImage.src = nextSrc;
+    const nextAsset = getSandboxPreviewAsset(nextGroup);
+    if (dom.sandboxPreviewImage.getAttribute("src") !== nextAsset.src) {
+      dom.sandboxPreviewImage.src = nextAsset.src;
     }
+    dom.sandboxPreviewImage.srcset = nextAsset.srcset;
+    dom.sandboxPreviewImage.sizes = nextAsset.sizes;
     dom.sandboxPreviewImage.dataset.group = nextGroup;
   }
 }
@@ -131,38 +134,73 @@ async function ensureSandboxRuntimeLoaded() {
   return loadPromise;
 }
 
+function clearSandboxInteractionPreload() {
+  if (typeof sandboxInteractionUnbind === "function") {
+    sandboxInteractionUnbind();
+    sandboxInteractionUnbind = null;
+  }
+}
+
+function startSandboxRuntimePreload() {
+  clearSandboxInteractionPreload();
+  sandboxPreloadScheduled = false;
+  if (state.sandboxRuntimeStatus === "ready" || state.sandboxRuntimePromise) {
+    return;
+  }
+  const promise = (async () => {
+    setSandboxRuntimeStatus("loading");
+    await preloadSandboxRuntime();
+    setSandboxRuntimeStatus("ready");
+  })()
+    .catch((error) => {
+      setSandboxRuntimeStatus("error", error);
+      showToast(`3D runtime unavailable: ${String(error.message || error)}`);
+    })
+    .finally(() => {
+      state.sandboxRuntimePromise = null;
+    });
+  state.sandboxRuntimePromise = promise.then(() => undefined);
+  void promise.then(async () => {
+    if (!currentCase() || !isSandboxRuntimeReady()) {
+      syncSandboxPreview();
+      return;
+    }
+    await loadSandboxForCurrentCase();
+  });
+}
+
+function bindSandboxInteractionPreload() {
+  if (sandboxInteractionUnbind || state.sandboxRuntimeStatus === "ready" || state.sandboxRuntimePromise) {
+    return;
+  }
+  const trigger = () => {
+    startSandboxRuntimePreload();
+  };
+  const frame = dom.sandboxFrame;
+  if (!frame) return;
+  const events = ["pointerdown", "touchstart"];
+  events.forEach((eventName) => {
+    frame.addEventListener(eventName, trigger, { passive: true, once: true });
+  });
+  sandboxInteractionUnbind = () => {
+    events.forEach((eventName) => {
+      frame.removeEventListener(eventName, trigger);
+    });
+  };
+}
+
 function scheduleSandboxRuntimePreload() {
   if (sandboxPreloadScheduled || state.sandboxRuntimeStatus === "ready" || state.sandboxRuntimePromise) {
     return;
   }
+  if (state.layout === "mobile") {
+    bindSandboxInteractionPreload();
+    return;
+  }
   sandboxPreloadScheduled = true;
   const start = () => {
-    sandboxPreloadScheduled = false;
-    if (state.sandboxRuntimeStatus === "ready" || state.sandboxRuntimePromise) {
-      return;
-    }
-    const promise = (async () => {
-      setSandboxRuntimeStatus("loading");
-      await preloadSandboxRuntime();
-      setSandboxRuntimeStatus("ready");
-    })()
-      .catch((error) => {
-        setSandboxRuntimeStatus("error", error);
-        showToast(`3D runtime unavailable: ${String(error.message || error)}`);
-      })
-      .finally(() => {
-        state.sandboxRuntimePromise = null;
-      });
-    state.sandboxRuntimePromise = promise.then(() => undefined);
-    void promise.then(async () => {
-      if (!currentCase() || !isSandboxRuntimeReady()) {
-        syncSandboxPreview();
-        return;
-      }
-      await loadSandboxForCurrentCase();
-    });
+    startSandboxRuntimePreload();
   };
-
   if (typeof window.requestIdleCallback === "function") {
     window.requestIdleCallback(() => start(), { timeout: 1200 });
     return;
@@ -215,13 +253,25 @@ let sandbox = null;
 let profileModal = null;
 let manualController = null;
 
-function renderCatalogUI() {
+function shouldDeferCatalogRender() {
+  return state.layout === "mobile" && state.view === "details";
+}
+
+function renderCatalogUI(options = {}) {
+  if (!options.force && shouldDeferCatalogRender()) {
+    return;
+  }
   renderCatalog({
     state,
     dom,
     onSelectCase: selectCase,
     onCycleStatus: updateCatalogCaseProgress,
   });
+}
+
+function openCatalogView() {
+  renderCatalogUI({ force: true });
+  shell.openCatalog();
 }
 
 async function loadSandboxForCurrentCase() {
@@ -298,7 +348,7 @@ async function loadCatalog() {
     sandbox.resetSandboxData();
     renderCatalogUI();
     syncSandboxPreview({ visible: true });
-    shell.openCatalog();
+    openCatalogView();
     return;
   }
 
@@ -445,6 +495,7 @@ async function init() {
       dom,
       saveProgressSortMap,
       renderCatalog: renderCatalogUI,
+      openCatalogView,
       setActiveTab,
       syncProgressSortToggle: () => syncProgressSortToggle(state, dom),
       loadCatalog,
@@ -453,6 +504,12 @@ async function init() {
       manual: manualController,
       shell,
       sandbox,
+    });
+
+    window.addEventListener("resize", () => {
+      if (state.layout !== "mobile") {
+        scheduleSandboxRuntimePreload();
+      }
     });
 
     sandbox.updateSandboxControls();

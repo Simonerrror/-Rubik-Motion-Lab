@@ -9,6 +9,7 @@ export function bindGlobalEvents(deps) {
     dom,
     saveProgressSortMap,
     renderCatalog,
+    openCatalogView,
     setActiveTab,
     syncProgressSortToggle,
     loadCatalog,
@@ -88,7 +89,7 @@ export function bindGlobalEvents(deps) {
       setActiveTab(category);
       syncProgressSortToggle();
       await loadCatalog();
-      shell.openCatalog();
+      openCatalogView();
     });
   });
 
@@ -128,7 +129,7 @@ export function bindGlobalEvents(deps) {
   });
 
   dom.shellBackBtn?.addEventListener("click", () => {
-    shell.openCatalog();
+    openCatalogView();
   });
 
   dom.shellSettingsBtn?.addEventListener("click", () => {
@@ -174,7 +175,7 @@ export function bindGlobalEvents(deps) {
     }
 
     if (event.key === "Escape" && shell.canReturnToCatalog()) {
-      shell.openCatalog();
+      openCatalogView();
       return;
     }
 
