@@ -130,7 +130,7 @@ export function createShellController(deps) {
   function init() {
     state.layoutPreference = parseLayoutPreference();
     state.layout = resolveLayout(state.layoutPreference, window.innerWidth);
-    state.view = state.layout === "mobile" && !state.activeCase ? "catalog" : "details";
+    state.view = "details";
     state.sheet = "none";
     applyShellState();
     window.addEventListener("resize", syncLayout);

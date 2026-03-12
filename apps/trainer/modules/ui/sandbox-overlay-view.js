@@ -24,12 +24,19 @@ export function tileTitle(item) {
   );
 }
 
-export function appendRecognizerPreview(container, item) {
+export function appendRecognizerPreview(container, item, options = {}) {
   if (item.recognizer_url) {
     const img = document.createElement("img");
     const sep = item.recognizer_url.includes("?") ? "&" : "?";
     img.src = `${item.recognizer_url}${sep}v=${RECOGNIZER_CACHE_BUSTER}`;
     img.alt = `${item.case_code} recognizer`;
+    img.decoding = "async";
+    if (options.loading) {
+      img.loading = options.loading;
+    }
+    if (options.fetchPriority) {
+      img.fetchPriority = options.fetchPriority;
+    }
     container.appendChild(img);
     return;
   }
