@@ -1,71 +1,13 @@
-const FACE_COLORS = {
-  U: 0xfdff00,
-  R: 0xc1121f,
-  F: 0x2dbe4a,
-  D: 0xf4f4f4,
-  L: 0xe06a00,
-  B: 0x2b63e8,
-};
-
-const LOCAL_FACE_NORMALS = {
-  U: [0, 1, 0],
-  D: [0, -1, 0],
-  R: [1, 0, 0],
-  L: [-1, 0, 0],
-  F: [0, 0, 1],
-  B: [0, 0, -1],
-};
-
-const EPSILON = 1e-6;
-
-function clamp01(value) {
-  const numeric = Number(value || 0);
-  if (!Number.isFinite(numeric)) return 0;
-  if (numeric <= 0) return 0;
-  if (numeric >= 1) return 1;
-  return numeric;
-}
-
-function easeInOutSine(t) {
-  return 0.5 - (0.5 * Math.cos(Math.PI * t));
-}
-
-function resolveEasing(easingName) {
-  if (String(easingName || "").trim() === "ease_in_out_sine") {
-    return easeInOutSine;
-  }
-  return easeInOutSine;
-}
-
-function parseColorToHex(raw, fallback) {
-  if (typeof raw === "number" && Number.isFinite(raw)) {
-    return raw >>> 0;
-  }
-  if (typeof raw === "string") {
-    const normalized = raw.trim().replace(/^#/, "");
-    if (/^[0-9a-fA-F]{6}$/.test(normalized)) {
-      return Number.parseInt(normalized, 16);
-    }
-  }
-  return fallback;
-}
-
-function buildQuaternionFromSnapshot(THREE, cubie) {
-  const normals = cubie?.worldNormalsByLocalFace || {};
-  const xAxis = normals.R || [1, 0, 0];
-  const yAxis = normals.U || [0, 1, 0];
-  const zAxis = normals.F || [0, 0, 1];
-  const matrix = new THREE.Matrix4().makeBasis(
-    new THREE.Vector3(xAxis[0], xAxis[1], xAxis[2]),
-    new THREE.Vector3(yAxis[0], yAxis[1], yAxis[2]),
-    new THREE.Vector3(zAxis[0], zAxis[1], zAxis[2]),
-  );
-  return new THREE.Quaternion().setFromRotationMatrix(matrix);
-}
-
-function cubieHasMaskedTopColor(cubie) {
-  return Object.values(cubie?.localColors || {}).includes("U");
-}
+import {
+  FACE_COLORS,
+  LOCAL_FACE_NORMALS,
+  EPSILON,
+  clamp01,
+  resolveEasing,
+  parseColorToHex,
+  buildQuaternionFromSnapshot,
+  cubieHasMaskedTopColor,
+} from "./common.js";
 
 export function createBaselineThreeRenderer(canvasEl) {
   const hasThree = Boolean(globalThis.THREE);
@@ -76,10 +18,26 @@ export function createBaselineThreeRenderer(canvasEl) {
       animateTransition() {
         return Promise.resolve(false);
       },
+      cancelTransition() {},
       setFaceColors() {},
       setStickerlessTopMask() {},
       resize() {},
       dispose() {},
+      getRenderStats() {
+        return {
+          backend: "noop",
+          drawCalls: 0,
+          triangles: 0,
+          lines: 0,
+          points: 0,
+          sceneChildren: 0,
+          cubieObjects: 0,
+          stickerObjects: 0,
+        };
+      },
+      getBackendName() {
+        return "noop";
+      },
     };
   }
 
@@ -179,8 +137,7 @@ export function createBaselineThreeRenderer(canvasEl) {
 
     incoming.forEach((cubie) => {
       const id = String(cubie.id || "");
-      if (!id) return;
-      if (cubieObjects.has(id)) return;
+      if (!id || cubieObjects.has(id)) return;
       const group = createCubieObject(cubie);
       cubieObjects.set(id, group);
       scene.add(group);
@@ -335,6 +292,23 @@ export function createBaselineThreeRenderer(canvasEl) {
     renderer.dispose();
   }
 
+  function getRenderStats() {
+    let stickerObjects = 0;
+    cubieObjects.forEach((group) => {
+      stickerObjects += Object.keys(group.userData?.stickers || {}).length;
+    });
+    return {
+      backend: "baseline",
+      drawCalls: Number(renderer.info?.render?.calls || 0),
+      triangles: Number(renderer.info?.render?.triangles || 0),
+      lines: Number(renderer.info?.render?.lines || 0),
+      points: Number(renderer.info?.render?.points || 0),
+      sceneChildren: Number(scene.children?.length || 0),
+      cubieObjects: Number(cubieObjects.size || 0),
+      stickerObjects,
+    };
+  }
+
   renderer.setClearColor(0xd8dadf, 1);
   if ("outputColorSpace" in renderer && THREE.SRGBColorSpace) {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -378,5 +352,9 @@ export function createBaselineThreeRenderer(canvasEl) {
     setStickerlessTopMask,
     resize: updateSize,
     dispose,
+    getRenderStats,
+    getBackendName() {
+      return "baseline";
+    },
   };
 }

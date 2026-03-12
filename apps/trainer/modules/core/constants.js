@@ -21,6 +21,7 @@ export const DEFAULT_SANDBOX_PLAYBACK_CONFIG = {
   rate_func: "ease_in_out_sine",
 };
 export const SANDBOX_RESTART_DELAY_MS = 500;
+export const INSTANCED_RENDERER_MIN_SIZE = 4;
 export const MOBILE_LAYOUT_MAX_WIDTH = 860;
 export const DESKTOP_LAYOUT_MIN_WIDTH = 1280;
 
