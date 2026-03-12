@@ -61,7 +61,10 @@ function setSandboxPreviewGroup(group) {
   const nextGroup = normalizePreviewGroup(group);
   state.sandboxPreviewGroup = nextGroup;
   if (dom.sandboxPreviewImage) {
-    dom.sandboxPreviewImage.src = getSandboxPreviewAsset(nextGroup);
+    const nextSrc = getSandboxPreviewAsset(nextGroup);
+    if (dom.sandboxPreviewImage.getAttribute("src") !== nextSrc) {
+      dom.sandboxPreviewImage.src = nextSrc;
+    }
     dom.sandboxPreviewImage.dataset.group = nextGroup;
   }
 }
