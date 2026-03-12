@@ -59,6 +59,10 @@
             <div class="video-frame">
               <div id="sandbox-frame" class="sandbox-frame" data-testid="sandbox-frame">
                 <div class="sandbox-stage">
+                  <div id="sandbox-preview" class="sandbox-preview" data-visible="true" data-status="idle">
+                    <img id="sandbox-preview-image" class="sandbox-preview-image" alt="Sandbox baked preview" />
+                    <div id="sandbox-preview-label" class="sandbox-preview-label"></div>
+                  </div>
                   <canvas id="sandbox-canvas" class="sandbox-canvas"></canvas>
                   <div class="sandbox-overlay sandbox-overlay-top-right">
                     <div class="sandbox-top-panel">
@@ -172,8 +176,6 @@
     </section>
   </div>
 
-  <script src="./vendor/three.min.js"></script>
-  <script type="module" src="./sandbox3d.js"></script>
   <script type="module" src="./app.js"></script>
 </body>
 </html>

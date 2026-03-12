@@ -50,6 +50,8 @@ def test_renderer_perf_sanity_for_baseline_and_instanced_paths() -> None:
             """
             async () => {
               const core = await import('./modules/cube-core/model.js');
+              const runtime = await import('./modules/sandbox/runtime-loader.js');
+              await runtime.ensureSandboxRuntime();
               const scenarios = [3, 4, 5];
               const stats = [];
               for (const size of scenarios) {
@@ -59,7 +61,7 @@ def test_renderer_perf_sanity_for_baseline_and_instanced_paths() -> None:
                 canvas.style.width = '640px';
                 canvas.style.height = '480px';
                 document.body.appendChild(canvas);
-                const renderer = window.CubeSandbox3D.createSandbox3D(canvas);
+                const renderer = await runtime.ensureSandboxPlayerReady(canvas);
                 const slots = core.createSurfaceStateSlots(size);
                 const solved = slots.map((slot) => slot.face).join('');
                 const model = core.createCubeModel(size, solved, slots);

@@ -86,6 +86,8 @@ function createSandbox3D(canvasEl) {
   };
 }
 
+export { createSandbox3D };
+
 globalThis.CubeSandbox3D = {
   createSandbox3D,
 };

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trainer Preview Renderer</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #d8dadf;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+    }
+
+    #preview-capture {
+      width: 960px;
+      height: 540px;
+      display: block;
+    }
+  </style>
+</head>
+<body data-ready="false">
+  <canvas id="preview-capture" width="960" height="540"></canvas>
+  <script src="./vendor/three.min.js"></script>
+  <script type="module" src="./preview-renderer.js"></script>
+</body>
+</html>

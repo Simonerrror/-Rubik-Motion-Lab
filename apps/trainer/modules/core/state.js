@@ -37,6 +37,10 @@ import { DEFAULT_SANDBOX_PLAYBACK_CONFIG } from "./constants.js";
  * @property {Object|null} sandboxData
  * @property {Object|null} sandboxPlayer
  * @property {Object|null|undefined} sandboxStore
+ * @property {"idle"|"loading"|"ready"|"error"} sandboxRuntimeStatus
+ * @property {string|null} sandboxRuntimeError
+ * @property {Promise<void>|null} sandboxRuntimePromise
+ * @property {"F2L"|"OLL"|"PLL"} sandboxPreviewGroup
  * @property {number} sandboxStepIndex
  * @property {number} sandboxTimelineProgress
  * @property {number} sandboxCursorStepIndex
@@ -78,6 +82,10 @@ export function createInitialState(progressSortByGroup) {
     sandboxData: null,
     sandboxPlayer: null,
     sandboxStore: null,
+    sandboxRuntimeStatus: "idle",
+    sandboxRuntimeError: null,
+    sandboxRuntimePromise: null,
+    sandboxPreviewGroup: "PLL",
     sandboxStepIndex: 0,
     sandboxTimelineProgress: 0,
     sandboxCursorStepIndex: 0,

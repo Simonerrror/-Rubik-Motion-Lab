@@ -499,10 +499,56 @@ body::before {
   min-height: 0;
 }
 
+.sandbox-preview {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(180deg, #dfe8f1 0%, #cdd8e3 100%);
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.sandbox-preview[data-visible="false"] {
+  opacity: 0;
+}
+
+.sandbox-preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.sandbox-preview-label {
+  position: absolute;
+  left: 0.85rem;
+  bottom: 0.85rem;
+  padding: 0.34rem 0.58rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.84);
+  color: #f8fafc;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.sandbox-preview[data-status="loading"] .sandbox-preview-label,
+.sandbox-preview[data-status="error"] .sandbox-preview-label {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .sandbox-canvas {
   width: 100%;
   height: 100%;
   display: block;
+  position: relative;
+  z-index: 0;
 }
 
 .sandbox-overlay {
