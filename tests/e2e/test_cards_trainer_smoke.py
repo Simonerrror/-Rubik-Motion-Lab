@@ -118,12 +118,17 @@ def _run_layout_flow(page, base_url: str, is_mobile: bool) -> None:
     layout = "mobile" if is_mobile else "desktop"
     page.goto(f"{base_url}/index.html?layout={layout}", wait_until="domcontentloaded", timeout=20000)
     expect(page.locator("body")).to_have_attribute("data-layout", layout, timeout=10000)
+    if is_mobile:
+        expect(page.locator("#sandbox-preview-image")).to_be_attached(timeout=10000)
+    else:
+        expect(page.locator("#sandbox-preview-image")).to_be_visible(timeout=10000)
 
     for tab in ("tab-f2l", "tab-oll", "tab-pll"):
         page.get_by_test_id(tab).click()
         expect(page.locator("[data-testid^='case-card-']").first).to_be_visible(timeout=10000)
 
     _open_first_case(page, is_mobile=is_mobile)
+    expect(page.locator("#sandbox-preview")).to_have_attribute("data-visible", "false", timeout=10000)
 
     if is_mobile:
         _open_settings(page)

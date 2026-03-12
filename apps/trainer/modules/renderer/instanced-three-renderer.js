@@ -8,6 +8,15 @@ import {
   buildQuaternionFromSnapshot,
   cubieHasMaskedTopColor,
 } from "./common.js";
+import {
+  BODY_MATERIAL_CONFIG,
+  CAMERA_BASE_POSITION,
+  LIGHT_RIG,
+  RENDERER_DIMENSIONS,
+  SANDBOX_CLEAR_COLOR,
+  SANDBOX_MASK_COLOR,
+  STICKER_OFFSET,
+} from "./visual-config.js";
 
 function createNoopRenderer() {
   return {
@@ -65,15 +74,14 @@ export function createInstancedThreeRenderer(canvasEl) {
   }
 
   const THREE = globalThis.THREE;
-  const cell = 1.04;
-  const cubieSize = 0.9;
-  const stickerSize = 0.74;
-  const stickerOffset = (cubieSize * 0.5) + 0.014;
-  const BASE_CAMERA_POSITION = { x: 4.8, y: 5.6, z: 6.4 };
+  const cell = RENDERER_DIMENSIONS.cell;
+  const cubieSize = RENDERER_DIMENSIONS.cubieSize;
+  const stickerSize = RENDERER_DIMENSIONS.stickerSize;
+  const stickerOffset = STICKER_OFFSET;
 
   let faceColors = { ...FACE_COLORS };
   let stickerlessTopMaskEnabled = false;
-  let stickerlessTopMaskColor = 0x0b1220;
+  let stickerlessTopMaskColor = SANDBOX_MASK_COLOR;
   let disposed = false;
   let animationRaf = 0;
   let activeAnimationResolve = null;
@@ -100,11 +108,7 @@ export function createInstancedThreeRenderer(canvasEl) {
     powerPreference: "high-performance",
   });
   const bodyGeometry = new THREE.BoxGeometry(cubieSize, cubieSize, cubieSize);
-  const bodyMaterial = new THREE.MeshStandardMaterial({
-    color: 0x0b1220,
-    roughness: 0.86,
-    metalness: 0.02,
-  });
+  const bodyMaterial = new THREE.MeshStandardMaterial(BODY_MATERIAL_CONFIG);
   const stickerGeometry = new THREE.PlaneGeometry(stickerSize, stickerSize);
 
   function render() {
@@ -119,9 +123,9 @@ export function createInstancedThreeRenderer(canvasEl) {
     const sizeScale = Math.max(1, currentModelSize / 3);
     const cameraScale = retinaScale * sizeScale;
     camera.position.set(
-      BASE_CAMERA_POSITION.x * cameraScale,
-      BASE_CAMERA_POSITION.y * cameraScale,
-      BASE_CAMERA_POSITION.z * cameraScale,
+      CAMERA_BASE_POSITION.x * cameraScale,
+      CAMERA_BASE_POSITION.y * cameraScale,
+      CAMERA_BASE_POSITION.z * cameraScale,
     );
     camera.lookAt(0, 0, 0);
   }
@@ -373,7 +377,7 @@ export function createInstancedThreeRenderer(canvasEl) {
     };
   }
 
-  renderer.setClearColor(0xd8dadf, 1);
+  renderer.setClearColor(SANDBOX_CLEAR_COLOR, 1);
   if ("outputColorSpace" in renderer && THREE.SRGBColorSpace) {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
   } else if ("outputEncoding" in renderer && THREE.sRGBEncoding) {
@@ -386,19 +390,21 @@ export function createInstancedThreeRenderer(canvasEl) {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-  const ambient = new THREE.AmbientLight(0xffffff, 0.32);
-  scene.add(ambient);
-  const keyLight = new THREE.DirectionalLight(0xffffff, 0.58);
-  keyLight.position.set(6.2, 8.6, 7.1);
-  keyLight.castShadow = true;
-  keyLight.shadow.mapSize.set(1024, 1024);
-  scene.add(keyLight);
-  const fillLight = new THREE.DirectionalLight(0xffffff, 0.12);
-  fillLight.position.set(-4.8, 3.8, -5.7);
-  scene.add(fillLight);
-  const rimLight = new THREE.DirectionalLight(0xffffff, 0.08);
-  rimLight.position.set(-1.5, 6.4, 6.8);
-  scene.add(rimLight);
+  LIGHT_RIG.forEach((entry) => {
+    if (entry.kind === "ambient") {
+      scene.add(new THREE.AmbientLight(entry.color, entry.intensity));
+      return;
+    }
+    const light = new THREE.DirectionalLight(entry.color, entry.intensity);
+    light.position.set(entry.position[0], entry.position[1], entry.position[2]);
+    if (entry.castShadow) {
+      light.castShadow = true;
+    }
+    if (entry.shadowMapSize) {
+      light.shadow.mapSize.set(entry.shadowMapSize[0], entry.shadowMapSize[1]);
+    }
+    scene.add(light);
+  });
 
   buildScene(4);
 

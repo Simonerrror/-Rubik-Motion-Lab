@@ -1,11 +1,4 @@
-export const FACE_COLORS = {
-  U: 0xfdff00,
-  R: 0xc1121f,
-  F: 0x2dbe4a,
-  D: 0xf4f4f4,
-  L: 0xe06a00,
-  B: 0x2b63e8,
-};
+export { FACE_COLORS } from "./visual-config.js";
 
 export const LOCAL_FACE_NORMALS = {
   U: [0, 1, 0],
