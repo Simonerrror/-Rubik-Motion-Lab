@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rubik Motion Trainer</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600;700;900&display=swap" />
+  <link rel="preload" href="./assets/previews/trainer-preview-pll.png" as="image" fetchpriority="high" />
+  <link rel="preload" href="./assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
@@ -60,7 +61,16 @@
               <div id="sandbox-frame" class="sandbox-frame" data-testid="sandbox-frame">
                 <div class="sandbox-stage">
                   <div id="sandbox-preview" class="sandbox-preview" data-visible="true" data-status="idle">
-                    <img id="sandbox-preview-image" class="sandbox-preview-image" alt="Sandbox baked preview" />
+                    <img
+                      id="sandbox-preview-image"
+                      class="sandbox-preview-image"
+                      src="./assets/previews/trainer-preview-pll.png"
+                      width="960"
+                      height="540"
+                      fetchpriority="high"
+                      decoding="async"
+                      alt="Sandbox baked preview"
+                    />
                     <div id="sandbox-preview-label" class="sandbox-preview-label"></div>
                   </div>
                   <canvas id="sandbox-canvas" class="sandbox-canvas"></canvas>
