@@ -3,14 +3,14 @@ set shell := ["zsh", "-cu"]
 default:
   @just --list
 
-api:
-  uv run python apps/cards-api/main.py
-
 worker interval="1" workers="1" manim_threads="1":
   uv run python apps/cards-worker/main.py --interval {{interval}} --workers {{workers}} --manim-threads {{manim_threads}}
 
 worker-once workers="1" manim_threads="1":
   uv run python apps/cards-worker/main.py --once --workers {{workers}} --manim-threads {{manim_threads}}
+
+cards-reset-runtime:
+  PYTHONPATH=packages/cubeanim/src uv run python tools/cards_runtime.py reset-runtime
 
 ui:
   uv run python apps/render-ui/main.py
@@ -37,7 +37,7 @@ trainer-export input="apps/trainer/profile.json":
   PYTHONPATH=packages/cubeanim/src uv run python tools/trainer/profile_codec_cli.py export --input {{input}}
 
 check:
-  PYTHONPATH=packages/cubeanim/src python3 -m py_compile cubist.py packages/cubeanim/src/cubeanim/*.py tools/render_algo.py apps/render-ui/main.py apps/cards-api/main.py apps/cards-worker/main.py tools/trainer/build_trainer_catalog.py tools/trainer/prune_trainer_assets.py
+  PYTHONPATH=packages/cubeanim/src python3 -m py_compile cubist.py packages/cubeanim/src/cubeanim/*.py tools/render_algo.py tools/cards_runtime.py apps/render-ui/main.py apps/cards-worker/main.py tools/trainer/build_trainer_catalog.py tools/trainer/prune_trainer_assets.py
 
 dev:
   @./scripts/dev/dev_tmux.sh up
@@ -53,9 +53,6 @@ dev-ls:
 
 dev-name:
   @./scripts/dev/dev_tmux.sh name
-
-dev-port:
-  @./scripts/dev/dev_tmux.sh port
 
 dev-tmuxp:
   tmuxp load -y .tmuxp/cards-dev.yaml -s "$$(./scripts/dev/dev_tmux.sh name)-tmuxp"

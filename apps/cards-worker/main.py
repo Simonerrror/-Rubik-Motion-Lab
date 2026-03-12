@@ -20,7 +20,7 @@ from cubeanim.cards.services import CardsService
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Render queue worker for cards web UI")
+    parser = argparse.ArgumentParser(description="Render queue worker for the local cards runtime")
     parser.add_argument("--interval", type=float, default=1.0, help="Polling interval in seconds")
     parser.add_argument("--once", action="store_true", help="Process one pending job and exit")
     parser.add_argument("--workers", type=int, default=1, help="Number of worker processes")

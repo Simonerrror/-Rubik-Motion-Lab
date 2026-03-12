@@ -1,19 +1,19 @@
 # Rubik Motion Lab
 
-Repository for the static Rubik trainer, shared cube-domain logic, and a local-only Manim authoring tool.
+Repository for the static Rubik trainer, local cards service/runtime, and a local-only Manim authoring tool.
 
 ## Layout
 
 - `apps/trainer` — primary static trainer (public root `/`)
-- `apps/cards-api` — FastAPI backend (no embedded web UI)
-- `apps/cards-worker` — legacy artifact queue worker
+- `apps/cards-worker` — local artifact queue worker
 - `apps/render-ui` — local GUI renderer
 - `packages/cubeanim/src/cubeanim_domain` — pure shared domain logic
 - `packages/cubeanim/src/cubeanim_renderer` — Manim-only local renderer stack
 - `packages/cubeanim/src/cubeanim` — compatibility facade for legacy imports
-- `tools` — CLI tools (`render_algo`, trainer build, F2L import)
+- `tools` — CLI tools (`render_algo`, `cards_runtime`, trainer build, F2L import)
 - `legacy/cards-web` — frozen deprecated web UI snapshot
 - `db/cards/{schema.sql,seed.sql}` — DB schema/seed source
+- `apps/cards-api` — deprecated compatibility shim, excluded from active workflow
 
 Detailed structure and migration notes: `docs/REPO_LAYOUT.md`.
 Trainer UX manual: `docs/TRAINER_MANUAL.md`.
@@ -38,8 +38,8 @@ uv run python -m playwright install chromium
 ```bash
 uv run python apps/render-ui/main.py
 uv run python tools/render_algo.py --formula "R U R' U'" --name MyAlgo --group PLL --quality standard
-uv run python apps/cards-api/main.py
 uv run python apps/cards-worker/main.py --workers 1 --manim-threads 1
+uv run python tools/cards_runtime.py reset-runtime
 ```
 
 Or use `just`:
@@ -47,8 +47,8 @@ Or use `just`:
 ```bash
 just ui
 just render "R U R' U'" my_algo PLL draft
-just api
 just worker
+just cards-reset-runtime
 ```
 
 ## Trainer build
@@ -67,6 +67,12 @@ just trainer-serve port=8011
 - The local renderer writes artifacts under `data/local-renderer/`.
 - `apps/render-ui` and `tools/render_algo.py` are private authoring tools and are not part of the web runtime.
 
+## Cards runtime
+
+- Active cards flow is local-only: `CardsService`, runtime DB/recognizers, and `apps/cards-worker`.
+- Trainer smoke must not hit `/api/*`; the static trainer reads catalog/assets directly.
+- Runtime admin operations should use `tools/cards_runtime.py`, not the deprecated HTTP layer.
+
 ## Tests
 
 ```bash
@@ -74,8 +80,5 @@ PYTHONPATH=packages/cubeanim/src uv run pytest -q
 SMOKE_STRICT=1 PYTHONPATH=packages/cubeanim/src uv run pytest -q tests/e2e/test_cards_trainer_smoke.py -s
 ```
 
-## API notes
-
-- `GET /` on cards-api returns JSON health payload: `{"ok": true, "service": "cards-api"}`
-- Runtime assets are served via `/assets` from `data/cards/runtime`
-- Legacy cards web UI is archived under `legacy/cards-web` and excluded from active flow
+- `tests/legacy` and the deprecated cards API shim are out of the active test perimeter.
+- Legacy cards web UI is archived under `legacy/cards-web` and excluded from active flow.

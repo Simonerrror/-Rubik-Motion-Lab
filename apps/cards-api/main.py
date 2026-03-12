@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+"""Deprecated compatibility shim.
+
+Active cards workflows use ``CardsService`` and local runtime tooling directly.
+This module remains only for manual fallback and is excluded from active checks.
+"""
+
 import os
 import sys
 from pathlib import Path
@@ -235,6 +241,10 @@ def api_admin_reset_runtime() -> dict:
 
 if __name__ == "__main__":
     import uvicorn
+    print(
+        "cards-api is deprecated; prefer CardsService or tools/cards_runtime.py for active workflows.",
+        file=sys.stderr,
+    )
 
     host = os.environ.get("CUBEANIM_CARDS_HOST", "127.0.0.1").strip() or "127.0.0.1"
     raw_port = os.environ.get("CUBEANIM_CARDS_PORT", "8008").strip() or "8008"

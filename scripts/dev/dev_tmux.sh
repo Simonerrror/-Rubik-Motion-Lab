@@ -23,13 +23,7 @@ if [ -z "$session_name" ]; then
 fi
 
 cmd="${1:-up}"
-cards_port="${CUBEANIM_CARDS_PORT:-8008}"
 python_bin="${CUBEANIM_PYTHON_BIN:-}"
-
-if ! [[ "$cards_port" =~ ^[0-9]+$ ]]; then
-  echo "CUBEANIM_CARDS_PORT must be an integer, got: $cards_port"
-  exit 2
-fi
 
 if [ -n "$python_bin" ] && [ ! -x "$python_bin" ]; then
   echo "CUBEANIM_PYTHON_BIN is not executable: $python_bin"
@@ -41,7 +35,6 @@ create_session() {
     return 0
   fi
 
-  local api_exec
   local worker_exec
   local py_path
   local py_q
@@ -51,22 +44,16 @@ create_session() {
     py_q="$(printf '%q' "$python_bin")"
     root_q="$(printf '%q' "$worktree_path")"
     py_path="${root_q}/packages/cubeanim/src:${root_q}"
-    api_exec="PYTHONPATH=${py_path} ${py_q} apps/cards-api/main.py"
     worker_exec="PYTHONPATH=${py_path} ${py_q} apps/cards-worker/main.py"
   else
-    api_exec='PYTHONPATH=packages/cubeanim/src uv run python apps/cards-api/main.py'
     worker_exec='PYTHONPATH=packages/cubeanim/src uv run python apps/cards-worker/main.py'
   fi
 
-  api_start_cmd="clear; echo \"[cards_api:${cards_port}]\"; if lsof -nP -iTCP:${cards_port} -sTCP:LISTEN >/dev/null 2>&1; then echo \"Port ${cards_port} is already in use. Stop old API first.\"; exit 1; fi; ${api_exec}"
   worker_start_cmd="clear; echo \"[cards_worker]\"; ${worker_exec}"
 
   tmux new-session -d -s "$session_name" -n cards -c "$worktree_path"
   tmux set-option -t "$session_name" remain-on-exit on
-  tmux respawn-pane -k -t "$session_name:cards.0" "$api_start_cmd"
-  tmux split-window -h -t "$session_name:cards" -c "$worktree_path"
-  tmux respawn-pane -k -t "$session_name:cards.1" "$worker_start_cmd"
-  tmux select-layout -t "$session_name:cards" even-horizontal
+  tmux respawn-pane -k -t "$session_name:cards.0" "$worker_start_cmd"
   tmux select-window -t "$session_name:cards"
 }
 
@@ -101,11 +88,8 @@ case "$cmd" in
   name)
     echo "$session_name"
     ;;
-  port)
-    echo "$cards_port"
-    ;;
   *)
-    echo "Usage: $0 [up|attach|create|stop|ls|name|port]"
+    echo "Usage: $0 [up|attach|create|stop|ls|name]"
     exit 2
     ;;
 esac
