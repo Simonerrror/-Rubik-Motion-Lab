@@ -52,11 +52,6 @@ class CreateAlternativeRequest(BaseModel):
     name: str | None = None
     activate: bool = True
 
-
-class CaseRenderRequest(BaseModel):
-    quality: str = Field(pattern="^(draft|high)$")
-
-
 class CaseProgressRequest(BaseModel):
     status: str = Field(pattern="^(NEW|IN_PROGRESS|LEARNED)$")
 
@@ -96,17 +91,10 @@ def api_get_case_sandbox(
     case_id: int,
     formula_mode: str = Query(default="active"),
 ) -> dict:
-    if formula_mode.strip().lower() != "active":
-        raise HTTPException(status_code=400, detail="Only formula_mode=active is supported")
-    try:
-        item = service.get_case_sandbox(case_id)
-    except KeyError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-    return {"ok": True, "data": item}
+    raise HTTPException(
+        status_code=410,
+        detail="Sandbox payload endpoint is removed; trainer now builds timeline locally from catalog metadata.",
+    )
 
 
 @app.get("/api/cases/{case_id}/alternatives")
@@ -155,27 +143,12 @@ def api_activate_alternative(case_id: int, payload: ActivateAlternativeRequest) 
 def api_delete_alternative(
     case_id: int,
     algorithm_id: int,
-    purge_media: bool = Query(default=True),
 ) -> dict:
     try:
         item = service.delete_alternative(
             case_id=case_id,
             algorithm_id=algorithm_id,
-            purge_media=purge_media,
         )
-    except KeyError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-    return {"ok": True, "data": item}
-
-
-@app.post("/api/cases/{case_id}/renders")
-def api_enqueue_case_render(case_id: int, payload: CaseRenderRequest) -> dict:
-    try:
-        item = service.queue_case_render(case_id=case_id, quality=payload.quality)
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except ValueError as exc:
@@ -187,15 +160,10 @@ def api_enqueue_case_render(case_id: int, payload: CaseRenderRequest) -> dict:
 
 @app.get("/api/cases/{case_id}/renders/status")
 def api_case_render_status(case_id: int) -> dict:
-    try:
-        item = service.case_queue_status(case_id=case_id)
-    except KeyError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-    return {"ok": True, "data": item}
+    raise HTTPException(
+        status_code=410,
+        detail="Render queue endpoints are removed from the active project architecture.",
+    )
 
 
 @app.patch("/api/cases/{case_id}/progress")

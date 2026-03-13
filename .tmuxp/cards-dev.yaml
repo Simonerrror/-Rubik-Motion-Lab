@@ -5,5 +5,7 @@ windows:
     panes:
       - shell_command:
           - clear
-          - echo "[cards_worker]"
-          - PYTHONPATH=packages/cubeanim/src uv run python apps/cards-worker/main.py
+          - echo "[cards_runtime_shell]"
+          - pwd
+          - echo
+          - echo "Use just trainer-build / just cards-reset-runtime / just smoke-ui"

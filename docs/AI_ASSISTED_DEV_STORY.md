@@ -8,7 +8,8 @@ This project was built as an iterative AI-assisted engineering process.
 - Stabilization: parser/render/UI foundation hardened with tests.
 - Productization: behavior invariants, simultaneous move semantics, smooth motion.
 - Polish: visual palette alignment and storage ergonomics.
-- Cards phase: FastAPI + vanilla cards UI, case-centric PLL workflow, render queue worker, recognizers, and runtime consistency fixes.
+- Cards phase: FastAPI + vanilla cards UI, case-centric PLL workflow, recognizers, and runtime consistency fixes.
+- Split phase: trainer becomes fully JS for playback, cards runtime becomes service-only, and the Python renderer moves out into a sibling local mini-repo.
 
 ## Commit Map
 
@@ -23,22 +24,19 @@ This project was built as an iterative AI-assisted engineering process.
 | `4ac62be` | motion quality | timing policy + easing + tests | smoother animations |
 | `a81c2f7` | visual polish | softened internal dark faces | cohesive palette |
 | `b464e4a` | storage contract | readable quality folders + compatibility | cleaner output structure |
-| `HEAD` | cards productization | FastAPI cards stack, PLL caseflow, queue/reuse/worker stability, recognizer pipeline | end-to-end learning cards workflow with deterministic behavior |
+| `HEAD` | local split | service-only cards runtime, JS trainer playback, renderer/domain extraction | cleaner product boundary and smaller active repo graph |
 
 ## Why This Matters
 
-The value is not only the final renderer, but the transparent engineering trail:
+The value is not only the trainer/runtime product, but the transparent engineering trail:
 
 - prompts -> code
 - feedback -> targeted patch
 - tests -> confidence
 - polishing -> production readiness
 
-## Session Lessons (PLL Completion)
+## Session Lessons
 
-- Keep two names in render flow:
-  - `storage/output_name` for filesystem/catalog dedupe.
-  - `display_name` for on-video overlay text.
-- Worker must not hold SQLite transaction while running Manim; claim and finalize in short DB transactions.
-- `render_artifacts` must be treated as valid only if referenced file exists.
+- Keep domain logic shared and versioned before trying to split repositories.
+- Trainer playback is safer when the browser computes timeline/state locally from canonical formula contracts.
 - Recognizer assets are easier to operate when grouped by category directories.

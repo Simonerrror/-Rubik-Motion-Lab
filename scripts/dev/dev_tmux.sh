@@ -35,25 +35,11 @@ create_session() {
     return 0
   fi
 
-  local worker_exec
-  local py_path
-  local py_q
-  local root_q
-
-  if [ -n "$python_bin" ]; then
-    py_q="$(printf '%q' "$python_bin")"
-    root_q="$(printf '%q' "$worktree_path")"
-    py_path="${root_q}/packages/cubeanim/src:${root_q}"
-    worker_exec="PYTHONPATH=${py_path} ${py_q} apps/cards-worker/main.py"
-  else
-    worker_exec='PYTHONPATH=packages/cubeanim/src uv run python apps/cards-worker/main.py'
-  fi
-
-  worker_start_cmd="clear; echo \"[cards_worker]\"; ${worker_exec}"
+  local shell_start_cmd="clear; echo \"[cards_runtime_shell]\"; pwd; echo; echo \"Use just trainer-build / just cards-reset-runtime / just smoke-ui\"; exec ${SHELL:-/bin/zsh} -l"
 
   tmux new-session -d -s "$session_name" -n cards -c "$worktree_path"
   tmux set-option -t "$session_name" remain-on-exit on
-  tmux respawn-pane -k -t "$session_name:cards.0" "$worker_start_cmd"
+  tmux respawn-pane -k -t "$session_name:cards.0" "$shell_start_cmd"
   tmux select-window -t "$session_name:cards"
 }
 

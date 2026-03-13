@@ -1,8 +1,8 @@
 export const GROUPS = ["F2L", "OLL", "PLL"];
 export const PROFILE_STORAGE_KEY = "cards_trainer_profile_v1";
 export const PROFILE_SCHEMA_VERSION = 1;
-export const CATALOG_SCHEMA_VERSION = "trainer-catalog-v1";
-export const CATALOG_URL = "./data/catalog-v1.json";
+export const CATALOG_SCHEMA_VERSION = "trainer-catalog-v2";
+export const CATALOG_URL = "./data/catalog-v2.json";
 export const MANUAL_CONTENT_URL = "./data/manual-content.json";
 export const PROGRESS_SORT_STORAGE_KEY = "cards_progress_sort_by_group_v1";
 export const STATUS_SORT_RANK = {

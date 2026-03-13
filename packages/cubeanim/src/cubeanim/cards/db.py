@@ -115,14 +115,6 @@ def _materialize_runtime_from_canonical(conn: sqlite3.Connection, run_dir: Path)
         stale_cases_sql = f"SELECT id FROM cases WHERE category_code = ? AND case_code NOT IN ({placeholders})"
         stale_algorithms_sql = f"SELECT id FROM algorithms WHERE case_id IN ({stale_cases_sql})"
         conn.execute(
-            f"DELETE FROM render_jobs WHERE algorithm_id IN ({stale_algorithms_sql})",
-            params,
-        )
-        conn.execute(
-            f"DELETE FROM render_artifacts WHERE algorithm_id IN ({stale_algorithms_sql})",
-            params,
-        )
-        conn.execute(
             f"UPDATE cases SET selected_algorithm_id = NULL WHERE id IN ({stale_cases_sql})",
             params,
         )
@@ -281,14 +273,6 @@ def _materialize_runtime_from_canonical(conn: sqlite3.Connection, run_dir: Path)
         if stale_ids:
             id_placeholders = ",".join(["?"] * len(stale_ids))
             conn.execute(
-                f"DELETE FROM render_jobs WHERE algorithm_id IN ({id_placeholders})",
-                tuple(stale_ids),
-            )
-            conn.execute(
-                f"DELETE FROM render_artifacts WHERE algorithm_id IN ({id_placeholders})",
-                tuple(stale_ids),
-            )
-            conn.execute(
                 f"""
                 UPDATE cases
                 SET selected_algorithm_id = NULL
@@ -340,11 +324,6 @@ def _materialize_runtime_from_canonical(conn: sqlite3.Connection, run_dir: Path)
             ).fetchone()
             if algo_row is None:
                 continue
-            _cleanup_stale_artifacts_for_formula(
-                conn,
-                algorithm_id=int(algo_row["id"]),
-                formula=formula,
-            )
 
         _refresh_case_recognizer_by_active(conn, run_dir, case_id)
 
@@ -437,24 +416,7 @@ def _cleanup_stale_noncustom_algorithms(
 
 
 def _cleanup_algorithm_dependencies(conn: sqlite3.Connection, algorithm_id: int) -> None:
-    conn.execute("DELETE FROM render_jobs WHERE algorithm_id = ?", (algorithm_id,))
-    conn.execute("DELETE FROM render_artifacts WHERE algorithm_id = ?", (algorithm_id,))
-
-
-def _cleanup_stale_artifacts_for_formula(
-    conn: sqlite3.Connection,
-    algorithm_id: int,
-    formula: str,
-) -> None:
-    formula_norm = " ".join(formula.split())
-    conn.execute(
-        """
-        DELETE FROM render_artifacts
-        WHERE algorithm_id = ?
-          AND formula_norm != ?
-        """,
-        (algorithm_id, formula_norm),
-    )
+    return None
 
 
 def reset_runtime_state(repo_root: Path | None = None, db_path: Path | None = None) -> Path:
@@ -482,3 +444,7 @@ def _apply_schema_migrations(conn: sqlite3.Connection) -> None:
         conn.execute("ALTER TABLE cases ADD COLUMN probability_text TEXT")
     if not _column_exists(conn, "cases", "selected_algorithm_id"):
         conn.execute("ALTER TABLE cases ADD COLUMN selected_algorithm_id INTEGER")
+    conn.execute("DROP INDEX IF EXISTS idx_render_jobs_algorithm_quality")
+    conn.execute("DROP INDEX IF EXISTS idx_render_jobs_status")
+    conn.execute("DROP TABLE IF EXISTS render_jobs")
+    conn.execute("DROP TABLE IF EXISTS render_artifacts")

@@ -103,7 +103,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--catalog",
         type=Path,
-        default=REPO_ROOT / "apps" / "trainer" / "data" / "catalog-v1.json",
+        default=REPO_ROOT / "apps" / "trainer" / "data" / "catalog-v2.json",
         help="Path to trainer catalog JSON",
     )
     parser.add_argument(

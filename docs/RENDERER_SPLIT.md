@@ -1,6 +1,6 @@
-# Local Renderer Split Guide
+# Local Split Guide
 
-Manim is now treated as a private local authoring tool, not as a trainer backend or remote service.
+Main repo no longer carries the Python renderer in its active package graph.
 
 ## 1) Runtime boundary
 
@@ -10,25 +10,21 @@ Manim is now treated as a private local authoring tool, not as a trainer backend
   - move normalization and inversion
   - sandbox timeline assembly
   - F2L/OLL/PLL start-state resolution
-- `packages/cubeanim/src/cubeanim_renderer` contains the Manim-only stack:
-  - scene setup
-  - executor
-  - render orchestration
-  - Rubik 3D Manim primitives
-- `packages/cubeanim/src/cubeanim` remains a compatibility facade for legacy imports during migration.
+- The Manim-only stack lives in a sibling local mini-repo (`cubeanim-renderer-py`).
+- `packages/cubeanim/src/cubeanim` remains a compatibility facade only for non-render legacy imports during migration.
 
 ## 2) Local renderer workflow
 
-- GUI-first entrypoint: `uv run python apps/render-ui/main.py`
-- Optional CLI smoke wrapper: `uv run python tools/render_algo.py --formula "R U R' U'" --name MyAlgo --group PLL --quality draft`
-- Artifacts are written under `data/local-renderer/` and are not part of web runtime assets.
+- Renderer authoring happens outside this repo.
+- The main repo does not build or ship render artifacts.
+- Trainer consumes recognizer assets and metadata only.
 
 ## 3) Removed service model
 
 - Remote renderer backends are removed.
 - HTTP `/plan` and `/render` are removed from the active architecture.
 - `CUBEANIM_RENDER_BACKEND=http`, `CUBEANIM_RENDER_API_URL`, and `CUBEANIM_RENDER_API_TIMEOUT_SEC` are no longer supported.
-- `cards/*` no longer import the old render service module directly.
+- `cards/*` no longer contain render queue, artifact, or worker logic.
 
 ## 4) Verification model
 

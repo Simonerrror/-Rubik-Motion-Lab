@@ -6,8 +6,10 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PRODUCT_FILES = [
     REPO_ROOT / "apps" / "trainer" / "app.js",
+    REPO_ROOT / "packages" / "cubeanim" / "src" / "cubeanim" / "cards" / "db.py",
     REPO_ROOT / "packages" / "cubeanim" / "src" / "cubeanim" / "cards" / "recognizer.py",
     REPO_ROOT / "packages" / "cubeanim" / "src" / "cubeanim" / "cards" / "sandbox.py",
+    REPO_ROOT / "packages" / "cubeanim" / "src" / "cubeanim" / "cards" / "services.py",
     REPO_ROOT / "tools" / "trainer" / "build_trainer_catalog.py",
 ]
 FORBIDDEN_TOKENS = [

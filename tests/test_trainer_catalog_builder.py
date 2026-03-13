@@ -39,19 +39,14 @@ def test_build_trainer_catalog_payload_is_complete_and_grouped(tmp_path: Path) -
         assert case["case_key"]
         assert ":" in case["case_key"]
         assert case["status"] in {"NEW", "IN_PROGRESS", "LEARNED"}
-        assert case["sandbox"]
         assert case["active_algorithm_id"]
         algorithms = case["algorithms"]
         assert isinstance(algorithms, list)
         assert algorithms
 
         for algorithm in algorithms:
-            sandbox = algorithm["sandbox"]
-            move_steps = list(sandbox["move_steps"])
-            states_by_step = list(sandbox["states_by_step"])
-            assert len(states_by_step) == len(move_steps) + 1
-            assert len(sandbox["state_slots"]) == 54
-            assert all(len(state) == 54 for state in states_by_step)
+            assert algorithm["formula"]
+            assert "sandbox" not in algorithm
 
 
 def test_build_trainer_catalog_writes_files(tmp_path: Path) -> None:
@@ -65,7 +60,7 @@ def test_build_trainer_catalog_writes_files(tmp_path: Path) -> None:
         base_catalog_url="./assets",
     )
 
-    catalog_path = output_dir / "data" / "catalog-v1.json"
+    catalog_path = output_dir / "data" / "catalog-v2.json"
     assert catalog_path.exists()
     catalog = catalog_path.read_text(encoding="utf-8")
     assert SCHEMA_VERSION in catalog
