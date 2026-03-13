@@ -1,0 +1,4778 @@
+{
+  "schema_version": "trainer-catalog-v2",
+  "generated_at": "2026-03-13T09:49:58+00:00",
+  "categories": [
+    "F2L",
+    "OLL",
+    "PLL"
+  ],
+  "cases": [
+    {
+      "case_key": "F2L:B01",
+      "group": "F2L",
+      "case_code": "B01",
+      "title": "B01",
+      "subgroup_title": "Basic F2L",
+      "case_number": 1,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b01.svg",
+      "active_algorithm_id": "F2L:B01:algo:12442",
+      "algorithms": [
+        {
+          "id": "F2L:B01:algo:12442",
+          "name": "Main",
+          "formula": "U2 (R U R') U (R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B01:algo:14872",
+          "name": "Alt 1",
+          "formula": "y F R U2 R' F'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B02",
+      "group": "F2L",
+      "case_code": "B02",
+      "title": "B02",
+      "subgroup_title": "Basic F2L",
+      "case_number": 2,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b02.svg",
+      "active_algorithm_id": "F2L:B02:algo:12443",
+      "algorithms": [
+        {
+          "id": "F2L:B02:algo:12443",
+          "name": "Main",
+          "formula": "y U2 (L' U' L) U' (L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B02:algo:14874",
+          "name": "Alt 1",
+          "formula": "F' L' U2 L F",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B03",
+      "group": "F2L",
+      "case_code": "B03",
+      "title": "B03",
+      "subgroup_title": "Basic F2L",
+      "case_number": 3,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b03.svg",
+      "active_algorithm_id": "F2L:B03:algo:12444",
+      "algorithms": [
+        {
+          "id": "F2L:B03:algo:12444",
+          "name": "Main",
+          "formula": "U (R U2 R') U (R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B04",
+      "group": "F2L",
+      "case_code": "B04",
+      "title": "B04",
+      "subgroup_title": "Basic F2L",
+      "case_number": 4,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b04.svg",
+      "active_algorithm_id": "F2L:B04:algo:12445",
+      "algorithms": [
+        {
+          "id": "F2L:B04:algo:12445",
+          "name": "Main",
+          "formula": "y U' (L' U2 L) U' (L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B05",
+      "group": "F2L",
+      "case_code": "B05",
+      "title": "B05",
+      "subgroup_title": "Basic F2L",
+      "case_number": 5,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b05.svg",
+      "active_algorithm_id": "F2L:B05:algo:12446",
+      "algorithms": [
+        {
+          "id": "F2L:B05:algo:12446",
+          "name": "Main",
+          "formula": "U (R U' R') U' (R U' R' U R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B05:algo:12447",
+          "name": "Alt 1",
+          "formula": "U (F R' F' R) U (R U R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B05:algo:14879",
+          "name": "Alt 2",
+          "formula": "U2 (L F' L' F) (R U R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B05:algo:14880",
+          "name": "Alt 3",
+          "formula": "y U L' U' (L2 F' L' F) (L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B05:algo:14881",
+          "name": "Alt 4",
+          "formula": "y F' (U' L' U L) F (L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B05:algo:14882",
+          "name": "Alt 5",
+          "formula": "y' U2 R U' R' U' S R' S'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B06",
+      "group": "F2L",
+      "case_code": "B06",
+      "title": "B06",
+      "subgroup_title": "Basic F2L",
+      "case_number": 6,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b06.svg",
+      "active_algorithm_id": "F2L:B06:algo:12448",
+      "algorithms": [
+        {
+          "id": "F2L:B06:algo:12448",
+          "name": "Main",
+          "formula": "y U' (L' U L) U (L' U L U' L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B06:algo:14884",
+          "name": "Alt 1",
+          "formula": "y U' (F' L F L') U' (L' U' L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B06:algo:14885",
+          "name": "Alt 2",
+          "formula": "y U2 (R F' R' F) (L' U' L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B06:algo:14886",
+          "name": "Alt 3",
+          "formula": "U' R U (R2 F R F') (R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B06:algo:14887",
+          "name": "Alt 4",
+          "formula": "F (U R U' R') F' (R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B06:algo:14888",
+          "name": "Alt 5",
+          "formula": "y2 U2 L' U L U S' L S",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B07",
+      "group": "F2L",
+      "case_code": "B07",
+      "title": "B07",
+      "subgroup_title": "Basic F2L",
+      "case_number": 7,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b07.svg",
+      "active_algorithm_id": "F2L:B07:algo:12449",
+      "algorithms": [
+        {
+          "id": "F2L:B07:algo:12449",
+          "name": "Main",
+          "formula": "(R U2 R') U' (R U R')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B08",
+      "group": "F2L",
+      "case_code": "B08",
+      "title": "B08",
+      "subgroup_title": "Basic F2L",
+      "case_number": 8,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b08.svg",
+      "active_algorithm_id": "F2L:B08:algo:12450",
+      "algorithms": [
+        {
+          "id": "F2L:B08:algo:12450",
+          "name": "Main",
+          "formula": "y (L' U2 L) U (L' U' L)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B09",
+      "group": "F2L",
+      "case_code": "B09",
+      "title": "B09",
+      "subgroup_title": "Basic F2L",
+      "case_number": 9,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b09.svg",
+      "active_algorithm_id": "F2L:B09:algo:12451",
+      "algorithms": [
+        {
+          "id": "F2L:B09:algo:12451",
+          "name": "Main",
+          "formula": "(R U R')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B10",
+      "group": "F2L",
+      "case_code": "B10",
+      "title": "B10",
+      "subgroup_title": "Basic F2L",
+      "case_number": 10,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b10.svg",
+      "active_algorithm_id": "F2L:B10:algo:12452",
+      "algorithms": [
+        {
+          "id": "F2L:B10:algo:12452",
+          "name": "Main",
+          "formula": "y (L' U' L)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B11",
+      "group": "F2L",
+      "case_code": "B11",
+      "title": "B11",
+      "subgroup_title": "Basic F2L",
+      "case_number": 11,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b11.svg",
+      "active_algorithm_id": "F2L:B11:algo:12453",
+      "algorithms": [
+        {
+          "id": "F2L:B11:algo:12453",
+          "name": "Main",
+          "formula": "U' (R U R') U (R U R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B11:algo:14894",
+          "name": "Alt 1",
+          "formula": "U2 (R U' R') U' (R U R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B11:algo:14895",
+          "name": "Alt 2",
+          "formula": "R' U R2 U R'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B12",
+      "group": "F2L",
+      "case_code": "B12",
+      "title": "B12",
+      "subgroup_title": "Basic F2L",
+      "case_number": 12,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b12.svg",
+      "active_algorithm_id": "F2L:B12:algo:12454",
+      "algorithms": [
+        {
+          "id": "F2L:B12:algo:12454",
+          "name": "Main",
+          "formula": "y U (L' U' L) U' (L' U' L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B12:algo:14897",
+          "name": "Alt 1",
+          "formula": "y U2 (L' U L) U (L' U' L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B12:algo:14898",
+          "name": "Alt 2",
+          "formula": "y L U' L2 U' L",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B13",
+      "group": "F2L",
+      "case_code": "B13",
+      "title": "B13",
+      "subgroup_title": "Basic F2L",
+      "case_number": 13,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b13.svg",
+      "active_algorithm_id": "F2L:B13:algo:12455",
+      "algorithms": [
+        {
+          "id": "F2L:B13:algo:12455",
+          "name": "Main",
+          "formula": "R' U2 R2 U R2 U R",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B13:algo:14900",
+          "name": "Alt 1",
+          "formula": "(R U' R') U (R U' R') U2 (R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B13:algo:14901",
+          "name": "Alt 2",
+          "formula": "R' U2 R2 U R'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B13:algo:14902",
+          "name": "Alt 3",
+          "formula": "y U L' U2 L U' y' R U R'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B14",
+      "group": "F2L",
+      "case_code": "B14",
+      "title": "B14",
+      "subgroup_title": "Basic F2L",
+      "case_number": 14,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b14.svg",
+      "active_algorithm_id": "F2L:B14:algo:12456",
+      "algorithms": [
+        {
+          "id": "F2L:B14:algo:12456",
+          "name": "Main",
+          "formula": "y L U2 L2 U' L2 U' L'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B14:algo:14904",
+          "name": "Alt 1",
+          "formula": "y (L' U L) U' (L' U L) U2 (L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B14:algo:14905",
+          "name": "Alt 2",
+          "formula": "y L U2 L2 U' L",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B14:algo:14906",
+          "name": "Alt 3",
+          "formula": "U' (R U2 R') U y (L' U' L)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B15",
+      "group": "F2L",
+      "case_code": "B15",
+      "title": "B15",
+      "subgroup_title": "Basic F2L",
+      "case_number": 15,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b15.svg",
+      "active_algorithm_id": "F2L:B15:algo:12457",
+      "algorithms": [
+        {
+          "id": "F2L:B15:algo:12457",
+          "name": "Main",
+          "formula": "U' (R U' R') U (R U R')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B16",
+      "group": "F2L",
+      "case_code": "B16",
+      "title": "B16",
+      "subgroup_title": "Basic F2L",
+      "case_number": 16,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b16.svg",
+      "active_algorithm_id": "F2L:B16:algo:12458",
+      "algorithms": [
+        {
+          "id": "F2L:B16:algo:12458",
+          "name": "Main",
+          "formula": "y U (L' U L) U' (L' U' L)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B17",
+      "group": "F2L",
+      "case_code": "B17",
+      "title": "B17",
+      "subgroup_title": "Basic F2L",
+      "case_number": 17,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b17.svg",
+      "active_algorithm_id": "F2L:B17:algo:12459",
+      "algorithms": [
+        {
+          "id": "F2L:B17:algo:12459",
+          "name": "Main",
+          "formula": "y U' (L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B18",
+      "group": "F2L",
+      "case_code": "B18",
+      "title": "B18",
+      "subgroup_title": "Basic F2L",
+      "case_number": 18,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b18.svg",
+      "active_algorithm_id": "F2L:B18:algo:12460",
+      "algorithms": [
+        {
+          "id": "F2L:B18:algo:12460",
+          "name": "Main",
+          "formula": "U (R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B19",
+      "group": "F2L",
+      "case_code": "B19",
+      "title": "B19",
+      "subgroup_title": "Basic F2L",
+      "case_number": 19,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b19.svg",
+      "active_algorithm_id": "F2L:B19:algo:12461",
+      "algorithms": [
+        {
+          "id": "F2L:B19:algo:12461",
+          "name": "Main",
+          "formula": "y U (L' U2 L) U2 (L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B19:algo:14912",
+          "name": "Alt 1",
+          "formula": "r' U2 R2 U R2 U r",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B20",
+      "group": "F2L",
+      "case_code": "B20",
+      "title": "B20",
+      "subgroup_title": "Basic F2L",
+      "case_number": 20,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b20.svg",
+      "active_algorithm_id": "F2L:B20:algo:12462",
+      "algorithms": [
+        {
+          "id": "F2L:B20:algo:12462",
+          "name": "Main",
+          "formula": "U' (R U2 R') U2 (R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B20:algo:14914",
+          "name": "Alt 1",
+          "formula": "y l U2 L2 U' L2 U' l'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B21",
+      "group": "F2L",
+      "case_code": "B21",
+      "title": "B21",
+      "subgroup_title": "Basic F2L",
+      "case_number": 21,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b21.svg",
+      "active_algorithm_id": "F2L:B21:algo:12463",
+      "algorithms": [
+        {
+          "id": "F2L:B21:algo:12463",
+          "name": "Main",
+          "formula": "U' (R U R') U2 (R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B21:algo:14916",
+          "name": "Alt 1",
+          "formula": "y U l' U L U' L' U' l",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B22",
+      "group": "F2L",
+      "case_code": "B22",
+      "title": "B22",
+      "subgroup_title": "Basic F2L",
+      "case_number": 22,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b22.svg",
+      "active_algorithm_id": "F2L:B22:algo:12464",
+      "algorithms": [
+        {
+          "id": "F2L:B22:algo:12464",
+          "name": "Main",
+          "formula": "y U (L' U' L) U2 (L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B22:algo:14918",
+          "name": "Alt 1",
+          "formula": "U' r U' R' U R U r'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B23",
+      "group": "F2L",
+      "case_code": "B23",
+      "title": "B23",
+      "subgroup_title": "Basic F2L",
+      "case_number": 23,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b23.svg",
+      "active_algorithm_id": "F2L:B23:algo:12465",
+      "algorithms": [
+        {
+          "id": "F2L:B23:algo:12465",
+          "name": "Main",
+          "formula": "M U (L F' L') U' M'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B23:algo:14920",
+          "name": "Alt 1",
+          "formula": "U' (R' U R) U' (R U R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B23:algo:14921",
+          "name": "Alt 2",
+          "formula": "y (L' U L) y' U2 (R U R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B23:algo:14922",
+          "name": "Alt 3",
+          "formula": "y' (R2 F R F' R) U2 (R' U R)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B23:algo:14923",
+          "name": "Alt 4",
+          "formula": "y2 (f' L f) U2 (L U L')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B24",
+      "group": "F2L",
+      "case_code": "B24",
+      "title": "B24",
+      "subgroup_title": "Basic F2L",
+      "case_number": 24,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b24.svg",
+      "active_algorithm_id": "F2L:B24:algo:12466",
+      "algorithms": [
+        {
+          "id": "F2L:B24:algo:12466",
+          "name": "Main",
+          "formula": "y M U' (R' F R) U M'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B24:algo:14925",
+          "name": "Alt 1",
+          "formula": "y U (L U' L') U (L' U' L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B24:algo:14926",
+          "name": "Alt 2",
+          "formula": "(R U' R') y U2 (L' U' L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B24:algo:14927",
+          "name": "Alt 3",
+          "formula": "y2 (L2 F' L' F L') U2 (L U' L')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B24:algo:14928",
+          "name": "Alt 4",
+          "formula": "y' (f R' f') U2 R' U' R",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B25",
+      "group": "F2L",
+      "case_code": "B25",
+      "title": "B25",
+      "subgroup_title": "Basic F2L",
+      "case_number": 25,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b25.svg",
+      "active_algorithm_id": "F2L:B25:algo:12467",
+      "algorithms": [
+        {
+          "id": "F2L:B25:algo:12467",
+          "name": "Main",
+          "formula": "U (R U R') U2 (R U R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B25:algo:14930",
+          "name": "Alt 1",
+          "formula": "U' (R U2 R') U (R U R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B25:algo:14931",
+          "name": "Alt 2",
+          "formula": "y U (L' U L) U2 (L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B26",
+      "group": "F2L",
+      "case_code": "B26",
+      "title": "B26",
+      "subgroup_title": "Basic F2L",
+      "case_number": 26,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b26.svg",
+      "active_algorithm_id": "F2L:B26:algo:12468",
+      "algorithms": [
+        {
+          "id": "F2L:B26:algo:12468",
+          "name": "Main",
+          "formula": "y U' (L' U' L) U2 (L' U' L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B26:algo:14933",
+          "name": "Alt 1",
+          "formula": "y U (L' U2 L) U' (L' U' L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B26:algo:14934",
+          "name": "Alt 2",
+          "formula": "U' R U' R' U2 R U' R'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B27",
+      "group": "F2L",
+      "case_code": "B27",
+      "title": "B27",
+      "subgroup_title": "Basic F2L",
+      "case_number": 27,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b27.svg",
+      "active_algorithm_id": "F2L:B27:algo:12469",
+      "algorithms": [
+        {
+          "id": "F2L:B27:algo:12469",
+          "name": "Main",
+          "formula": "U (F' U' F) U' (R U R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B27:algo:14936",
+          "name": "Alt 1",
+          "formula": "y U2 (L' U' L) (F' L F L')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B27:algo:14937",
+          "name": "Alt 2",
+          "formula": "y U' M' (U' L' U l) (L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B27:algo:14938",
+          "name": "Alt 3",
+          "formula": "y U' (L U F' L' F) (L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B27:algo:14939",
+          "name": "Alt 4",
+          "formula": "y' U2 (R' U' R) y U (R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B27:algo:14940",
+          "name": "Alt 5",
+          "formula": "y' U2 R' U' M U' R U M'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B27:algo:14941",
+          "name": "Alt 6",
+          "formula": "y2 U (f' L' f) U' (L U L')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B28",
+      "group": "F2L",
+      "case_code": "B28",
+      "title": "B28",
+      "subgroup_title": "Basic F2L",
+      "case_number": 28,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b28.svg",
+      "active_algorithm_id": "F2L:B28:algo:12470",
+      "algorithms": [
+        {
+          "id": "F2L:B28:algo:12470",
+          "name": "Main",
+          "formula": "y U' (F U F') U (L' U' L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B28:algo:14943",
+          "name": "Alt 1",
+          "formula": "U2 (R U R') (F R' F' R)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B28:algo:14944",
+          "name": "Alt 2",
+          "formula": "U M' (U R U' r') (R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B28:algo:14945",
+          "name": "Alt 3",
+          "formula": "U (R' U' F R F') (R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B28:algo:14946",
+          "name": "Alt 4",
+          "formula": "y2 U2 (L U L') y' U' (L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B28:algo:14947",
+          "name": "Alt 5",
+          "formula": "y2 U2 L U M U L' U' M'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B28:algo:14948",
+          "name": "Alt 6",
+          "formula": "y' U' (f R f') U (R' U' R)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B29",
+      "group": "F2L",
+      "case_code": "B29",
+      "title": "B29",
+      "subgroup_title": "Basic F2L",
+      "case_number": 29,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b29.svg",
+      "active_algorithm_id": "F2L:B29:algo:12471",
+      "algorithms": [
+        {
+          "id": "F2L:B29:algo:12471",
+          "name": "Main",
+          "formula": "(U R U' R')^3",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B30",
+      "group": "F2L",
+      "case_code": "B30",
+      "title": "B30",
+      "subgroup_title": "Basic F2L",
+      "case_number": 30,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b30.svg",
+      "active_algorithm_id": "F2L:B30:algo:12472",
+      "algorithms": [
+        {
+          "id": "F2L:B30:algo:12472",
+          "name": "Main",
+          "formula": "U' (R' F R F') (R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B30:algo:14951",
+          "name": "Alt 1",
+          "formula": "(R U' R') (F' U2 F)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B30:algo:14952",
+          "name": "Alt 2",
+          "formula": "y' R' U R' F R F' R",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B30:algo:14953",
+          "name": "Alt 3",
+          "formula": "y' U' (R' U2 R) (f R f')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B31",
+      "group": "F2L",
+      "case_code": "B31",
+      "title": "B31",
+      "subgroup_title": "Basic F2L",
+      "case_number": 31,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b31.svg",
+      "active_algorithm_id": "F2L:B31:algo:12473",
+      "algorithms": [
+        {
+          "id": "F2L:B31:algo:12473",
+          "name": "Main",
+          "formula": "(R U R') U' (R U R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B31:algo:14955",
+          "name": "Alt 1",
+          "formula": "y M' (U' L' U L) (U' L' U l)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B31:algo:14956",
+          "name": "Alt 2",
+          "formula": "y (L F' L' F)^2",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B32",
+      "group": "F2L",
+      "case_code": "B32",
+      "title": "B32",
+      "subgroup_title": "Basic F2L",
+      "case_number": 32,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b32.svg",
+      "active_algorithm_id": "F2L:B32:algo:12474",
+      "algorithms": [
+        {
+          "id": "F2L:B32:algo:12474",
+          "name": "Main",
+          "formula": "y (L' U' L) U (L' U' L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B32:algo:14958",
+          "name": "Alt 1",
+          "formula": "M' (U R U' R') (U R U' r')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B32:algo:14959",
+          "name": "Alt 2",
+          "formula": "(R' F R F')^2",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B33",
+      "group": "F2L",
+      "case_code": "B33",
+      "title": "B33",
+      "subgroup_title": "Basic F2L",
+      "case_number": 33,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b33.svg",
+      "active_algorithm_id": "F2L:B33:algo:12475",
+      "algorithms": [
+        {
+          "id": "F2L:B33:algo:12475",
+          "name": "Main",
+          "formula": "(R U' R') U (R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B34",
+      "group": "F2L",
+      "case_code": "B34",
+      "title": "B34",
+      "subgroup_title": "Basic F2L",
+      "case_number": 34,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b34.svg",
+      "active_algorithm_id": "F2L:B34:algo:12476",
+      "algorithms": [
+        {
+          "id": "F2L:B34:algo:12476",
+          "name": "Main",
+          "formula": "y (L' U L) U' (L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B35",
+      "group": "F2L",
+      "case_code": "B35",
+      "title": "B35",
+      "subgroup_title": "Basic F2L",
+      "case_number": 35,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b35.svg",
+      "active_algorithm_id": "F2L:B35:algo:12477",
+      "algorithms": [
+        {
+          "id": "F2L:B35:algo:12477",
+          "name": "Main",
+          "formula": "U' (R' F R F') (R U R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B35:algo:14963",
+          "name": "Alt 1",
+          "formula": "(R' F' R) (U R U' R') F",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B35:algo:14964",
+          "name": "Alt 2",
+          "formula": "U' F' (R U R' U') (R' F R)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B35:algo:14965",
+          "name": "Alt 3",
+          "formula": "y U' (L' U L) (F' L F L')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B35:algo:14966",
+          "name": "Alt 4",
+          "formula": "y2 U' M U L U' M' U L'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B35:algo:14967",
+          "name": "Alt 5",
+          "formula": "y' U' R' U M U' R U M'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B36",
+      "group": "F2L",
+      "case_code": "B36",
+      "title": "B36",
+      "subgroup_title": "Basic F2L",
+      "case_number": 36,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b36.svg",
+      "active_algorithm_id": "F2L:B36:algo:12478",
+      "algorithms": [
+        {
+          "id": "F2L:B36:algo:12478",
+          "name": "Main",
+          "formula": "y U (L F' L' F) (L' U' L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B36:algo:14969",
+          "name": "Alt 1",
+          "formula": "y (L F L') (U' L' U L) F'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B36:algo:14970",
+          "name": "Alt 2",
+          "formula": "y U F (L' U' L U) (L F' L')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B36:algo:14971",
+          "name": "Alt 3",
+          "formula": "U (R U' R') (F R' F' R)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B36:algo:14972",
+          "name": "Alt 4",
+          "formula": "y' U M U' R' U M' U' R",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B36:algo:14973",
+          "name": "Alt 5",
+          "formula": "y2 U L U' M U L' U' M'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B37",
+      "group": "F2L",
+      "case_code": "B37",
+      "title": "B37",
+      "subgroup_title": "Basic F2L",
+      "case_number": 37,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b37.svg",
+      "active_algorithm_id": "F2L:B37:algo:12479",
+      "algorithms": [
+        {
+          "id": "F2L:B37:algo:12479",
+          "name": "Main",
+          "formula": "(R U' R') U (R U2 R' U R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B37:algo:14975",
+          "name": "Alt 1",
+          "formula": "y' (L' U L) U (L' U' L U2 L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B38",
+      "group": "F2L",
+      "case_code": "B38",
+      "title": "B38",
+      "subgroup_title": "Basic F2L",
+      "case_number": 38,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b38.svg",
+      "active_algorithm_id": "F2L:B38:algo:12480",
+      "algorithms": [
+        {
+          "id": "F2L:B38:algo:12480",
+          "name": "Main",
+          "formula": "y' (L' U L) U' (L' U2 L U' L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B38:algo:14977",
+          "name": "Alt 1",
+          "formula": "(R U' R') U' (R U R' U2 R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B39",
+      "group": "F2L",
+      "case_code": "B39",
+      "title": "B39",
+      "subgroup_title": "Basic F2L",
+      "case_number": 39,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b39.svg",
+      "active_algorithm_id": "F2L:B39:algo:12481",
+      "algorithms": [
+        {
+          "id": "F2L:B39:algo:12481",
+          "name": "Main",
+          "formula": "(R U' R') (F' L' U2 L F)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B39:algo:14979",
+          "name": "Alt 1",
+          "formula": "y (F R U2 R' F') (L' U' L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B39:algo:14980",
+          "name": "Alt 2",
+          "formula": "y2 L2 F U F' U' L' U L'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B39:algo:14981",
+          "name": "Alt 3",
+          "formula": "y' R' U R' U' F' U F R2",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B40",
+      "group": "F2L",
+      "case_code": "B40",
+      "title": "B40",
+      "subgroup_title": "Basic F2L",
+      "case_number": 40,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b40.svg",
+      "active_algorithm_id": "F2L:B40:algo:12482",
+      "algorithms": [
+        {
+          "id": "F2L:B40:algo:12482",
+          "name": "Main",
+          "formula": "y (L' U L) (F R U2 R' F')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B40:algo:14983",
+          "name": "Alt 1",
+          "formula": "(F' L' U2 L F) (R U R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B40:algo:14984",
+          "name": "Alt 2",
+          "formula": "y' R2 F' U' F U R U' R",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B40:algo:14985",
+          "name": "Alt 3",
+          "formula": "y2 L U' L U F U' F' L2",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:B41",
+      "group": "F2L",
+      "case_code": "B41",
+      "title": "B41",
+      "subgroup_title": "Basic F2L",
+      "case_number": 41,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_b41.svg",
+      "active_algorithm_id": "F2L:B41:algo:12483",
+      "algorithms": [
+        {
+          "id": "F2L:B41:algo:12483",
+          "name": "Main",
+          "formula": "R2 U2 F R2 F' U2 R' U R'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B41:algo:14987",
+          "name": "Alt 1",
+          "formula": "y L2 U2 F' L2 F U2 L U' L",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B41:algo:14988",
+          "name": "Alt 2",
+          "formula": "y' (f R' f') U (R' U2 R) U (R' U2 R)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:B41:algo:14989",
+          "name": "Alt 3",
+          "formula": "y2 (f' L f) U' (L U2 L') U' (L U2 L')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A01",
+      "group": "F2L",
+      "case_code": "A01",
+      "title": "A01",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 42,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a01.svg",
+      "active_algorithm_id": "F2L:A01:algo:12560",
+      "algorithms": [
+        {
+          "id": "F2L:A01:algo:12560",
+          "name": "Main",
+          "formula": "U' R' U R2 U' R'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A02",
+      "group": "F2L",
+      "case_code": "A02",
+      "title": "A02",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 43,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a02.svg",
+      "active_algorithm_id": "F2L:A02:algo:12561",
+      "algorithms": [
+        {
+          "id": "F2L:A02:algo:12561",
+          "name": "Main",
+          "formula": "y U L U' L2 U L",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A03",
+      "group": "F2L",
+      "case_code": "A03",
+      "title": "A03",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 44,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a03.svg",
+      "active_algorithm_id": "F2L:A03:algo:12562",
+      "algorithms": [
+        {
+          "id": "F2L:A03:algo:12562",
+          "name": "Main",
+          "formula": "U2 (R' U R) U' (S R S')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A03:algo:14993",
+          "name": "Alt 1",
+          "formula": "y R' F R2 U' R' U2 F'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A03:algo:14994",
+          "name": "Alt 2",
+          "formula": "y2 U2 (L F' L' F) (L U L')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A04",
+      "group": "F2L",
+      "case_code": "A04",
+      "title": "A04",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 45,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a04.svg",
+      "active_algorithm_id": "F2L:A04:algo:12563",
+      "algorithms": [
+        {
+          "id": "F2L:A04:algo:12563",
+          "name": "Main",
+          "formula": "y U2 (L U' L') U (S' L' S)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A04:algo:14996",
+          "name": "Alt 1",
+          "formula": "L F' L2 U L U2 F",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A04:algo:14997",
+          "name": "Alt 2",
+          "formula": "y' U2 (R' F R F') (R' U' R)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A05",
+      "group": "F2L",
+      "case_code": "A05",
+      "title": "A05",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 46,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a05.svg",
+      "active_algorithm_id": "F2L:A05:algo:12564",
+      "algorithms": [
+        {
+          "id": "F2L:A05:algo:12564",
+          "name": "Main",
+          "formula": "U2 L2 u L2 u' L2",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A05:algo:14999",
+          "name": "Alt 1",
+          "formula": "y U2 R2 u' R2 u R2",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A05:algo:15000",
+          "name": "Alt 2",
+          "formula": "y' U2 L2 u' L2 u L2",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A05:algo:15001",
+          "name": "Alt 3",
+          "formula": "y2 U2 R2 u R2 u' R2",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A06",
+      "group": "F2L",
+      "case_code": "A06",
+      "title": "A06",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 47,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a06.svg",
+      "active_algorithm_id": "F2L:A06:algo:12565",
+      "algorithms": [
+        {
+          "id": "F2L:A06:algo:12565",
+          "name": "Main",
+          "formula": "L F' U F L'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A06:algo:15003",
+          "name": "Alt 1",
+          "formula": "y R' F U' F' R",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A06:algo:15004",
+          "name": "Alt 2",
+          "formula": "y' (L' u' L) U' (L' u L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A06:algo:15005",
+          "name": "Alt 3",
+          "formula": "y2 (R u R') U (R u' R')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A07",
+      "group": "F2L",
+      "case_code": "A07",
+      "title": "A07",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 48,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a07.svg",
+      "active_algorithm_id": "F2L:A07:algo:12566",
+      "algorithms": [
+        {
+          "id": "F2L:A07:algo:12566",
+          "name": "Main",
+          "formula": "R' U' R2 U R'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A08",
+      "group": "F2L",
+      "case_code": "A08",
+      "title": "A08",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 49,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a08.svg",
+      "active_algorithm_id": "F2L:A08:algo:12567",
+      "algorithms": [
+        {
+          "id": "F2L:A08:algo:12567",
+          "name": "Main",
+          "formula": "y L U L2 U' L",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A09",
+      "group": "F2L",
+      "case_code": "A09",
+      "title": "A09",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 50,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a09.svg",
+      "active_algorithm_id": "F2L:A09:algo:12568",
+      "algorithms": [
+        {
+          "id": "F2L:A09:algo:12568",
+          "name": "Main",
+          "formula": "F D R D' F'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A09:algo:15009",
+          "name": "Alt 1",
+          "formula": "y R (F U F') R'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A09:algo:15010",
+          "name": "Alt 2",
+          "formula": "y2 F (L U L') F'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A09:algo:15011",
+          "name": "Alt 3",
+          "formula": "y' R u R u' R'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A10",
+      "group": "F2L",
+      "case_code": "A10",
+      "title": "A10",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 51,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a10.svg",
+      "active_algorithm_id": "F2L:A10:algo:12569",
+      "algorithms": [
+        {
+          "id": "F2L:A10:algo:12569",
+          "name": "Main",
+          "formula": "y F' D' L' D F",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A10:algo:15013",
+          "name": "Alt 1",
+          "formula": "L' (F' U' F) L",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A10:algo:15014",
+          "name": "Alt 2",
+          "formula": "y' F' (R' U' R) F",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A10:algo:15015",
+          "name": "Alt 3",
+          "formula": "y2 L' u' L' u L",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A11",
+      "group": "F2L",
+      "case_code": "A11",
+      "title": "A11",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 52,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a11.svg",
+      "active_algorithm_id": "F2L:A11:algo:12570",
+      "algorithms": [
+        {
+          "id": "F2L:A11:algo:12570",
+          "name": "Main",
+          "formula": "U' (L' U' L) (R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A11:algo:15017",
+          "name": "Alt 1",
+          "formula": "y U2 L' U' L2 U L2 U' L",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A12",
+      "group": "F2L",
+      "case_code": "A12",
+      "title": "A12",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 53,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a12.svg",
+      "active_algorithm_id": "F2L:A12:algo:12571",
+      "algorithms": [
+        {
+          "id": "F2L:A12:algo:12571",
+          "name": "Main",
+          "formula": "U (R U R') (L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A12:algo:15019",
+          "name": "Alt 1",
+          "formula": "y' U2 R U R2 U' R2 U R'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A13",
+      "group": "F2L",
+      "case_code": "A13",
+      "title": "A13",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 54,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a13.svg",
+      "active_algorithm_id": "F2L:A13:algo:12572",
+      "algorithms": [
+        {
+          "id": "F2L:A13:algo:12572",
+          "name": "Main",
+          "formula": "(F U2 F') (R U R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A13:algo:15021",
+          "name": "Alt 1",
+          "formula": "y L U2 L' F U F'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A13:algo:15022",
+          "name": "Alt 2",
+          "formula": "y' R U2 R' f R f'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A14",
+      "group": "F2L",
+      "case_code": "A14",
+      "title": "A14",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 55,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a14.svg",
+      "active_algorithm_id": "F2L:A14:algo:12573",
+      "algorithms": [
+        {
+          "id": "F2L:A14:algo:12573",
+          "name": "Main",
+          "formula": "y (F' U2 F) (L' U' L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A14:algo:15024",
+          "name": "Alt 1",
+          "formula": "R' U2 R F' U' F",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A14:algo:15025",
+          "name": "Alt 2",
+          "formula": "y2 L' U2 L f' L' f",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A15",
+      "group": "F2L",
+      "case_code": "A15",
+      "title": "A15",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 56,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a15.svg",
+      "active_algorithm_id": "F2L:A15:algo:12574",
+      "algorithms": [
+        {
+          "id": "F2L:A15:algo:12574",
+          "name": "Main",
+          "formula": "U (R U R') (L U L')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A15:algo:15027",
+          "name": "Alt 1",
+          "formula": "U' (R U2 R') U' (L U L')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A15:algo:15028",
+          "name": "Alt 2",
+          "formula": "y U (L' U L) (R' U R)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A16",
+      "group": "F2L",
+      "case_code": "A16",
+      "title": "A16",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 57,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a16.svg",
+      "active_algorithm_id": "F2L:A16:algo:12575",
+      "algorithms": [
+        {
+          "id": "F2L:A16:algo:12575",
+          "name": "Main",
+          "formula": "y U' (L' U' L) (R' U' R)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A16:algo:15030",
+          "name": "Alt 1",
+          "formula": "y U (L' U2 L) U (R' U' R)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A16:algo:15031",
+          "name": "Alt 2",
+          "formula": "U' (R U' R') (L U' L')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A17",
+      "group": "F2L",
+      "case_code": "A17",
+      "title": "A17",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 58,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a17.svg",
+      "active_algorithm_id": "F2L:A17:algo:12576",
+      "algorithms": [
+        {
+          "id": "F2L:A17:algo:12576",
+          "name": "Main",
+          "formula": "U2 F' (L U L') F",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A17:algo:15033",
+          "name": "Alt 1",
+          "formula": "y U2 L' (B U B') L",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A17:algo:15034",
+          "name": "Alt 2",
+          "formula": "y' U2 R' (F U F') R",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A17:algo:15035",
+          "name": "Alt 3",
+          "formula": "y2 f' U L U' f",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A18",
+      "group": "F2L",
+      "case_code": "A18",
+      "title": "A18",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 59,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a18.svg",
+      "active_algorithm_id": "F2L:A18:algo:12577",
+      "algorithms": [
+        {
+          "id": "F2L:A18:algo:12577",
+          "name": "Main",
+          "formula": "y U2 F (R' U' R) F'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A18:algo:15037",
+          "name": "Alt 1",
+          "formula": "U2 R (B' U' B) R'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A18:algo:15038",
+          "name": "Alt 2",
+          "formula": "y2 U2 L (F' U' F) L'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A18:algo:15039",
+          "name": "Alt 3",
+          "formula": "y' f U' R' U f'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A19",
+      "group": "F2L",
+      "case_code": "A19",
+      "title": "A19",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 60,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a19.svg",
+      "active_algorithm_id": "F2L:A19:algo:12578",
+      "algorithms": [
+        {
+          "id": "F2L:A19:algo:12578",
+          "name": "Main",
+          "formula": "U (R U' R') (L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A20",
+      "group": "F2L",
+      "case_code": "A20",
+      "title": "A20",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 61,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a20.svg",
+      "active_algorithm_id": "F2L:A20:algo:12579",
+      "algorithms": [
+        {
+          "id": "F2L:A20:algo:12579",
+          "name": "Main",
+          "formula": "y (L' U2 L) U' (L U L')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A20:algo:15042",
+          "name": "Alt 1",
+          "formula": "y U2 (L' U L) U' (L U2 L')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A21",
+      "group": "F2L",
+      "case_code": "A21",
+      "title": "A21",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 62,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a21.svg",
+      "active_algorithm_id": "F2L:A21:algo:12580",
+      "algorithms": [
+        {
+          "id": "F2L:A21:algo:12580",
+          "name": "Main",
+          "formula": "U2 (R U' R') U (L' U' L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A21:algo:15044",
+          "name": "Alt 1",
+          "formula": "y (F' L F L') U' (L U2 L')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A22",
+      "group": "F2L",
+      "case_code": "A22",
+      "title": "A22",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 63,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a22.svg",
+      "active_algorithm_id": "F2L:A22:algo:12581",
+      "algorithms": [
+        {
+          "id": "F2L:A22:algo:12581",
+          "name": "Main",
+          "formula": "y U' L' U' L2 U2 L'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A23",
+      "group": "F2L",
+      "case_code": "A23",
+      "title": "A23",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 64,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a23.svg",
+      "active_algorithm_id": "F2L:A23:algo:12582",
+      "algorithms": [
+        {
+          "id": "F2L:A23:algo:12582",
+          "name": "Main",
+          "formula": "(R U R') U' (L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A23:algo:15047",
+          "name": "Alt 1",
+          "formula": "y (S' L S)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A24",
+      "group": "F2L",
+      "case_code": "A24",
+      "title": "A24",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 65,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a24.svg",
+      "active_algorithm_id": "F2L:A24:algo:12583",
+      "algorithms": [
+        {
+          "id": "F2L:A24:algo:12583",
+          "name": "Main",
+          "formula": "U' (R U R') (F U F')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A24:algo:15049",
+          "name": "Alt 1",
+          "formula": "y U (L' U L) U (L U L')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A24:algo:15050",
+          "name": "Alt 2",
+          "formula": "y U' (F U F') (L U L')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A25",
+      "group": "F2L",
+      "case_code": "A25",
+      "title": "A25",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 66,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a25.svg",
+      "active_algorithm_id": "F2L:A25:algo:12584",
+      "algorithms": [
+        {
+          "id": "F2L:A25:algo:12584",
+          "name": "Main",
+          "formula": "y U' (L' U L) (R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A26",
+      "group": "F2L",
+      "case_code": "A26",
+      "title": "A26",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 67,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a26.svg",
+      "active_algorithm_id": "F2L:A26:algo:12585",
+      "algorithms": [
+        {
+          "id": "F2L:A26:algo:12585",
+          "name": "Main",
+          "formula": "(R U2 R') U (R' U' R)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A26:algo:15053",
+          "name": "Alt 1",
+          "formula": "U2 (R U' R') U (R' U2 R)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A27",
+      "group": "F2L",
+      "case_code": "A27",
+      "title": "A27",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 68,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a27.svg",
+      "active_algorithm_id": "F2L:A27:algo:12586",
+      "algorithms": [
+        {
+          "id": "F2L:A27:algo:12586",
+          "name": "Main",
+          "formula": "(F R' F' R) U (R' U2 R)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A27:algo:15055",
+          "name": "Alt 1",
+          "formula": "y U2 (L' U L) U' (R U R')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A28",
+      "group": "F2L",
+      "case_code": "A28",
+      "title": "A28",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 69,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a28.svg",
+      "active_algorithm_id": "F2L:A28:algo:12587",
+      "algorithms": [
+        {
+          "id": "F2L:A28:algo:12587",
+          "name": "Main",
+          "formula": "U R U R2 U2 R",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A29",
+      "group": "F2L",
+      "case_code": "A29",
+      "title": "A29",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 70,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a29.svg",
+      "active_algorithm_id": "F2L:A29:algo:12588",
+      "algorithms": [
+        {
+          "id": "F2L:A29:algo:12588",
+          "name": "Main",
+          "formula": "(S R' S')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A29:algo:15058",
+          "name": "Alt 1",
+          "formula": "y (L' U' L) U (R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A30",
+      "group": "F2L",
+      "case_code": "A30",
+      "title": "A30",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 71,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a30.svg",
+      "active_algorithm_id": "F2L:A30:algo:12589",
+      "algorithms": [
+        {
+          "id": "F2L:A30:algo:12589",
+          "name": "Main",
+          "formula": "U (F U' F') (R' U' R)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A30:algo:15060",
+          "name": "Alt 1",
+          "formula": "U' (R U' R') U' (R' U R)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A30:algo:15061",
+          "name": "Alt 2",
+          "formula": "y U (L' U' L) (F' U' F)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A31",
+      "group": "F2L",
+      "case_code": "A31",
+      "title": "A31",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 72,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a31.svg",
+      "active_algorithm_id": "F2L:A31:algo:12590",
+      "algorithms": [
+        {
+          "id": "F2L:A31:algo:12590",
+          "name": "Main",
+          "formula": "U' (F' U F) (L U2 L')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A31:algo:15063",
+          "name": "Alt 1",
+          "formula": "y U' (L' U L) U' (f R' f')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A32",
+      "group": "F2L",
+      "case_code": "A32",
+      "title": "A32",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 73,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a32.svg",
+      "active_algorithm_id": "F2L:A32:algo:12591",
+      "algorithms": [
+        {
+          "id": "F2L:A32:algo:12591",
+          "name": "Main",
+          "formula": "U (R U' R') U (f' L f)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A32:algo:15065",
+          "name": "Alt 1",
+          "formula": "y U (F U' F') (R' U2 R)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A33",
+      "group": "F2L",
+      "case_code": "A33",
+      "title": "A33",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 74,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a33.svg",
+      "active_algorithm_id": "F2L:A33:algo:12592",
+      "algorithms": [
+        {
+          "id": "F2L:A33:algo:12592",
+          "name": "Main",
+          "formula": "(R U' R') (L U2 L')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A33:algo:15067",
+          "name": "Alt 1",
+          "formula": "y (L' U' L) (f R' f')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A34",
+      "group": "F2L",
+      "case_code": "A34",
+      "title": "A34",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 75,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a34.svg",
+      "active_algorithm_id": "F2L:A34:algo:12593",
+      "algorithms": [
+        {
+          "id": "F2L:A34:algo:12593",
+          "name": "Main",
+          "formula": "(R U R') (f' L f)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A34:algo:15069",
+          "name": "Alt 1",
+          "formula": "y (L' U L) (R' U2 R)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A35",
+      "group": "F2L",
+      "case_code": "A35",
+      "title": "A35",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 76,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a35.svg",
+      "active_algorithm_id": "F2L:A35:algo:12594",
+      "algorithms": [
+        {
+          "id": "F2L:A35:algo:12594",
+          "name": "Main",
+          "formula": "(R U' R') U (L U L')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A35:algo:15071",
+          "name": "Alt 1",
+          "formula": "y (L F' L' F) (R' U2 R)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:A36",
+      "group": "F2L",
+      "case_code": "A36",
+      "title": "A36",
+      "subgroup_title": "Advanced F2L",
+      "case_number": 77,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_a36.svg",
+      "active_algorithm_id": "F2L:A36:algo:12595",
+      "algorithms": [
+        {
+          "id": "F2L:A36:algo:12595",
+          "name": "Main",
+          "formula": "(R' F R F') (L U2 L')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:A36:algo:15073",
+          "name": "Alt 1",
+          "formula": "y (L' U' L) U' (R' U' R)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:E01",
+      "group": "F2L",
+      "case_code": "E01",
+      "title": "E01",
+      "subgroup_title": "Expert F2L",
+      "case_number": 78,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_e01.svg",
+      "active_algorithm_id": "F2L:E01:algo:12648",
+      "algorithms": [
+        {
+          "id": "F2L:E01:algo:12648",
+          "name": "Main",
+          "formula": "R2 U' R2 U R2",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E01:algo:15075",
+          "name": "Alt 1",
+          "formula": "y2 L2 U' L2 U L2",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E01:algo:15076",
+          "name": "Alt 2",
+          "formula": "y F' R' F2 R F",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:E02",
+      "group": "F2L",
+      "case_code": "E02",
+      "title": "E02",
+      "subgroup_title": "Expert F2L",
+      "case_number": 79,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_e02.svg",
+      "active_algorithm_id": "F2L:E02:algo:12649",
+      "algorithms": [
+        {
+          "id": "F2L:E02:algo:12649",
+          "name": "Main",
+          "formula": "f' R' U R f",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E02:algo:15078",
+          "name": "Alt 1",
+          "formula": "y R' u' R u R",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E02:algo:15079",
+          "name": "Alt 2",
+          "formula": "y' L' u' L u L",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E02:algo:15080",
+          "name": "Alt 3",
+          "formula": "y2 f' D' L D f",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:E03",
+      "group": "F2L",
+      "case_code": "E03",
+      "title": "E03",
+      "subgroup_title": "Expert F2L",
+      "case_number": 80,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_e03.svg",
+      "active_algorithm_id": "F2L:E03:algo:12650",
+      "algorithms": [
+        {
+          "id": "F2L:E03:algo:12650",
+          "name": "Main",
+          "formula": "y L2 U L2 U' L2",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E03:algo:15082",
+          "name": "Alt 1",
+          "formula": "y' R2 U R2 U' R2",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E03:algo:15083",
+          "name": "Alt 2",
+          "formula": "F L F2 L' F'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:E04",
+      "group": "F2L",
+      "case_code": "E04",
+      "title": "E04",
+      "subgroup_title": "Expert F2L",
+      "case_number": 81,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_e04.svg",
+      "active_algorithm_id": "F2L:E04:algo:12651",
+      "algorithms": [
+        {
+          "id": "F2L:E04:algo:12651",
+          "name": "Main",
+          "formula": "y f L U' L' f'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E04:algo:15085",
+          "name": "Alt 1",
+          "formula": "L u L' u' L'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E04:algo:15086",
+          "name": "Alt 2",
+          "formula": "y2 R u R' u' R'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E04:algo:15087",
+          "name": "Alt 3",
+          "formula": "y' f D R' D' f'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:E05",
+      "group": "F2L",
+      "case_code": "E05",
+      "title": "E05",
+      "subgroup_title": "Expert F2L",
+      "case_number": 82,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_e05.svg",
+      "active_algorithm_id": "F2L:E05:algo:12652",
+      "algorithms": [
+        {
+          "id": "F2L:E05:algo:12652",
+          "name": "Main",
+          "formula": "L2 u' L2 u L2",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E05:algo:15089",
+          "name": "Alt 1",
+          "formula": "y' R2 u R2 u' R2",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E05:algo:15090",
+          "name": "Alt 2",
+          "formula": "y L2 u L2 u' L2",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E05:algo:15091",
+          "name": "Alt 3",
+          "formula": "y2 R2 u' R2 u R2",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:E06",
+      "group": "F2L",
+      "case_code": "E06",
+      "title": "E06",
+      "subgroup_title": "Expert F2L",
+      "case_number": 83,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_e06.svg",
+      "active_algorithm_id": "F2L:E06:algo:12653",
+      "algorithms": [
+        {
+          "id": "F2L:E06:algo:12653",
+          "name": "Main",
+          "formula": "(L' u' L) U (L' u L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E06:algo:15093",
+          "name": "Alt 1",
+          "formula": "y' (R u R') U' (R u' R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E06:algo:15094",
+          "name": "Alt 2",
+          "formula": "y (L u L') U' (L u' L')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E06:algo:15095",
+          "name": "Alt 3",
+          "formula": "y2 (R' u' R) U (R' u R)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:E07",
+      "group": "F2L",
+      "case_code": "E07",
+      "title": "E07",
+      "subgroup_title": "Expert F2L",
+      "case_number": 84,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_e07.svg",
+      "active_algorithm_id": "F2L:E07:algo:12654",
+      "algorithms": [
+        {
+          "id": "F2L:E07:algo:12654",
+          "name": "Main",
+          "formula": "R' F R2 U' R2 F' R",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E07:algo:15097",
+          "name": "Alt 1",
+          "formula": "L F' L2 U' L2 F L'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E07:algo:15098",
+          "name": "Alt 2",
+          "formula": "y (f' L' f) U' (L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E07:algo:15099",
+          "name": "Alt 3",
+          "formula": "y' (R U R') U' (f R' f')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E07:algo:15100",
+          "name": "Alt 4",
+          "formula": "y2 (f R f') (L U2 L')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:E08",
+      "group": "F2L",
+      "case_code": "E08",
+      "title": "E08",
+      "subgroup_title": "Expert F2L",
+      "case_number": 85,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_e08.svg",
+      "active_algorithm_id": "F2L:E08:algo:12655",
+      "algorithms": [
+        {
+          "id": "F2L:E08:algo:12655",
+          "name": "Main",
+          "formula": "y L F' L2 U L2 F L'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E08:algo:15102",
+          "name": "Alt 1",
+          "formula": "y R' F R2 U R2 F' R",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E08:algo:15103",
+          "name": "Alt 2",
+          "formula": "(f R f') U (R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E08:algo:15104",
+          "name": "Alt 3",
+          "formula": "y2 (L' U' L) U (f' L f)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E08:algo:15105",
+          "name": "Alt 4",
+          "formula": "y' (f' L' f) (R' U2 R)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:E09",
+      "group": "F2L",
+      "case_code": "E09",
+      "title": "E09",
+      "subgroup_title": "Expert F2L",
+      "case_number": 86,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_e09.svg",
+      "active_algorithm_id": "F2L:E09:algo:12656",
+      "algorithms": [
+        {
+          "id": "F2L:E09:algo:12656",
+          "name": "Main",
+          "formula": "R (L U2 L') R'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E09:algo:15107",
+          "name": "Alt 1",
+          "formula": "y L' (R' U2 R) L",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:E10",
+      "group": "F2L",
+      "case_code": "E10",
+      "title": "E10",
+      "subgroup_title": "Expert F2L",
+      "case_number": 87,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_e10.svg",
+      "active_algorithm_id": "F2L:E10:algo:12657",
+      "algorithms": [
+        {
+          "id": "F2L:E10:algo:12657",
+          "name": "Main",
+          "formula": "L F2 L' F U' F",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E10:algo:15109",
+          "name": "Alt 1",
+          "formula": "(L F' L' U' F) U' (R U R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E10:algo:15110",
+          "name": "Alt 2",
+          "formula": "y (L U' F' L' F) (L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:E11",
+      "group": "F2L",
+      "case_code": "E11",
+      "title": "E11",
+      "subgroup_title": "Expert F2L",
+      "case_number": 88,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_e11.svg",
+      "active_algorithm_id": "F2L:E11:algo:12658",
+      "algorithms": [
+        {
+          "id": "F2L:E11:algo:12658",
+          "name": "Main",
+          "formula": "y R' F2 R F' U F'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E11:algo:15112",
+          "name": "Alt 1",
+          "formula": "y (R' F R U F') U (L' U' L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E11:algo:15113",
+          "name": "Alt 2",
+          "formula": "(R' U F R F') (R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:E12",
+      "group": "F2L",
+      "case_code": "E12",
+      "title": "E12",
+      "subgroup_title": "Expert F2L",
+      "case_number": 89,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_e12.svg",
+      "active_algorithm_id": "F2L:E12:algo:12659",
+      "algorithms": [
+        {
+          "id": "F2L:E12:algo:12659",
+          "name": "Main",
+          "formula": "(R' F R U' F') (R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E12:algo:15115",
+          "name": "Alt 1",
+          "formula": "y (L' U' L) U (S' L' S)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:E13",
+      "group": "F2L",
+      "case_code": "E13",
+      "title": "E13",
+      "subgroup_title": "Expert F2L",
+      "case_number": 90,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_e13.svg",
+      "active_algorithm_id": "F2L:E13:algo:12660",
+      "algorithms": [
+        {
+          "id": "F2L:E13:algo:12660",
+          "name": "Main",
+          "formula": "y (L F' L' U F) (L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E13:algo:15117",
+          "name": "Alt 1",
+          "formula": "(R U R') U' (S R S')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:E14",
+      "group": "F2L",
+      "case_code": "E14",
+      "title": "E14",
+      "subgroup_title": "Expert F2L",
+      "case_number": 91,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_e14.svg",
+      "active_algorithm_id": "F2L:E14:algo:12661",
+      "algorithms": [
+        {
+          "id": "F2L:E14:algo:12661",
+          "name": "Main",
+          "formula": "(L' U L) (M' U R U' r') (R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E14:algo:15119",
+          "name": "Alt 1",
+          "formula": "y (L U F' L' F) U2 (L' U' L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E14:algo:15120",
+          "name": "Alt 2",
+          "formula": "y (L U L') (F U F') U' (L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:E15",
+      "group": "F2L",
+      "case_code": "E15",
+      "title": "E15",
+      "subgroup_title": "Expert F2L",
+      "case_number": 92,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_e15.svg",
+      "active_algorithm_id": "F2L:E15:algo:12662",
+      "algorithms": [
+        {
+          "id": "F2L:E15:algo:12662",
+          "name": "Main",
+          "formula": "y (R U' R') (M' U' L' U l) (L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E15:algo:15122",
+          "name": "Alt 1",
+          "formula": "(R' U' F R F') U2 (R U R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E15:algo:15123",
+          "name": "Alt 2",
+          "formula": "(R' U' R) (F' U' F) U (R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:E16",
+      "group": "F2L",
+      "case_code": "E16",
+      "title": "E16",
+      "subgroup_title": "Expert F2L",
+      "case_number": 93,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_e16.svg",
+      "active_algorithm_id": "F2L:E16:algo:12663",
+      "algorithms": [
+        {
+          "id": "F2L:E16:algo:12663",
+          "name": "Main",
+          "formula": "(R' F R U' F') U (R U' R')",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E16:algo:15125",
+          "name": "Alt 1",
+          "formula": "R U' R2 u' R' u R",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E16:algo:15126",
+          "name": "Alt 2",
+          "formula": "y2 L U' L2 u' L' u L",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "F2L:E17",
+      "group": "F2L",
+      "case_code": "E17",
+      "title": "E17",
+      "subgroup_title": "Expert F2L",
+      "case_number": 94,
+      "probability_text": "n/a",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/f2l/svg/f2l_e17.svg",
+      "active_algorithm_id": "F2L:E17:algo:12664",
+      "algorithms": [
+        {
+          "id": "F2L:E17:algo:12664",
+          "name": "Main",
+          "formula": "y (L F' L' U F) U' (L' U L)",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E17:algo:15128",
+          "name": "Alt 1",
+          "formula": "y L' U L2 u L u' L'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "F2L:E17:algo:15129",
+          "name": "Alt 2",
+          "formula": "y' R' U R2 u R u' R'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_29",
+      "group": "OLL",
+      "case_code": "OLL_29",
+      "title": "OLL #29",
+      "subgroup_title": "Awkward Shape",
+      "case_number": 29,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_29.svg",
+      "active_algorithm_id": "OLL:OLL_29:algo:39",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_29:algo:39",
+          "name": "OLL_29",
+          "formula": "M U R U R' U' R' F R F' M'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_30",
+      "group": "OLL",
+      "case_code": "OLL_30",
+      "title": "OLL #30",
+      "subgroup_title": "Awkward Shape",
+      "case_number": 30,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_30.svg",
+      "active_algorithm_id": "OLL:OLL_30:algo:40",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_30:algo:40",
+          "name": "OLL_30",
+          "formula": "F R' F R2 U' R' U' R U R' F2",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_41",
+      "group": "OLL",
+      "case_code": "OLL_41",
+      "title": "OLL #41",
+      "subgroup_title": "Awkward Shape",
+      "case_number": 41,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_41.svg",
+      "active_algorithm_id": "OLL:OLL_41:algo:51",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_41:algo:51",
+          "name": "OLL_41",
+          "formula": "R U R' U R U2 R' F R U R' U' F'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_42",
+      "group": "OLL",
+      "case_code": "OLL_42",
+      "title": "OLL #42",
+      "subgroup_title": "Awkward Shape",
+      "case_number": 42,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_42.svg",
+      "active_algorithm_id": "OLL:OLL_42:algo:52",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_42:algo:52",
+          "name": "OLL_42",
+          "formula": "(R' U' R U' R' U2 R) F R U R' U' F'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_39",
+      "group": "OLL",
+      "case_code": "OLL_39",
+      "title": "OLL #39",
+      "subgroup_title": "Big Lightning",
+      "case_number": 39,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_39.svg",
+      "active_algorithm_id": "OLL:OLL_39:algo:49",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_39:algo:49",
+          "name": "OLL_39",
+          "formula": "L F' L' U' L U F U' L'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_40",
+      "group": "OLL",
+      "case_code": "OLL_40",
+      "title": "OLL #40",
+      "subgroup_title": "Big Lightning",
+      "case_number": 40,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_40.svg",
+      "active_algorithm_id": "OLL:OLL_40:algo:50",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_40:algo:50",
+          "name": "OLL_40",
+          "formula": "R' F R U R' U' F' U R",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_53",
+      "group": "OLL",
+      "case_code": "OLL_53",
+      "title": "OLL #53",
+      "subgroup_title": "Big Lightning",
+      "case_number": 53,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_53.svg",
+      "active_algorithm_id": "OLL:OLL_53:algo:63",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_53:algo:63",
+          "name": "OLL_53",
+          "formula": "r' U' R U' R' U R U' R' U2 r",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_54",
+      "group": "OLL",
+      "case_code": "OLL_54",
+      "title": "OLL #54",
+      "subgroup_title": "Big Lightning",
+      "case_number": 54,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_54.svg",
+      "active_algorithm_id": "OLL:OLL_54:algo:64",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_54:algo:64",
+          "name": "OLL_54",
+          "formula": "r U R' U R U' R' U R U2 r'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_34",
+      "group": "OLL",
+      "case_code": "OLL_34",
+      "title": "OLL #34",
+      "subgroup_title": "C Shape",
+      "case_number": 34,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_34.svg",
+      "active_algorithm_id": "OLL:OLL_34:algo:44",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_34:algo:44",
+          "name": "OLL_34",
+          "formula": "(R U R2 U') (R' F R U) R U' F'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_46",
+      "group": "OLL",
+      "case_code": "OLL_46",
+      "title": "OLL #46",
+      "subgroup_title": "C Shape",
+      "case_number": 46,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_46.svg",
+      "active_algorithm_id": "OLL:OLL_46:algo:56",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_46:algo:56",
+          "name": "OLL_46",
+          "formula": "R' U' R' F R F' U R",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_28",
+      "group": "OLL",
+      "case_code": "OLL_28",
+      "title": "OLL #28",
+      "subgroup_title": "Corners Oriented",
+      "case_number": 28,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_28.svg",
+      "active_algorithm_id": "OLL:OLL_28:algo:38",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_28:algo:38",
+          "name": "OLL_28",
+          "formula": "r U R' U' M U R U' R'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_57",
+      "group": "OLL",
+      "case_code": "OLL_57",
+      "title": "OLL #57",
+      "subgroup_title": "Corners Oriented",
+      "case_number": 57,
+      "probability_text": "1/108",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_57.svg",
+      "active_algorithm_id": "OLL:OLL_57:algo:67",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_57:algo:67",
+          "name": "OLL_57",
+          "formula": "(R U R' U') M' (U R U' r')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_21",
+      "group": "OLL",
+      "case_code": "OLL_21",
+      "title": "OLL #21",
+      "subgroup_title": "Cross",
+      "case_number": 21,
+      "probability_text": "1/108",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_21.svg",
+      "active_algorithm_id": "OLL:OLL_21:algo:31",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_21:algo:31",
+          "name": "OLL_21",
+          "formula": "(R U2 R' U' R U R' U') R U' R'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_22",
+      "group": "OLL",
+      "case_code": "OLL_22",
+      "title": "OLL #22",
+      "subgroup_title": "Cross",
+      "case_number": 22,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_22.svg",
+      "active_algorithm_id": "OLL:OLL_22:algo:32",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_22:algo:32",
+          "name": "OLL_22",
+          "formula": "R U2 R2 U' R2 U' R2 U2 R",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_23",
+      "group": "OLL",
+      "case_code": "OLL_23",
+      "title": "OLL #23",
+      "subgroup_title": "Cross",
+      "case_number": 23,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_23.svg",
+      "active_algorithm_id": "OLL:OLL_23:algo:33",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_23:algo:33",
+          "name": "OLL_23",
+          "formula": "R2 D R' U2 R D' R' U2 R'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_24",
+      "group": "OLL",
+      "case_code": "OLL_24",
+      "title": "OLL #24",
+      "subgroup_title": "Cross",
+      "case_number": 24,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_24.svg",
+      "active_algorithm_id": "OLL:OLL_24:algo:34",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_24:algo:34",
+          "name": "OLL_24",
+          "formula": "(r U R' U') (r' F R F')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_25",
+      "group": "OLL",
+      "case_code": "OLL_25",
+      "title": "OLL #25",
+      "subgroup_title": "Cross",
+      "case_number": 25,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_25.svg",
+      "active_algorithm_id": "OLL:OLL_25:algo:35",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_25:algo:35",
+          "name": "OLL_25",
+          "formula": "F' (r U R' U') r' F R",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_26",
+      "group": "OLL",
+      "case_code": "OLL_26",
+      "title": "OLL #26",
+      "subgroup_title": "Cross (Antisune)",
+      "case_number": 26,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_26.svg",
+      "active_algorithm_id": "OLL:OLL_26:algo:36",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_26:algo:36",
+          "name": "OLL_26",
+          "formula": "R U2 R' U' R U' R'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_27",
+      "group": "OLL",
+      "case_code": "OLL_27",
+      "title": "OLL #27",
+      "subgroup_title": "Cross (Sune)",
+      "case_number": 27,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_27.svg",
+      "active_algorithm_id": "OLL:OLL_27:algo:37",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_27:algo:37",
+          "name": "OLL_27",
+          "formula": "R U R' U R U2 R'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_1",
+      "group": "OLL",
+      "case_code": "OLL_1",
+      "title": "OLL #1",
+      "subgroup_title": "Dot",
+      "case_number": 1,
+      "probability_text": "1/108",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_1.svg",
+      "active_algorithm_id": "OLL:OLL_1:algo:11",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_1:algo:11",
+          "name": "OLL_1",
+          "formula": "R U2 R2 F R F' U2 R' F R F'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_2",
+      "group": "OLL",
+      "case_code": "OLL_2",
+      "title": "OLL #2",
+      "subgroup_title": "Dot",
+      "case_number": 2,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_2.svg",
+      "active_algorithm_id": "OLL:OLL_2:algo:12",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_2:algo:12",
+          "name": "OLL_2",
+          "formula": "r U r' U2 r U2 R' U2 R U' r'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_3",
+      "group": "OLL",
+      "case_code": "OLL_3",
+      "title": "OLL #3",
+      "subgroup_title": "Dot",
+      "case_number": 3,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_3.svg",
+      "active_algorithm_id": "OLL:OLL_3:algo:13",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_3:algo:13",
+          "name": "OLL_3",
+          "formula": "f (R U R' U') f' U' F (R U R' U') F'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_4",
+      "group": "OLL",
+      "case_code": "OLL_4",
+      "title": "OLL #4",
+      "subgroup_title": "Dot",
+      "case_number": 4,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_4.svg",
+      "active_algorithm_id": "OLL:OLL_4:algo:14",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_4:algo:14",
+          "name": "OLL_4",
+          "formula": "f (R U R' U') f' U F (R U R' U') F'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_17",
+      "group": "OLL",
+      "case_code": "OLL_17",
+      "title": "OLL #17",
+      "subgroup_title": "Dot",
+      "case_number": 17,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_17.svg",
+      "active_algorithm_id": "OLL:OLL_17:algo:27",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_17:algo:27",
+          "name": "OLL_17",
+          "formula": "(R U R' U) (R' F R F') U2 (R' F R F')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_18",
+      "group": "OLL",
+      "case_code": "OLL_18",
+      "title": "OLL #18",
+      "subgroup_title": "Dot",
+      "case_number": 18,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_18.svg",
+      "active_algorithm_id": "OLL:OLL_18:algo:28",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_18:algo:28",
+          "name": "OLL_18",
+          "formula": "F R U R' U' F' U f R U R' U' f'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_19",
+      "group": "OLL",
+      "case_code": "OLL_19",
+      "title": "OLL #19",
+      "subgroup_title": "Dot",
+      "case_number": 19,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_19.svg",
+      "active_algorithm_id": "OLL:OLL_19:algo:29",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_19:algo:29",
+          "name": "OLL_19",
+          "formula": "M U (R U R' U') M' (R' F R F')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_20",
+      "group": "OLL",
+      "case_code": "OLL_20",
+      "title": "OLL #20",
+      "subgroup_title": "Dot",
+      "case_number": 20,
+      "probability_text": "1/216",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_20.svg",
+      "active_algorithm_id": "OLL:OLL_20:algo:30",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_20:algo:30",
+          "name": "OLL_20",
+          "formula": "M U (R U R' U') M2 (U R U' R') M",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_9",
+      "group": "OLL",
+      "case_code": "OLL_9",
+      "title": "OLL #9",
+      "subgroup_title": "Fish Shape",
+      "case_number": 9,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_9.svg",
+      "active_algorithm_id": "OLL:OLL_9:algo:19",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_9:algo:19",
+          "name": "OLL_9",
+          "formula": "(R U R' U') R' F R2 U R' U' F'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_10",
+      "group": "OLL",
+      "case_code": "OLL_10",
+      "title": "OLL #10",
+      "subgroup_title": "Fish Shape",
+      "case_number": 10,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_10.svg",
+      "active_algorithm_id": "OLL:OLL_10:algo:20",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_10:algo:20",
+          "name": "OLL_10",
+          "formula": "(R U R' U) (R' F R F') (R U2 R')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_35",
+      "group": "OLL",
+      "case_code": "OLL_35",
+      "title": "OLL #35",
+      "subgroup_title": "Fish Shape",
+      "case_number": 35,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_35.svg",
+      "active_algorithm_id": "OLL:OLL_35:algo:45",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_35:algo:45",
+          "name": "OLL_35",
+          "formula": "R U2 R2 F R F' R U2 R'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_37",
+      "group": "OLL",
+      "case_code": "OLL_37",
+      "title": "OLL #37",
+      "subgroup_title": "Fish Shape",
+      "case_number": 37,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_37.svg",
+      "active_algorithm_id": "OLL:OLL_37:algo:47",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_37:algo:47",
+          "name": "OLL_37",
+          "formula": "F R' F' R U R U' R'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_51",
+      "group": "OLL",
+      "case_code": "OLL_51",
+      "title": "OLL #51",
+      "subgroup_title": "I Shape",
+      "case_number": 51,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_51.svg",
+      "active_algorithm_id": "OLL:OLL_51:algo:61",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_51:algo:61",
+          "name": "OLL_51",
+          "formula": "f (R U R' U') f' U F (R U R' U') F'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_52",
+      "group": "OLL",
+      "case_code": "OLL_52",
+      "title": "OLL #52",
+      "subgroup_title": "I Shape",
+      "case_number": 52,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_52.svg",
+      "active_algorithm_id": "OLL:OLL_52:algo:62",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_52:algo:62",
+          "name": "OLL_52",
+          "formula": "R U R' U R U' B U' B' R'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_55",
+      "group": "OLL",
+      "case_code": "OLL_55",
+      "title": "OLL #55",
+      "subgroup_title": "I Shape",
+      "case_number": 55,
+      "probability_text": "1/108",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_55.svg",
+      "active_algorithm_id": "OLL:OLL_55:algo:65",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_55:algo:65",
+          "name": "OLL_55",
+          "formula": "R U2 R2 U' R U' R' U2 F R F'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_56",
+      "group": "OLL",
+      "case_code": "OLL_56",
+      "title": "OLL #56",
+      "subgroup_title": "I Shape",
+      "case_number": 56,
+      "probability_text": "1/108",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_56.svg",
+      "active_algorithm_id": "OLL:OLL_56:algo:66",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_56:algo:66",
+          "name": "OLL_56",
+          "formula": "r U r' U R U' R' U R U' R' r U' r'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_31",
+      "group": "OLL",
+      "case_code": "OLL_31",
+      "title": "OLL #31",
+      "subgroup_title": "P Shape",
+      "case_number": 31,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_31.svg",
+      "active_algorithm_id": "OLL:OLL_31:algo:41",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_31:algo:41",
+          "name": "OLL_31",
+          "formula": "R' U' F U R U' R' F' R",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_32",
+      "group": "OLL",
+      "case_code": "OLL_32",
+      "title": "OLL #32",
+      "subgroup_title": "P Shape",
+      "case_number": 32,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_32.svg",
+      "active_algorithm_id": "OLL:OLL_32:algo:42",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_32:algo:42",
+          "name": "OLL_32",
+          "formula": "L U F' U' L' U L F L'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_43",
+      "group": "OLL",
+      "case_code": "OLL_43",
+      "title": "OLL #43",
+      "subgroup_title": "P Shape",
+      "case_number": 43,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_43.svg",
+      "active_algorithm_id": "OLL:OLL_43:algo:53",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_43:algo:53",
+          "name": "OLL_43",
+          "formula": "f' (L' U' L U) f",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_44",
+      "group": "OLL",
+      "case_code": "OLL_44",
+      "title": "OLL #44",
+      "subgroup_title": "P Shape",
+      "case_number": 44,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_44.svg",
+      "active_algorithm_id": "OLL:OLL_44:algo:54",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_44:algo:54",
+          "name": "OLL_44",
+          "formula": "f (R U R' U') f'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_7",
+      "group": "OLL",
+      "case_code": "OLL_7",
+      "title": "OLL #7",
+      "subgroup_title": "Small L Shape",
+      "case_number": 7,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_7.svg",
+      "active_algorithm_id": "OLL:OLL_7:algo:17",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_7:algo:17",
+          "name": "OLL_7",
+          "formula": "r U R' U R U2 r'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_8",
+      "group": "OLL",
+      "case_code": "OLL_8",
+      "title": "OLL #8",
+      "subgroup_title": "Small L Shape",
+      "case_number": 8,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_8.svg",
+      "active_algorithm_id": "OLL:OLL_8:algo:18",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_8:algo:18",
+          "name": "OLL_8",
+          "formula": "r' U' R U' R' U2 r",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_11",
+      "group": "OLL",
+      "case_code": "OLL_11",
+      "title": "OLL #11",
+      "subgroup_title": "Small L Shape",
+      "case_number": 11,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_11.svg",
+      "active_algorithm_id": "OLL:OLL_11:algo:21",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_11:algo:21",
+          "name": "OLL_11",
+          "formula": "r U R' U R U' R' U' r' R U R U' R'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_12",
+      "group": "OLL",
+      "case_code": "OLL_12",
+      "title": "OLL #12",
+      "subgroup_title": "Small L Shape",
+      "case_number": 12,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_12.svg",
+      "active_algorithm_id": "OLL:OLL_12:algo:22",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_12:algo:22",
+          "name": "OLL_12",
+          "formula": "F R U R' U' F' U F R U R' U' F'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_13",
+      "group": "OLL",
+      "case_code": "OLL_13",
+      "title": "OLL #13",
+      "subgroup_title": "Small L Shape",
+      "case_number": 13,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_13.svg",
+      "active_algorithm_id": "OLL:OLL_13:algo:23",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_13:algo:23",
+          "name": "OLL_13",
+          "formula": "F (U R U' R')2 F'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_14",
+      "group": "OLL",
+      "case_code": "OLL_14",
+      "title": "OLL #14",
+      "subgroup_title": "Small L Shape",
+      "case_number": 14,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_14.svg",
+      "active_algorithm_id": "OLL:OLL_14:algo:24",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_14:algo:24",
+          "name": "OLL_14",
+          "formula": "R' F R U R' F' R F U' F'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_15",
+      "group": "OLL",
+      "case_code": "OLL_15",
+      "title": "OLL #15",
+      "subgroup_title": "Small L Shape",
+      "case_number": 15,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_15.svg",
+      "active_algorithm_id": "OLL:OLL_15:algo:25",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_15:algo:25",
+          "name": "OLL_15",
+          "formula": "r' U' r (R' U' R U) r' U r",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_16",
+      "group": "OLL",
+      "case_code": "OLL_16",
+      "title": "OLL #16",
+      "subgroup_title": "Small L Shape",
+      "case_number": 16,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_16.svg",
+      "active_algorithm_id": "OLL:OLL_16:algo:26",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_16:algo:26",
+          "name": "OLL_16",
+          "formula": "r U r' (R U R' U') r U' r'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_47",
+      "group": "OLL",
+      "case_code": "OLL_47",
+      "title": "OLL #47",
+      "subgroup_title": "Small L Shape",
+      "case_number": 47,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_47.svg",
+      "active_algorithm_id": "OLL:OLL_47:algo:57",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_47:algo:57",
+          "name": "OLL_47",
+          "formula": "F' (L' U' L U)2 F",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_48",
+      "group": "OLL",
+      "case_code": "OLL_48",
+      "title": "OLL #48",
+      "subgroup_title": "Small L Shape",
+      "case_number": 48,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_48.svg",
+      "active_algorithm_id": "OLL:OLL_48:algo:58",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_48:algo:58",
+          "name": "OLL_48",
+          "formula": "F (R U R' U')2 F'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_49",
+      "group": "OLL",
+      "case_code": "OLL_49",
+      "title": "OLL #49",
+      "subgroup_title": "Small L Shape",
+      "case_number": 49,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_49.svg",
+      "active_algorithm_id": "OLL:OLL_49:algo:59",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_49:algo:59",
+          "name": "OLL_49",
+          "formula": "r U' r2 U r2 U r2 U' r",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_50",
+      "group": "OLL",
+      "case_code": "OLL_50",
+      "title": "OLL #50",
+      "subgroup_title": "Small L Shape",
+      "case_number": 50,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_50.svg",
+      "active_algorithm_id": "OLL:OLL_50:algo:60",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_50:algo:60",
+          "name": "OLL_50",
+          "formula": "r' U r2 U' r2 U' r2 U r'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_5",
+      "group": "OLL",
+      "case_code": "OLL_5",
+      "title": "OLL #5",
+      "subgroup_title": "Square Shape",
+      "case_number": 5,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_5.svg",
+      "active_algorithm_id": "OLL:OLL_5:algo:15",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_5:algo:15",
+          "name": "OLL_5",
+          "formula": "r' U2 R U R' U r",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_6",
+      "group": "OLL",
+      "case_code": "OLL_6",
+      "title": "OLL #6",
+      "subgroup_title": "Square Shape",
+      "case_number": 6,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_6.svg",
+      "active_algorithm_id": "OLL:OLL_6:algo:16",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_6:algo:16",
+          "name": "OLL_6",
+          "formula": "r U2 R' U' R U' r'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_33",
+      "group": "OLL",
+      "case_code": "OLL_33",
+      "title": "OLL #33",
+      "subgroup_title": "T Shape",
+      "case_number": 33,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_33.svg",
+      "active_algorithm_id": "OLL:OLL_33:algo:43",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_33:algo:43",
+          "name": "OLL_33",
+          "formula": "(R U R' U') (R' F R F')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_45",
+      "group": "OLL",
+      "case_code": "OLL_45",
+      "title": "OLL #45",
+      "subgroup_title": "T Shape",
+      "case_number": 45,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_45.svg",
+      "active_algorithm_id": "OLL:OLL_45:algo:55",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_45:algo:55",
+          "name": "OLL_45",
+          "formula": "F (R U R' U') F'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_36",
+      "group": "OLL",
+      "case_code": "OLL_36",
+      "title": "OLL #36",
+      "subgroup_title": "W Shape",
+      "case_number": 36,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_36.svg",
+      "active_algorithm_id": "OLL:OLL_36:algo:46",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_36:algo:46",
+          "name": "OLL_36",
+          "formula": "L' U' L U' L' U L U L F' L' F",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "OLL:OLL_38",
+      "group": "OLL",
+      "case_code": "OLL_38",
+      "title": "OLL #38",
+      "subgroup_title": "W Shape",
+      "case_number": 38,
+      "probability_text": "1/54",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/oll/svg/oll_oll_38.svg",
+      "active_algorithm_id": "OLL:OLL_38:algo:48",
+      "algorithms": [
+        {
+          "id": "OLL:OLL_38:algo:48",
+          "name": "OLL_38",
+          "formula": "(R U R' U) (R U' R' U') (R' F R F')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "PLL:PLL_1",
+      "group": "PLL",
+      "case_code": "PLL_1",
+      "title": "Aa-perm",
+      "subgroup_title": "Adjacent Corner Swap",
+      "case_number": 1,
+      "probability_text": "1/18",
+      "status": "LEARNED",
+      "recognizer_url": "./assets/recognizers/pll/svg/pll_pll_1.svg",
+      "active_algorithm_id": "PLL:PLL_1:algo:68",
+      "algorithms": [
+        {
+          "id": "PLL:PLL_1:algo:68",
+          "name": "Aa",
+          "formula": "x L2 D2 L' U' L D2 L' U L' x'",
+          "is_custom": false,
+          "status": "LEARNED"
+        }
+      ]
+    },
+    {
+      "case_key": "PLL:PLL_2",
+      "group": "PLL",
+      "case_code": "PLL_2",
+      "title": "Ab-perm",
+      "subgroup_title": "Adjacent Corner Swap",
+      "case_number": 2,
+      "probability_text": "1/18",
+      "status": "LEARNED",
+      "recognizer_url": "./assets/recognizers/pll/svg/pll_pll_2.svg",
+      "active_algorithm_id": "PLL:PLL_2:algo:69",
+      "algorithms": [
+        {
+          "id": "PLL:PLL_2:algo:69",
+          "name": "Ab",
+          "formula": "x' L2 D2 L U L' D2 L U' L x",
+          "is_custom": false,
+          "status": "LEARNED"
+        }
+      ]
+    },
+    {
+      "case_key": "PLL:PLL_3",
+      "group": "PLL",
+      "case_code": "PLL_3",
+      "title": "F-perm",
+      "subgroup_title": "Adjacent Corner Swap",
+      "case_number": 3,
+      "probability_text": "1/18",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/pll/svg/pll_pll_3.svg",
+      "active_algorithm_id": "PLL:PLL_3:algo:70",
+      "algorithms": [
+        {
+          "id": "PLL:PLL_3:algo:70",
+          "name": "F",
+          "formula": "R' U' F' R U R' U' R' F R2 U' R' U' R U R' U R",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "PLL:PLL_4",
+      "group": "PLL",
+      "case_code": "PLL_4",
+      "title": "Ga-perm",
+      "subgroup_title": "Adjacent Corner Swap",
+      "case_number": 4,
+      "probability_text": "1/18",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/pll/svg/pll_pll_4.svg",
+      "active_algorithm_id": "PLL:PLL_4:algo:71",
+      "algorithms": [
+        {
+          "id": "PLL:PLL_4:algo:71",
+          "name": "Ga",
+          "formula": "R2 U R' U R' U' R U' R2 U' D R' U R D'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "PLL:PLL_5",
+      "group": "PLL",
+      "case_code": "PLL_5",
+      "title": "Gb-perm",
+      "subgroup_title": "Adjacent Corner Swap",
+      "case_number": 5,
+      "probability_text": "1/18",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/pll/svg/pll_pll_5.svg",
+      "active_algorithm_id": "PLL:PLL_5:algo:72",
+      "algorithms": [
+        {
+          "id": "PLL:PLL_5:algo:72",
+          "name": "Gb",
+          "formula": "R' U' R U D' R2 U R' U R U' R U' R2 D",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "PLL:PLL_6",
+      "group": "PLL",
+      "case_code": "PLL_6",
+      "title": "Gc-perm",
+      "subgroup_title": "Adjacent Corner Swap",
+      "case_number": 6,
+      "probability_text": "1/18",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/pll/svg/pll_pll_6.svg",
+      "active_algorithm_id": "PLL:PLL_6:algo:73",
+      "algorithms": [
+        {
+          "id": "PLL:PLL_6:algo:73",
+          "name": "Gc",
+          "formula": "R2 U' R U' R U R' U R2 U D' R U' R' D",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "PLL:PLL_7",
+      "group": "PLL",
+      "case_code": "PLL_7",
+      "title": "Gd-perm",
+      "subgroup_title": "Adjacent Corner Swap",
+      "case_number": 7,
+      "probability_text": "1/18",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/pll/svg/pll_pll_7.svg",
+      "active_algorithm_id": "PLL:PLL_7:algo:74",
+      "algorithms": [
+        {
+          "id": "PLL:PLL_7:algo:74",
+          "name": "Gd",
+          "formula": "R U R' U' D R2 U' R U' R' U R' U R2 D'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "PLL:PLL_8",
+      "group": "PLL",
+      "case_code": "PLL_8",
+      "title": "Ja-perm",
+      "subgroup_title": "Adjacent Corner Swap",
+      "case_number": 8,
+      "probability_text": "1/18",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/pll/svg/pll_pll_8.svg",
+      "active_algorithm_id": "PLL:PLL_8:algo:75",
+      "algorithms": [
+        {
+          "id": "PLL:PLL_8:algo:75",
+          "name": "Ja",
+          "formula": "x R2 F R F' R U2 r' U r U2 x'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "PLL:PLL_9",
+      "group": "PLL",
+      "case_code": "PLL_9",
+      "title": "Jb-perm",
+      "subgroup_title": "Adjacent Corner Swap",
+      "case_number": 9,
+      "probability_text": "1/18",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/pll/svg/pll_pll_9.svg",
+      "active_algorithm_id": "PLL:PLL_9:algo:76",
+      "algorithms": [
+        {
+          "id": "PLL:PLL_9:algo:76",
+          "name": "Jb",
+          "formula": "R U R' F' R U R' U' R' F R2 U' R'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "PLL:PLL_10",
+      "group": "PLL",
+      "case_code": "PLL_10",
+      "title": "Ra-perm",
+      "subgroup_title": "Adjacent Corner Swap",
+      "case_number": 10,
+      "probability_text": "1/18",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/pll/svg/pll_pll_10.svg",
+      "active_algorithm_id": "PLL:PLL_10:algo:77",
+      "algorithms": [
+        {
+          "id": "PLL:PLL_10:algo:77",
+          "name": "Ra",
+          "formula": "R U' R' U' R U R D R' U' R D' R' U2 R'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "PLL:PLL_11",
+      "group": "PLL",
+      "case_code": "PLL_11",
+      "title": "Rb-perm",
+      "subgroup_title": "Adjacent Corner Swap",
+      "case_number": 11,
+      "probability_text": "1/18",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/pll/svg/pll_pll_11.svg",
+      "active_algorithm_id": "PLL:PLL_11:algo:78",
+      "algorithms": [
+        {
+          "id": "PLL:PLL_11:algo:78",
+          "name": "Rb",
+          "formula": "R2 F R U R U' R' F' R U2 R' U2 R",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "PLL:PLL_12",
+      "group": "PLL",
+      "case_code": "PLL_12",
+      "title": "T-perm",
+      "subgroup_title": "Adjacent Corner Swap",
+      "case_number": 12,
+      "probability_text": "1/12",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/pll/svg/pll_pll_12.svg",
+      "active_algorithm_id": "PLL:PLL_12:algo:79",
+      "algorithms": [
+        {
+          "id": "PLL:PLL_12:algo:79",
+          "name": "T",
+          "formula": "R U R' U' R' F R2 U' R' U' R U R' F'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "PLL:PLL_13",
+      "group": "PLL",
+      "case_code": "PLL_13",
+      "title": "E-perm",
+      "subgroup_title": "Diagonal Corner Swap",
+      "case_number": 13,
+      "probability_text": "1/36",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/pll/svg/pll_pll_13.svg",
+      "active_algorithm_id": "PLL:PLL_13:algo:80",
+      "algorithms": [
+        {
+          "id": "PLL:PLL_13:algo:80",
+          "name": "E",
+          "formula": "x' L' U L D' L' U' L D L' U' L D' L' U L D x",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "PLL:PLL_14",
+      "group": "PLL",
+      "case_code": "PLL_14",
+      "title": "Na-perm",
+      "subgroup_title": "Diagonal Corner Swap",
+      "case_number": 14,
+      "probability_text": "1/72",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/pll/svg/pll_pll_14.svg",
+      "active_algorithm_id": "PLL:PLL_14:algo:81",
+      "algorithms": [
+        {
+          "id": "PLL:PLL_14:algo:81",
+          "name": "Na",
+          "formula": "R U R' U R U R' F' R U R' U' R' F R2 U' R' U2 R U' R'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "PLL:PLL_15",
+      "group": "PLL",
+      "case_code": "PLL_15",
+      "title": "Nb-perm",
+      "subgroup_title": "Diagonal Corner Swap",
+      "case_number": 15,
+      "probability_text": "1/72",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/pll/svg/pll_pll_15.svg",
+      "active_algorithm_id": "PLL:PLL_15:algo:82",
+      "algorithms": [
+        {
+          "id": "PLL:PLL_15:algo:82",
+          "name": "Nb",
+          "formula": "R' U R U' R' F' U' F R U R' F R' F' R U' R",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "PLL:PLL_16",
+      "group": "PLL",
+      "case_code": "PLL_16",
+      "title": "V-perm",
+      "subgroup_title": "Diagonal Corner Swap",
+      "case_number": 16,
+      "probability_text": "1/18",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/pll/svg/pll_pll_16.svg",
+      "active_algorithm_id": "PLL:PLL_16:algo:83",
+      "algorithms": [
+        {
+          "id": "PLL:PLL_16:algo:83",
+          "name": "V",
+          "formula": "R' U R' U' y R' F' R2 U' R' U R' F R F y'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "PLL:PLL_17",
+      "group": "PLL",
+      "case_code": "PLL_17",
+      "title": "Y-perm",
+      "subgroup_title": "Diagonal Corner Swap",
+      "case_number": 17,
+      "probability_text": "1/18",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/pll/svg/pll_pll_17.svg",
+      "active_algorithm_id": "PLL:PLL_17:algo:84",
+      "algorithms": [
+        {
+          "id": "PLL:PLL_17:algo:84",
+          "name": "Y",
+          "formula": "F R U' R' U' R U R' F' R U R' U' R' F R F'",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "PLL:PLL_18",
+      "group": "PLL",
+      "case_code": "PLL_18",
+      "title": "H-perm",
+      "subgroup_title": "Edges Only",
+      "case_number": 18,
+      "probability_text": "1/72",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/pll/svg/pll_pll_18.svg",
+      "active_algorithm_id": "PLL:PLL_18:algo:85",
+      "algorithms": [
+        {
+          "id": "PLL:PLL_18:algo:85",
+          "name": "H",
+          "formula": "M2 U M2 U2 M2 U M2",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "PLL:PLL_19",
+      "group": "PLL",
+      "case_code": "PLL_19",
+      "title": "Ua-perm",
+      "subgroup_title": "Edges Only",
+      "case_number": 19,
+      "probability_text": "1/18",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/pll/svg/pll_pll_19.svg",
+      "active_algorithm_id": "PLL:PLL_19:algo:86",
+      "algorithms": [
+        {
+          "id": "PLL:PLL_19:algo:86",
+          "name": "Ua",
+          "formula": "R2 U' R' U' R U R U R U' R",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "PLL:PLL_20",
+      "group": "PLL",
+      "case_code": "PLL_20",
+      "title": "Ub-perm",
+      "subgroup_title": "Edges Only",
+      "case_number": 20,
+      "probability_text": "1/18",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/pll/svg/pll_pll_20.svg",
+      "active_algorithm_id": "PLL:PLL_20:algo:87",
+      "algorithms": [
+        {
+          "id": "PLL:PLL_20:algo:87",
+          "name": "Ub",
+          "formula": "M2 U' M U2 M' U' M2",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "PLL:PLL_21",
+      "group": "PLL",
+      "case_code": "PLL_21",
+      "title": "Z-perm",
+      "subgroup_title": "Edges Only",
+      "case_number": 21,
+      "probability_text": "1/36",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/pll/svg/pll_pll_21.svg",
+      "active_algorithm_id": "PLL:PLL_21:algo:88",
+      "algorithms": [
+        {
+          "id": "PLL:PLL_21:algo:88",
+          "name": "Z",
+          "formula": "M2 U M2 U M' U2 M2 U2 M' U2",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    }
+  ]
+}

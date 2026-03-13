@@ -27,27 +27,13 @@ for entry in (REPO_ROOT, PACKAGE_SRC):
 
 from cubeanim.cards import repository
 from cubeanim.cards.db import connect
-from cubeanim_domain.sandbox import build_sandbox_timeline
 from cubeanim.cards.services import CardsService
-from cubeanim_domain.state import solved_state_string, state_slots_metadata
+from cubeanim_domain.sandbox import build_sandbox_timeline
 from tools.trainer.prune_trainer_assets import prune_trainer_assets
 
 
 GROUPS = ("F2L", "OLL", "PLL")
-SCHEMA_VERSION = "trainer-catalog-v1"
-DEFAULT_PLAYBACK_CONFIG = {
-    "run_time_sec": 0.65,
-    "double_turn_multiplier": 1.7,
-    "inter_move_pause_ratio": 0.05,
-    "rate_func": "ease_in_out_sine",
-}
-
-
-def _default_state_slots() -> list[dict[str, Any]]:
-    return [
-        {"position": [x, y, z], "face": face}
-        for (x, y, z), face in state_slots_metadata()
-    ]
+SCHEMA_VERSION = "trainer-catalog-v2"
 
 
 def _normalize_formula(formula: str) -> str:
@@ -84,50 +70,12 @@ def _normalize_recognizer_url(recognizer_url: str | None, asset_base: str) -> st
     return f"{asset_base.rstrip('/')}/{normalized}"
 
 
-def _build_timeline_payload(formula: str, group: str) -> dict[str, Any]:
+def _validate_formula(formula: str, group: str) -> str:
     normalized = _normalize_formula(formula)
-    state_slots = _default_state_slots()
-
     if not normalized:
-        return {
-            "formula": "",
-            "group": group,
-            "move_steps": [],
-            "moves_flat": [],
-            "initial_state": solved_state_string(),
-            "states_by_step": [solved_state_string()],
-            "highlight_by_step": [],
-            "state_slots": state_slots,
-            "playback_config": DEFAULT_PLAYBACK_CONFIG,
-        }
-
-    try:
-        timeline = build_sandbox_timeline(normalized, group)
-    except Exception:
-        # Keep static build resilient even if a runtime DB contains malformed custom formulas.
-        return {
-            "formula": normalized,
-            "group": group,
-            "move_steps": [],
-            "moves_flat": [],
-            "initial_state": solved_state_string(),
-            "states_by_step": [solved_state_string()],
-            "highlight_by_step": [],
-            "state_slots": state_slots,
-            "playback_config": DEFAULT_PLAYBACK_CONFIG,
-        }
-
-    return {
-        "formula": timeline.formula,
-        "group": timeline.group,
-        "move_steps": timeline.move_steps,
-        "moves_flat": timeline.moves_flat,
-        "initial_state": timeline.initial_state,
-        "states_by_step": timeline.states_by_step,
-        "highlight_by_step": timeline.highlight_by_step,
-        "state_slots": timeline.state_slots,
-        "playback_config": DEFAULT_PLAYBACK_CONFIG,
-    }
+        raise ValueError(f"Algorithm formula is empty for group {group}")
+    build_sandbox_timeline(normalized, group)
+    return normalized
 
 
 def _pick_active_algorithm_id(raw_case: dict[str, Any], algorithms: list[dict[str, Any]]) -> str:
@@ -165,14 +113,10 @@ def build_catalog_payload(service: CardsService, *, base_catalog_url: str) -> di
                 algorithm_payload = {
                     "id": _algorithm_id(case_key, raw_id),
                     "name": str(item.get("name") or case_code),
-                    "formula": _normalize_formula(str(item.get("formula") or "")),
+                    "formula": _validate_formula(str(item.get("formula") or ""), group),
                     "is_custom": bool(item.get("is_custom", False)),
                     "status": str(item.get("status", "NEW")),
                 }
-                algorithm_payload["sandbox"] = _build_timeline_payload(
-                    formula=algorithm_payload["formula"],
-                    group=group,
-                )
                 algorithms.append(algorithm_payload)
 
             if not algorithms:
@@ -196,7 +140,6 @@ def build_catalog_payload(service: CardsService, *, base_catalog_url: str) -> di
                 ),
                 "active_algorithm_id": active_algorithm_id,
                 "algorithms": algorithms,
-                "sandbox": algorithms[0]["sandbox"],
             }
             cases_out.append(case_payload)
 
@@ -221,7 +164,7 @@ def build_trainer_catalog(
     payload = build_catalog_payload(service, base_catalog_url=base_catalog_url)
     data_dir = output_dir / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
-    catalog_path = data_dir / "catalog-v1.json"
+    catalog_path = data_dir / "catalog-v2.json"
     catalog_path.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2),
         encoding="utf-8",
@@ -280,7 +223,7 @@ def main() -> None:
         base_catalog_url=args.base_catalog_url,
     )
 
-    print(f"Catalog written to {output_dir / 'data' / 'catalog-v1.json'}")
+    print(f"Catalog written to {output_dir / 'data' / 'catalog-v2.json'}")
     print(f"Recognizers copied to {assets_dir}")
     print(f"Cases: {len(payload['cases'])}")
 

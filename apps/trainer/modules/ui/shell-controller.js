@@ -71,6 +71,7 @@ export function createShellController(deps) {
   }
 
   function syncLayout() {
+    const previousLayout = state.layout;
     const nextLayout = resolveLayout(state.layoutPreference, window.innerWidth);
     if (state.layout !== nextLayout) {
       state.layout = nextLayout;
@@ -79,7 +80,7 @@ export function createShellController(deps) {
       }
       if (state.layout !== "mobile") {
         state.view = "details";
-      } else if (!state.activeCase && state.view === "details") {
+      } else if (previousLayout !== "mobile" || (!state.activeCase && state.view === "details")) {
         state.view = "catalog";
       }
     }
@@ -130,7 +131,7 @@ export function createShellController(deps) {
   function init() {
     state.layoutPreference = parseLayoutPreference();
     state.layout = resolveLayout(state.layoutPreference, window.innerWidth);
-    state.view = "details";
+    state.view = state.layout === "mobile" ? "catalog" : "details";
     state.sheet = "none";
     applyShellState();
     window.addEventListener("resize", syncLayout);

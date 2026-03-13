@@ -220,16 +220,6 @@ export function createTrainerCatalogProvider(catalog, profile, onProfileCommit, 
     const algorithm = caseData.algorithms.find((item) => item.id === requestedAlgorithmId) || null;
     const overrideFormula = String(formulaOverride || "").trim();
 
-    if (algorithm?.sandbox && !overrideFormula) {
-      return cloneObject(algorithm.sandbox);
-    }
-
-    const baseSandbox =
-      cloneObject(caseData.sandbox) || cloneObject(caseData.algorithms.find((item) => item.sandbox)?.sandbox) || null;
-    if (!baseSandbox) {
-      throw new Error("Sandbox source is unavailable");
-    }
-
     const formula = overrideFormula || algorithm?.formula || "";
     if (!formula) {
       throw new Error("Formula is empty");
@@ -240,7 +230,7 @@ export function createTrainerCatalogProvider(catalog, profile, onProfileCommit, 
       return cloneObject(timelineCache.get(cacheKey));
     }
 
-    const timeline = buildLocalSandboxTimeline(baseSandbox, formula, caseData.group);
+    const timeline = buildLocalSandboxTimeline(null, formula, caseData.group);
     timelineCache?.set(cacheKey, cloneObject(timeline));
     return timeline;
   }

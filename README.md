@@ -1,23 +1,20 @@
 # Rubik Motion Lab
 
-Repository for the static Rubik trainer, local cards service/runtime, and a local-only Manim authoring tool.
+Repository for the static Rubik trainer and local cards runtime.
 
 ## Layout
 
 - `apps/trainer` — primary static trainer (public root `/`)
-- `apps/cards-worker` — local artifact queue worker
-- `apps/render-ui` — local GUI renderer
-- `packages/cubeanim/src/cubeanim_domain` — pure shared domain logic
-- `packages/cubeanim/src/cubeanim_renderer` — Manim-only local renderer stack
+- `packages/cubeanim/src/cubeanim_domain` — temporary in-repo mirror of the shared domain package
 - `packages/cubeanim/src/cubeanim` — compatibility facade for legacy imports
-- `tools` — CLI tools (`render_algo`, `cards_runtime`, trainer build, F2L import)
+- `tools` — CLI tools (`cards_runtime`, trainer build, F2L import)
 - `legacy/cards-web` — frozen deprecated web UI snapshot
 - `db/cards/{schema.sql,seed.sql}` — DB schema/seed source
 - `apps/cards-api` — deprecated compatibility shim, excluded from active workflow
 
 Detailed structure and migration notes: `docs/REPO_LAYOUT.md`.
 Trainer UX manual: `docs/TRAINER_MANUAL.md`.
-Local renderer architecture: `docs/RENDERER_SPLIT.md`.
+Local split notes: `docs/RENDERER_SPLIT.md`.
 
 ## Install
 
@@ -36,18 +33,13 @@ uv run python -m playwright install chromium
 ## Main commands
 
 ```bash
-uv run python apps/render-ui/main.py
-uv run python tools/render_algo.py --formula "R U R' U'" --name MyAlgo --group PLL --quality standard
-uv run python apps/cards-worker/main.py --workers 1 --manim-threads 1
 uv run python tools/cards_runtime.py reset-runtime
 ```
 
 Or use `just`:
 
 ```bash
-just ui
-just render "R U R' U'" my_algo PLL draft
-just worker
+just trainer-build
 just cards-reset-runtime
 ```
 
@@ -59,17 +51,17 @@ just trainer-manual
 just trainer-serve port=8011
 ```
 
-`trainer-build` generates `apps/trainer/data/catalog-v1.json`, syncs recognizers, and prunes unused recognizer assets.
+`trainer-build` generates `apps/trainer/data/catalog-v2.json`, syncs recognizers, and prunes unused recognizer assets.
 
-## Local renderer
+## Local split
 
-- Manim is no longer treated as a remote/backend renderer for the trainer.
-- The local renderer writes artifacts under `data/local-renderer/`.
-- `apps/render-ui` and `tools/render_algo.py` are private authoring tools and are not part of the web runtime.
+- Trainer is fully JS for formula parsing, start-state resolution, timeline assembly, and playback.
+- The Python renderer has been moved out of the active repo graph into a sibling local mini-repo.
+- `cubeanim_domain` is being externalized the same way; the in-repo package is a temporary mirror until the dependency is fully pinned.
 
 ## Cards runtime
 
-- Active cards flow is local-only: `CardsService`, runtime DB/recognizers, and `apps/cards-worker`.
+- Active cards flow is local-only: `CardsService`, runtime DB, recognizers, and trainer catalog build.
 - Trainer smoke must not hit `/api/*`; the static trainer reads catalog/assets directly.
 - Runtime admin operations should use `tools/cards_runtime.py`, not the deprecated HTTP layer.
 

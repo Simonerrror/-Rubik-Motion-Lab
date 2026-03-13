@@ -1,12 +1,10 @@
 import { DEFAULT_SANDBOX_PLAYBACK_CONFIG } from "../core/constants.js";
 import {
-  applyStep,
-  createCubeModel,
   inferCubeSizeFromStateSlots,
-  modelToStateString,
-  snapshotsForTimeline,
 } from "../cube-core/model.js";
 import { normalizeMoveSteps } from "./formula.js";
+import { resolveStartState } from "./start-state.js";
+import { invertMoves, stateSlotsMetadata, stateStringAfterMoves } from "./state.js";
 import { cloneObject } from "../utils/common.js";
 
 export function normalizeSandboxPlaybackConfig(raw) {
@@ -26,13 +24,16 @@ export function normalizeSandboxPlaybackConfig(raw) {
 export function buildLocalSandboxTimeline(baseSandbox, formula, group) {
   const normalizedFormula = normalizeMoveSteps(formula || "");
   const moveSteps = normalizedFormula.steps.map((step) => step.map((move) => String(move)));
-  const stateSlots = Array.isArray(baseSandbox?.state_slots) ? cloneObject(baseSandbox.state_slots) : [];
+  const stateSlots = stateSlotsMetadata();
   const playbackConfig = normalizeSandboxPlaybackConfig(baseSandbox?.playback_config);
   const cubeSize = Number(baseSandbox?.cube_size) || inferCubeSizeFromStateSlots(stateSlots);
-  const initialModel = createCubeModel(cubeSize, String(baseSandbox?.initial_state || ""), stateSlots);
-  const { models } = snapshotsForTimeline(initialModel, moveSteps);
-  const states = models.map((model) => modelToStateString(model));
-  const finalModel = moveSteps.reduce((model, step) => applyStep(model, step), initialModel);
+  const initialState = resolveStartState(group, invertMoves(normalizedFormula.formula));
+  const states = [initialState];
+  let currentState = initialState;
+  moveSteps.forEach((step) => {
+    currentState = stateStringAfterMoves(currentState, step);
+    states.push(currentState);
+  });
 
   return {
     formula: normalizedFormula.formula,
@@ -40,11 +41,11 @@ export function buildLocalSandboxTimeline(baseSandbox, formula, group) {
     cube_size: cubeSize,
     move_steps: moveSteps,
     moves_flat: normalizedFormula.movesFlat,
-    initial_state: states[0] || "",
+    initial_state: initialState,
     states_by_step: states,
-    final_state: modelToStateString(finalModel),
+    final_state: states[states.length - 1] || initialState,
     highlight_by_step: normalizedFormula.highlights,
-    state_slots: stateSlots,
+    state_slots: cloneObject(stateSlots),
     playback_config: playbackConfig,
   };
 }

@@ -9,7 +9,7 @@ from tools.trainer.prune_trainer_assets import prune_trainer_assets
 
 
 def test_prune_trainer_assets_removes_non_whitelisted_files(tmp_path: Path) -> None:
-    catalog_path = tmp_path / "catalog-v1.json"
+    catalog_path = tmp_path / "catalog-v2.json"
     assets_dir = tmp_path / "assets"
 
     keep_path = assets_dir / "recognizers" / "f2l" / "svg" / "f2l_b01.svg"
@@ -37,7 +37,7 @@ def test_prune_trainer_assets_removes_non_whitelisted_files(tmp_path: Path) -> N
 
 
 def test_prune_trainer_assets_rejects_invalid_case_codes(tmp_path: Path) -> None:
-    catalog_path = tmp_path / "catalog-v1.json"
+    catalog_path = tmp_path / "catalog-v2.json"
     assets_dir = tmp_path / "assets"
     (assets_dir / "recognizers").mkdir(parents=True, exist_ok=True)
     payload = {
