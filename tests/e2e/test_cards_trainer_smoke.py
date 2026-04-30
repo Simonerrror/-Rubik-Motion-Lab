@@ -129,7 +129,7 @@ def _run_layout_flow(page, base_url: str, is_mobile: bool) -> None:
         expect(page.locator("[data-testid^='case-card-']").first).to_be_visible(timeout=10000)
 
     page.get_by_test_id("tab-zbls").click()
-    expect(page.get_by_test_id("case-card-zbls-zbls-u01")).to_be_visible(timeout=10000)
+    expect(page.get_by_test_id("case-card-zbls-zbls-conu1a01")).to_be_visible(timeout=10000)
     page.get_by_test_id("tab-pll").click()
     expect(page.locator("[data-testid^='case-card-']").first).to_be_visible(timeout=10000)
 

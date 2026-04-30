@@ -229,10 +229,14 @@ def list_cases(conn: sqlite3.Connection, group: str) -> list[dict[str, Any]]:
                 ELSE 99
             END ASC,
             CASE
+                WHEN c.category_code = 'F2L' THEN COALESCE(c.subgroup_title, '')
+                ELSE ''
+            END ASC,
+            COALESCE(c.case_number, 999999) ASC,
+            CASE
                 WHEN c.category_code = 'F2L' THEN ''
                 ELSE COALESCE(c.subgroup_title, '')
             END ASC,
-            COALESCE(c.case_number, 999999) ASC,
             c.case_code ASC
         """,
         (group,),
