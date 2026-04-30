@@ -139,6 +139,12 @@ export function loadProgressSortMap() {
     const raw = localStorage.getItem(PROGRESS_SORT_STORAGE_KEY);
     if (!raw) return defaults;
     const parsed = JSON.parse(raw);
+    Object.entries(parsed || {}).forEach(([group, enabled]) => {
+      const normalized = String(group || "").trim().toUpperCase();
+      if (normalized) {
+        defaults[normalized] = Boolean(enabled);
+      }
+    });
     GROUPS.forEach((group) => {
       if (Object.prototype.hasOwnProperty.call(parsed || {}, group)) {
         defaults[group] = Boolean(parsed[group]);

@@ -16,6 +16,7 @@ export function queryTrainerDom(doc) {
     settingsBackdrop: doc.getElementById("settings-backdrop"),
     helpOpenBtn: doc.getElementById("help-open-btn"),
     catalog: doc.getElementById("catalog-container"),
+    categoryTabs: doc.querySelector(".sidebar-tabs"),
     sortProgressToggle: doc.getElementById("sort-progress-toggle"),
     mName: doc.getElementById("m-name"),
     mProb: doc.getElementById("m-prob"),

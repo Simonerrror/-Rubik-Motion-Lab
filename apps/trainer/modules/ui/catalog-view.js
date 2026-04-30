@@ -75,6 +75,29 @@ export function setActiveTab(category) {
   });
 }
 
+export function renderCategoryTabs(dom, catalog, activeCategory) {
+  if (!dom.categoryTabs) return;
+  const categories = Array.isArray(catalog?.categories)
+    ? catalog.categories.map((item) => String(item || "").trim().toUpperCase()).filter(Boolean)
+    : [];
+  const labels = catalog?.category_labels && typeof catalog.category_labels === "object"
+    ? catalog.category_labels
+    : {};
+  if (!categories.length) return;
+
+  dom.categoryTabs.innerHTML = "";
+  categories.forEach((category) => {
+    const tab = document.createElement("button");
+    tab.className = "nav-tab";
+    tab.type = "button";
+    tab.dataset.category = category;
+    tab.setAttribute("data-testid", `tab-${category.toLowerCase()}`);
+    tab.textContent = String(labels[category] || category);
+    tab.classList.toggle("active", category === activeCategory);
+    dom.categoryTabs.appendChild(tab);
+  });
+}
+
 export function syncProgressSortToggle(state, dom) {
   if (!dom.sortProgressToggle) return;
   dom.sortProgressToggle.checked = Boolean(state.progressSortByGroup[state.category]);
