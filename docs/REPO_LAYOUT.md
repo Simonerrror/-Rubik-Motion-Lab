@@ -25,6 +25,7 @@ db/
 
 data/
   f2l/best_f2l_from_pdf.yaml
+  manifests/              # canonical algorithm manifests for subset imports
   cards/runtime/   # generated runtime DB/assets (gitignored)
 
 legacy/
@@ -40,6 +41,7 @@ legacy/
 - `packages/cubeanim/src` is the only Python package root for runtime and tests.
 - `cubeanim_domain` is the shared source of truth for Python-side formula/timeline/start-state logic.
 - `cubeanim` is a transitional facade for backward-compatible imports.
+- Canonical algorithm manifests live under `data/manifests` (see `docs/CANONICAL_ALGORITHM_MANIFEST.md`).
 - Python renderer/manim code is no longer part of the active repo graph; it lives in a sibling local mini-repo.
 - Recognizer assets in `apps/trainer/assets/recognizers` are release-snapshot only:
   - build catalog

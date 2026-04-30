@@ -1,0 +1,49 @@
+{
+  "manifest_version": 1,
+  "category": "ZBLS",
+  "subset": "U",
+  "source": {
+    "title": "Rubik Motion Lab internal ZBLS U pilot slice",
+    "url": "docs/reviews/2026-04-30-zbls-u-pilot-source-review.md",
+    "retrieved_at": "2026-04-30",
+    "license": "Copyright (c) 2026 Rubik Motion Lab. Redistribution in this repository is approved by product owner decision dated 2026-04-30.",
+    "notes": "Pilot-only subset for RUB-9 runtime wiring. Formulas were authored and reviewed internally, with notation normalized to parser-safe repository format."
+  },
+  "cases": [
+    {
+      "case_code": "ZBLS_U01",
+      "display_title": "ZBLS U #01",
+      "subset": "U",
+      "sort_order": 1,
+      "recognition_notes": "Pilot recognition placeholder for U subset case 01.",
+      "probability_notes": "Pilot-only slice; canonical probability metadata deferred.",
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "R U R' U' R U R'",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y L' U' L U L' U2 L",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "case_code": "ZBLS_U02",
+      "display_title": "ZBLS U #02",
+      "subset": "U",
+      "sort_order": 2,
+      "recognition_notes": "Pilot recognition placeholder for U subset case 02.",
+      "probability_notes": "Pilot-only slice; canonical probability metadata deferred.",
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "F' U' F U R U R'",
+          "primary": true
+        }
+      ]
+    }
+  ]
+}
