@@ -625,6 +625,16 @@ def _build_zbls_svg(case_code: str, formula: str) -> str:
     )
 
 
+def _build_zbll_svg(case_code: str, formula: str) -> str:
+    return _build_isometric_formula_svg(
+        category="ZBLL",
+        case_code=case_code,
+        formula=formula,
+        version="v1-zbll",
+        mask_u_cubies=False,
+    )
+
+
 def _build_fallback_svg(category: str, case_code: str) -> str:
     bits = _pattern_bits(category, case_code)
     lines = _base_svg_lines(version="v4-fallback", category=category, case_code=case_code)
@@ -683,6 +693,11 @@ def _build_svg(category: str, case_code: str, formula: str | None = None) -> str
     if category == "ZBLS" and normalized_formula:
         try:
             return _build_zbls_svg(case_code=case_code, formula=normalized_formula)
+        except Exception:
+            pass
+    if category == "ZBLL" and normalized_formula:
+        try:
+            return _build_zbll_svg(case_code=case_code, formula=normalized_formula)
         except Exception:
             pass
     if category == "PLL" and normalized_formula:

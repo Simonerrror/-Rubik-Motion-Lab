@@ -32,7 +32,7 @@ from cubeanim_domain.sandbox import build_sandbox_timeline
 from tools.trainer.prune_trainer_assets import prune_trainer_assets
 
 
-DEFAULT_CATALOG_CATEGORIES = ("F2L", "OLL", "ZBLS", "PLL")
+DEFAULT_CATALOG_CATEGORIES = ("F2L", "OLL", "ZBLS", "ZBLL", "PLL")
 SCHEMA_VERSION = "trainer-catalog-v2"
 
 

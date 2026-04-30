@@ -45,8 +45,8 @@ def test_initialize_database_is_idempotent(tmp_path: Path) -> None:
         case_count = int(conn.execute("SELECT COUNT(*) FROM cases").fetchone()[0])
         algo_count = int(conn.execute("SELECT COUNT(*) FROM algorithms").fetchone()[0])
 
-    assert case_count == 174
-    assert algo_count == 340
+    assert case_count == 646
+    assert algo_count > 800
 
 
 def test_progress_status_update_roundtrip(tmp_path: Path) -> None:
@@ -116,11 +116,17 @@ def test_canonical_seed_tables_are_complete(tmp_path: Path) -> None:
                 "SELECT COUNT(*) FROM canonical_cases WHERE category_code = 'ZBLS'"
             ).fetchone()[0]
         )
+        zbll_cases = int(
+            conn.execute(
+                "SELECT COUNT(*) FROM canonical_cases WHERE category_code = 'ZBLL'"
+            ).fetchone()[0]
+        )
 
-    assert canonical_case_count == 174
-    assert canonical_algo_count == 340
+    assert canonical_case_count == 646
+    assert canonical_algo_count > 800
     assert oll_nonempty == 57
     assert zbls_cases == 2
+    assert zbll_cases == 472
 
 
 def test_initialize_database_does_not_require_legacy_txt_sources(tmp_path: Path) -> None:
@@ -138,8 +144,8 @@ def test_initialize_database_does_not_require_legacy_txt_sources(tmp_path: Path)
         case_count = int(conn.execute("SELECT COUNT(*) FROM cases").fetchone()[0])
         algo_count = int(conn.execute("SELECT COUNT(*) FROM algorithms").fetchone()[0])
 
-    assert case_count == 174
-    assert algo_count == 340
+    assert case_count == 646
+    assert algo_count > 800
 
 
 def test_oll_formulas_seeded_from_oll_txt(tmp_path: Path) -> None:
@@ -292,6 +298,23 @@ def test_zbls_recognizer_matches_formula_start_state(tmp_path: Path) -> None:
     for polygon in u_stickers:
         pos = tuple(int(chunk) for chunk in str(polygon.attrib.get("data-pos", "")).split(","))
         assert str(polygon.attrib.get("fill")) == expected_u_colors[pos]
+
+
+def test_zbll_recognizer_is_formula_based_not_fallback(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    db_path = tmp_path / "cards.db"
+    initialize_database(repo_root=repo_root, db_path=db_path)
+
+    svg_dir = tmp_path / "recognizers" / "zbll" / "svg"
+    content = (svg_dir / "zbll_zbll_t1.svg").read_text(encoding="utf-8")
+    assert "recognizer:v1-zbll category=ZBLL case=ZBLL_T1" in content
+    assert "recognizer:v4-fallback" not in content
+    sticker_cells = [
+        node
+        for node in _svg_polygon_nodes(content)
+        if node.attrib.get("data-layer") == "sticker"
+    ]
+    assert len(sticker_cells) == 27
 
 
 def test_f2l_recognizer_has_27_sticker_cells(tmp_path: Path) -> None:
