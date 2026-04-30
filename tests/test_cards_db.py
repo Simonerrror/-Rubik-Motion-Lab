@@ -45,8 +45,8 @@ def test_initialize_database_is_idempotent(tmp_path: Path) -> None:
         case_count = int(conn.execute("SELECT COUNT(*) FROM cases").fetchone()[0])
         algo_count = int(conn.execute("SELECT COUNT(*) FROM algorithms").fetchone()[0])
 
-    assert case_count == 646
-    assert algo_count > 800
+    assert case_count == 950
+    assert algo_count > 2300
 
 
 def test_progress_status_update_roundtrip(tmp_path: Path) -> None:
@@ -122,10 +122,10 @@ def test_canonical_seed_tables_are_complete(tmp_path: Path) -> None:
             ).fetchone()[0]
         )
 
-    assert canonical_case_count == 646
-    assert canonical_algo_count > 800
+    assert canonical_case_count == 950
+    assert canonical_algo_count > 2300
     assert oll_nonempty == 57
-    assert zbls_cases == 2
+    assert zbls_cases == 306
     assert zbll_cases == 472
 
 
@@ -144,8 +144,8 @@ def test_initialize_database_does_not_require_legacy_txt_sources(tmp_path: Path)
         case_count = int(conn.execute("SELECT COUNT(*) FROM cases").fetchone()[0])
         algo_count = int(conn.execute("SELECT COUNT(*) FROM algorithms").fetchone()[0])
 
-    assert case_count == 646
-    assert algo_count > 800
+    assert case_count == 950
+    assert algo_count > 2300
 
 
 def test_oll_formulas_seeded_from_oll_txt(tmp_path: Path) -> None:
@@ -270,7 +270,7 @@ def test_zbls_recognizer_matches_formula_start_state(tmp_path: Path) -> None:
     db_path = tmp_path / "cards.db"
     initialize_database(repo_root=repo_root, db_path=db_path)
 
-    formula = "F' U' F U R U R'"
+    formula = "(U2) R U' B U' B' R'"
     move_steps = FormulaConverter.convert_steps(formula, repeat=1)
     inverse_steps = FormulaConverter.invert_steps(move_steps)
     inverse_flat = [move for step in inverse_steps for move in step]
@@ -284,8 +284,8 @@ def test_zbls_recognizer_matches_formula_start_state(tmp_path: Path) -> None:
         expected_u_colors[(int(position[0]), int(position[1]), int(position[2]))] = colors[color_code]
 
     svg_dir = tmp_path / "recognizers" / "zbls" / "svg"
-    content = (svg_dir / "zbls_zbls_u02.svg").read_text(encoding="utf-8")
-    assert "recognizer:v1-zbls category=ZBLS case=ZBLS_U02" in content
+    content = (svg_dir / "zbls_zbls_conu1a02.svg").read_text(encoding="utf-8")
+    assert "recognizer:v1-zbls category=ZBLS case=ZBLS_CONU1A02" in content
     assert "recognizer:v4-fallback" not in content
 
     u_stickers = [

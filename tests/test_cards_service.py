@@ -81,7 +81,9 @@ def test_service_lists_data_driven_categories_and_zbls_cases(tmp_path: Path) -> 
     assert codes == ["F2L", "OLL", "ZBLS", "ZBLL", "PLL"]
 
     zbls_cases = service.list_cases(group="ZBLS")
-    assert [case["case_code"] for case in zbls_cases] == ["ZBLS_U01", "ZBLS_U02"]
+    assert len(zbls_cases) == 306
+    assert zbls_cases[0]["case_code"] == "ZBLS_CONU1A01"
+    assert zbls_cases[-1]["case_code"] == "ZBLS_CONF2L306"
     assert all(str(case.get("active_formula") or "").strip() for case in zbls_cases)
 
     zbll_cases = service.list_cases(group="ZBLL")
