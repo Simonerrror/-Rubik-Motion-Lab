@@ -37,6 +37,11 @@ def test_index_html_lazy_loads_runtime_scripts() -> None:
     assert "./app.js" in html_text
 
 
+def test_index_html_static_tabs_include_zbls_pilot_category() -> None:
+    html_text = INDEX_HTML.read_text(encoding="utf-8")
+    assert 'data-testid="tab-zbls"' in html_text
+
+
 def test_preview_tool_targets_preview_renderer_page() -> None:
     tool_text = PREVIEW_TOOL.read_text(encoding="utf-8")
     assert "preview-renderer.html" in tool_text

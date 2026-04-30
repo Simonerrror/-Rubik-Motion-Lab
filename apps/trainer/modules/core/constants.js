@@ -1,4 +1,4 @@
-export const GROUPS = ["F2L", "OLL", "PLL"];
+export const GROUPS = ["F2L", "OLL", "ZBLS", "PLL"];
 export const PROFILE_STORAGE_KEY = "cards_trainer_profile_v1";
 export const PROFILE_SCHEMA_VERSION = 1;
 export const CATALOG_SCHEMA_VERSION = "trainer-catalog-v2";
