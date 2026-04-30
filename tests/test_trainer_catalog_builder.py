@@ -29,12 +29,14 @@ def test_build_trainer_catalog_payload_is_complete_and_grouped(tmp_path: Path) -
     payload = _build_payload(tmp_path)
 
     assert payload["schema_version"] == SCHEMA_VERSION
-    assert payload["categories"] == ["F2L", "OLL", "ZBLS", "PLL"]
+    assert payload["categories"] == ["F2L", "OLL", "ZBLS", "ZBLL", "PLL"]
     assert payload["category_labels"]["ZBLS"] == "ZBLS"
+    assert payload["category_labels"]["ZBLL"] == "ZBLL"
 
     cases = payload["cases"]
     assert cases
-    assert {case["group"] for case in cases} == {"F2L", "OLL", "ZBLS", "PLL"}
+    assert {case["group"] for case in cases} == {"F2L", "OLL", "ZBLS", "ZBLL", "PLL"}
+    assert sum(1 for case in cases if case["group"] == "ZBLL") == 472
 
     for case in cases:
         assert case["case_key"]

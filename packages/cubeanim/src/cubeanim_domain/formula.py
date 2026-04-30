@@ -111,7 +111,7 @@ class FormulaConverter:
                 if i < length and formula[i] in "wW" and formula[start].upper() in cls._VALID_FACE_MOVES:
                     i += 1
 
-                if i < length and formula[i] in "'2":
+                if i < length and formula[i] in "'23":
                     i += 1
 
                 tokens.append(_Token(kind="MOVE", value=formula[start:i], start=start))
@@ -125,6 +125,8 @@ class FormulaConverter:
     def _split_move_modifier(move: str) -> tuple[str, str]:
         if move.endswith("2"):
             return move[:-1], "2"
+        if move.endswith("3"):
+            return move[:-1], "'"
         if move.endswith("'"):
             return move[:-1], "'"
         return move, ""

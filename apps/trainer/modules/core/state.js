@@ -40,7 +40,7 @@ import { DEFAULT_SANDBOX_PLAYBACK_CONFIG } from "./constants.js";
  * @property {"idle"|"loading"|"ready"|"error"} sandboxRuntimeStatus
  * @property {string|null} sandboxRuntimeError
  * @property {Promise<void>|null} sandboxRuntimePromise
- * @property {"F2L"|"OLL"|"ZBLS"|"PLL"} sandboxPreviewGroup
+ * @property {"F2L"|"OLL"|"ZBLS"|"ZBLL"|"PLL"} sandboxPreviewGroup
  * @property {number} sandboxStepIndex
  * @property {number} sandboxTimelineProgress
  * @property {number} sandboxCursorStepIndex

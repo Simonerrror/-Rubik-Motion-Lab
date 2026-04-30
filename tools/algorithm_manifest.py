@@ -57,7 +57,21 @@ def _normalize_formula(formula: str) -> str:
         .replace("`", "'")
         .replace("′", "'")
     )
+
+    def collapse_prime_run(match: re.Match[str]) -> str:
+        base = match.group(1)
+        count = len(match.group(2)) % 4
+        if count == 0:
+            return base
+        if count == 1:
+            return f"{base}'"
+        if count == 2:
+            return f"{base}2"
+        return base
+
+    normalized = re.sub(r"\b([URFDLBMESxyzrlfubd](?:w|W)?)(\'+)", collapse_prime_run, normalized)
     normalized = re.sub(r"2'+", "2", normalized)
+    normalized = re.sub(r"\b([URFDLBMESxyzrlfubd](?:w|W)?)3\b", r"\1'", normalized)
     normalized = re.sub(r"\)\s*(\d+)\b", r")^\1", normalized)
     return " ".join(normalized.split())
 
