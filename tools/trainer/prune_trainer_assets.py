@@ -11,6 +11,8 @@ CASE_CODE_PATTERNS: dict[str, re.Pattern[str]] = {
     "F2L": re.compile(r"^[BAE]\d{2}$"),
     "OLL": re.compile(r"^OLL_\d+$"),
     "PLL": re.compile(r"^PLL_\d+$"),
+    "ZBLL": re.compile(r"^ZBLL_[A-Z0-9]+$"),
+    "ZBLS": re.compile(r"^ZBLS_[A-Z0-9]+$"),
 }
 
 
@@ -46,6 +48,8 @@ def _validate_case_codes(cases: list[dict]) -> None:
         group = str(case.get("group") or "").strip().upper()
         case_code = str(case.get("case_code") or "").strip()
         pattern = CASE_CODE_PATTERNS.get(group)
+        if pattern is None and group:
+            pattern = re.compile(rf"^{re.escape(group)}_[A-Z0-9]+$")
         if pattern is None:
             invalid.append(f"{group}:{case_code}")
             continue

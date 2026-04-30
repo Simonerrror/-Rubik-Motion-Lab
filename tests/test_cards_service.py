@@ -72,6 +72,19 @@ def test_service_reference_sets(tmp_path: Path) -> None:
     assert reference_sets[0]["title"] == "Skip"
     assert any(item["title"] == "G-Perms" for item in reference_sets)
 
+
+def test_service_lists_data_driven_categories_and_zbls_cases(tmp_path: Path) -> None:
+    service = _build_service(tmp_path)
+
+    categories = service.list_categories(enabled_only=True)
+    codes = [item["code"] for item in categories]
+    assert codes == ["F2L", "OLL", "ZBLS", "PLL"]
+
+    zbls_cases = service.list_cases(group="ZBLS")
+    assert [case["case_code"] for case in zbls_cases] == ["ZBLS_U01", "ZBLS_U02"]
+    assert all(str(case.get("active_formula") or "").strip() for case in zbls_cases)
+
+
 def test_service_activate_does_not_reorder_algorithms(tmp_path: Path) -> None:
     service = _build_service(tmp_path)
 

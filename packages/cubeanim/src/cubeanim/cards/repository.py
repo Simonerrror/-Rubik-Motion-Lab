@@ -136,6 +136,27 @@ def list_algorithms(conn: sqlite3.Connection, group: str = "ALL") -> list[dict[s
     return [_algorithm_row_payload(row) for row in rows]
 
 
+def list_categories(conn: sqlite3.Connection, enabled_only: bool = True) -> list[dict[str, Any]]:
+    where = "WHERE enabled = 1" if enabled_only else ""
+    rows = conn.execute(
+        f"""
+        SELECT code, title, enabled, sort_order
+        FROM categories
+        {where}
+        ORDER BY sort_order ASC, code ASC
+        """
+    ).fetchall()
+    return [
+        {
+            "code": str(row["code"]),
+            "title": str(row["title"]),
+            "enabled": bool(row["enabled"]),
+            "sort_order": int(row["sort_order"]),
+        }
+        for row in rows
+    ]
+
+
 def get_algorithm(conn: sqlite3.Connection, algorithm_id: int) -> dict[str, Any] | None:
     row = conn.execute(
         """

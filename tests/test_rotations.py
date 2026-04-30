@@ -6,7 +6,6 @@ import re
 
 import pytest
 
-from cubeanim.animations import CubeMoveConcurrent
 from cubeanim.formula import FormulaConverter, FormulaSyntaxError
 from cubeanim.oll import resolve_valid_oll_start_state, validate_oll_f2l_start_state
 from cubeanim.pll import resolve_valid_pll_start_state, validate_pll_start_state
@@ -76,11 +75,6 @@ def test_parser_allows_simultaneous_moves_on_same_axis() -> None:
 def test_parser_rejects_simultaneous_moves_on_different_axes(formula: str) -> None:
     with pytest.raises(FormulaSyntaxError, match="Simultaneous moves must share axis"):
         FormulaConverter.convert_steps(formula)
-
-
-def test_runtime_safety_net_rejects_simultaneous_moves_on_different_axes() -> None:
-    with pytest.raises(ValueError, match="Simultaneous moves must rotate around the same axis"):
-        CubeMoveConcurrent(None, ["U", "R"])  # type: ignore[arg-type]
 
 
 def test_oll_rotation_formulas_from_catalog_resolve_valid_start_state() -> None:

@@ -32,7 +32,7 @@ from cubeanim_domain.sandbox import build_sandbox_timeline
 from tools.trainer.prune_trainer_assets import prune_trainer_assets
 
 
-GROUPS = ("F2L", "OLL", "PLL")
+DEFAULT_CATALOG_CATEGORIES = ("F2L", "OLL", "ZBLS", "PLL")
 SCHEMA_VERSION = "trainer-catalog-v2"
 
 
@@ -93,9 +93,20 @@ def _pick_active_algorithm_id(raw_case: dict[str, Any], algorithms: list[dict[st
 
 
 def build_catalog_payload(service: CardsService, *, base_catalog_url: str) -> dict[str, Any]:
+    category_rows = service.list_categories(enabled_only=True)
+    categories = [str(item["code"]).upper() for item in category_rows]
+    if not categories:
+        categories = list(DEFAULT_CATALOG_CATEGORIES)
+        category_rows = [{"code": code, "title": code} for code in categories]
+
+    category_labels = {
+        str(item["code"]).upper(): str(item.get("title") or item["code"])
+        for item in category_rows
+    }
+
     cases_out: list[dict[str, Any]] = []
 
-    for group in GROUPS:
+    for group in categories:
         raw_cases = service.list_cases(group=group)
         for raw_case in raw_cases:
             case_code = str(raw_case.get("case_code", "")).strip()
@@ -146,7 +157,8 @@ def build_catalog_payload(service: CardsService, *, base_catalog_url: str) -> di
     return {
         "schema_version": SCHEMA_VERSION,
         "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
-        "categories": list(GROUPS),
+        "categories": categories,
+        "category_labels": category_labels,
         "cases": cases_out,
     }
 

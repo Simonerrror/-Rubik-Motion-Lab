@@ -4,6 +4,7 @@ BEGIN;
 -- Categories
 INSERT INTO categories (code, title, enabled, sort_order) VALUES ('F2L', 'F2L', 1, 10) ON CONFLICT(code) DO UPDATE SET title=excluded.title, enabled=excluded.enabled, sort_order=excluded.sort_order;
 INSERT INTO categories (code, title, enabled, sort_order) VALUES ('OLL', 'OLL', 1, 20) ON CONFLICT(code) DO UPDATE SET title=excluded.title, enabled=excluded.enabled, sort_order=excluded.sort_order;
+INSERT INTO categories (code, title, enabled, sort_order) VALUES ('ZBLS', 'ZBLS', 1, 25) ON CONFLICT(code) DO UPDATE SET title=excluded.title, enabled=excluded.enabled, sort_order=excluded.sort_order;
 INSERT INTO categories (code, title, enabled, sort_order) VALUES ('PLL', 'PLL', 1, 30) ON CONFLICT(code) DO UPDATE SET title=excluded.title, enabled=excluded.enabled, sort_order=excluded.sort_order;
 
 -- Canonical F2L cases/algorithms
@@ -527,6 +528,20 @@ INSERT INTO canonical_cases (category_code, case_code, title, subgroup_title, ca
 INSERT INTO canonical_algorithms (canonical_case_id, name, formula, is_primary, sort_order) SELECT id, 'Ub', 'M2 U'' M U2 M'' U'' M2', 1, 1 FROM canonical_cases WHERE category_code='PLL' AND case_code='PLL_20' ON CONFLICT(canonical_case_id, name) DO UPDATE SET formula=excluded.formula, is_primary=excluded.is_primary, sort_order=excluded.sort_order;
 INSERT INTO canonical_cases (category_code, case_code, title, subgroup_title, case_number, probability_text, orientation_front, orientation_auf, sort_order) VALUES ('PLL', 'PLL_21', 'Z-perm', 'Edges Only', 21, '1/36', 'F', 0, 21) ON CONFLICT(category_code, case_code) DO UPDATE SET title=excluded.title, subgroup_title=excluded.subgroup_title, case_number=excluded.case_number, probability_text=excluded.probability_text, orientation_front=excluded.orientation_front, orientation_auf=excluded.orientation_auf, sort_order=excluded.sort_order;
 INSERT INTO canonical_algorithms (canonical_case_id, name, formula, is_primary, sort_order) SELECT id, 'Z', 'M2 U M2 U M'' U2 M2 U2 M'' U2', 1, 1 FROM canonical_cases WHERE category_code='PLL' AND case_code='PLL_21' ON CONFLICT(canonical_case_id, name) DO UPDATE SET formula=excluded.formula, is_primary=excluded.is_primary, sort_order=excluded.sort_order;
+
+-- Canonical ZBLS U pilot cases/algorithms
+-- BEGIN MANIFEST ZBLS_U_PILOT
+DELETE FROM canonical_algorithms
+WHERE canonical_case_id IN (
+  SELECT id FROM canonical_cases WHERE category_code = 'ZBLS'
+);
+DELETE FROM canonical_cases WHERE category_code = 'ZBLS';
+INSERT INTO canonical_cases (category_code, case_code, title, subgroup_title, case_number, probability_text, orientation_front, orientation_auf, sort_order) VALUES ('ZBLS', 'ZBLS_U01', 'ZBLS U #01', 'U', 1, 'Pilot-only slice; canonical probability metadata deferred.', 'F', 0, 1) ON CONFLICT(category_code, case_code) DO UPDATE SET title=excluded.title, subgroup_title=excluded.subgroup_title, case_number=excluded.case_number, probability_text=excluded.probability_text, orientation_front=excluded.orientation_front, orientation_auf=excluded.orientation_auf, sort_order=excluded.sort_order;
+INSERT INTO canonical_algorithms (canonical_case_id, name, formula, is_primary, sort_order) SELECT id, 'Main', 'R U R'' U'' R U R''', 1, 1 FROM canonical_cases WHERE category_code='ZBLS' AND case_code='ZBLS_U01' ON CONFLICT(canonical_case_id, name) DO UPDATE SET formula=excluded.formula, is_primary=excluded.is_primary, sort_order=excluded.sort_order;
+INSERT INTO canonical_algorithms (canonical_case_id, name, formula, is_primary, sort_order) SELECT id, 'Alt 1', 'y L'' U'' L U L'' U2 L', 0, 2 FROM canonical_cases WHERE category_code='ZBLS' AND case_code='ZBLS_U01' ON CONFLICT(canonical_case_id, name) DO UPDATE SET formula=excluded.formula, is_primary=excluded.is_primary, sort_order=excluded.sort_order;
+INSERT INTO canonical_cases (category_code, case_code, title, subgroup_title, case_number, probability_text, orientation_front, orientation_auf, sort_order) VALUES ('ZBLS', 'ZBLS_U02', 'ZBLS U #02', 'U', 2, 'Pilot-only slice; canonical probability metadata deferred.', 'F', 0, 2) ON CONFLICT(category_code, case_code) DO UPDATE SET title=excluded.title, subgroup_title=excluded.subgroup_title, case_number=excluded.case_number, probability_text=excluded.probability_text, orientation_front=excluded.orientation_front, orientation_auf=excluded.orientation_auf, sort_order=excluded.sort_order;
+INSERT INTO canonical_algorithms (canonical_case_id, name, formula, is_primary, sort_order) SELECT id, 'Main', 'F'' U'' F U R U R''', 1, 1 FROM canonical_cases WHERE category_code='ZBLS' AND case_code='ZBLS_U02' ON CONFLICT(canonical_case_id, name) DO UPDATE SET formula=excluded.formula, is_primary=excluded.is_primary, sort_order=excluded.sort_order;
+-- END MANIFEST ZBLS_U_PILOT
 
 -- Reference PLL probability tables
 INSERT INTO reference_case_sets (category_code, set_code, title, sort_order) VALUES ('PLL', 'skip', 'Skip', 0) ON CONFLICT(category_code, set_code) DO UPDATE SET title=excluded.title, sort_order=excluded.sort_order;
