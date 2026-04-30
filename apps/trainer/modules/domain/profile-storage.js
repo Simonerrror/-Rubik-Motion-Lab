@@ -134,7 +134,7 @@ export function mergeProfile(base, incoming) {
 }
 
 export function loadProgressSortMap() {
-  const defaults = { F2L: false, OLL: false, PLL: false };
+  const defaults = Object.fromEntries(GROUPS.map((group) => [group, false]));
   try {
     const raw = localStorage.getItem(PROGRESS_SORT_STORAGE_KEY);
     if (!raw) return defaults;

@@ -52,10 +52,11 @@ function currentCase() {
 
 function normalizePreviewGroup(group) {
   const normalized = String(group || "").toUpperCase();
-  if (normalized === "F2L" || normalized === "OLL" || normalized === "PLL") {
+  const categories = catalogCategories();
+  if (categories.includes(normalized)) {
     return normalized;
   }
-  return "PLL";
+  return categories[0] || "PLL";
 }
 
 function catalogCategories() {
