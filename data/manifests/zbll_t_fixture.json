@@ -1,0 +1,49 @@
+{
+  "manifest_version": 1,
+  "category": "ZBLL",
+  "subset": "T",
+  "source": {
+    "title": "SpeedCubeDB ZBLL T quarantine fixture",
+    "url": "https://speedcubedb.com/a/3x3/ZBLLT/ZBLL_T_37",
+    "retrieved_at": "2026-04-30",
+    "license": "Unspecified on source pages; attribution preserved, legal review pending before broad distribution.",
+    "notes": "Quarantine fixture for parser and timeline validation only. Source pages reviewed: ZBLL_T_37 and ZBLL_T_46 on SpeedCubeDB; formulas normalized to repository notation (e.g. U2' -> U2). Do not generate seed/runtime content from this manifest without explicit reuse approval."
+  },
+  "cases": [
+    {
+      "case_code": "ZBLL_T37",
+      "display_title": "ZBLL T #37",
+      "subset": "T",
+      "sort_order": 37,
+      "recognition_notes": "Pilot case imported from SpeedCubeDB T37 page.",
+      "probability_notes": "Subset pilot only; canonical ZBLL probability metadata deferred.",
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "R U R' U' L' U2' R U R' U2' L R U' R' y'",
+          "primary": true
+        },
+        {
+          "name": "Alt 1",
+          "formula": "y R' U2 R2 U R2 U R F' R U2 R' U2 R' F R",
+          "primary": false
+        }
+      ]
+    },
+    {
+      "case_code": "ZBLL_T46",
+      "display_title": "ZBLL T #46",
+      "subset": "T",
+      "sort_order": 46,
+      "recognition_notes": "Pilot case imported from SpeedCubeDB T46 page.",
+      "probability_notes": "Subset pilot only; canonical ZBLL probability metadata deferred.",
+      "algorithms": [
+        {
+          "name": "Main",
+          "formula": "R U' R' U' R U2' R' U2' R' D' R U' R' D R",
+          "primary": true
+        }
+      ]
+    }
+  ]
+}
