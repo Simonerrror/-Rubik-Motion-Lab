@@ -53,3 +53,40 @@ def test_prune_trainer_assets_rejects_invalid_case_codes(tmp_path: Path) -> None
 
     with pytest.raises(ValueError, match="Invalid case codes"):
         prune_trainer_assets(catalog_path=catalog_path, assets_dir=assets_dir)
+
+
+def test_prune_trainer_assets_accepts_zbls_and_future_prefixed_codes(tmp_path: Path) -> None:
+    catalog_path = tmp_path / "catalog-v2.json"
+    assets_dir = tmp_path / "assets"
+
+    keep_zbls = assets_dir / "recognizers" / "zbls" / "svg" / "zbls_zbls_u01.svg"
+    keep_zbll = assets_dir / "recognizers" / "zbll" / "svg" / "zbll_zbll_t1.svg"
+    drop = assets_dir / "recognizers" / "zbls" / "svg" / "zbls_extra.svg"
+    keep_zbls.parent.mkdir(parents=True, exist_ok=True)
+    keep_zbll.parent.mkdir(parents=True, exist_ok=True)
+    keep_zbls.write_text("<svg/>", encoding="utf-8")
+    keep_zbll.write_text("<svg/>", encoding="utf-8")
+    drop.write_text("<svg/>", encoding="utf-8")
+
+    payload = {
+        "cases": [
+            {
+                "group": "ZBLS",
+                "case_code": "ZBLS_U01",
+                "recognizer_url": "./assets/recognizers/zbls/svg/zbls_zbls_u01.svg",
+            },
+            {
+                "group": "ZBLL",
+                "case_code": "ZBLL_T1",
+                "recognizer_url": "./assets/recognizers/zbll/svg/zbll_zbll_t1.svg",
+            },
+        ]
+    }
+    catalog_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    stats = prune_trainer_assets(catalog_path=catalog_path, assets_dir=assets_dir)
+    assert stats["kept_count"] == 2
+    assert stats["removed_count"] == 1
+    assert keep_zbls.exists()
+    assert keep_zbll.exists()
+    assert not drop.exists()

@@ -1,11 +1,18 @@
 {
   "schema_version": "trainer-catalog-v2",
-  "generated_at": "2026-03-13T09:49:58+00:00",
+  "generated_at": "2026-04-30T15:42:50+00:00",
   "categories": [
     "F2L",
     "OLL",
+    "ZBLS",
     "PLL"
   ],
+  "category_labels": {
+    "F2L": "F2L",
+    "OLL": "OLL",
+    "ZBLS": "ZBLS",
+    "PLL": "PLL"
+  },
   "cases": [
     {
       "case_key": "F2L:B01",
@@ -4328,6 +4335,55 @@
           "id": "OLL:OLL_38:algo:48",
           "name": "OLL_38",
           "formula": "(R U R' U) (R U' R' U') (R' F R F')",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "ZBLS:ZBLS_U01",
+      "group": "ZBLS",
+      "case_code": "ZBLS_U01",
+      "title": "ZBLS U #01",
+      "subgroup_title": "U",
+      "case_number": 1,
+      "probability_text": "Pilot-only slice; canonical probability metadata deferred.",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/zbls/svg/zbls_zbls_u01.svg",
+      "active_algorithm_id": "ZBLS:ZBLS_U01:algo:29025",
+      "algorithms": [
+        {
+          "id": "ZBLS:ZBLS_U01:algo:29025",
+          "name": "Main",
+          "formula": "R U R' U' R U R'",
+          "is_custom": false,
+          "status": "NEW"
+        },
+        {
+          "id": "ZBLS:ZBLS_U01:algo:29026",
+          "name": "Alt 1",
+          "formula": "y L' U' L U L' U2 L",
+          "is_custom": false,
+          "status": "NEW"
+        }
+      ]
+    },
+    {
+      "case_key": "ZBLS:ZBLS_U02",
+      "group": "ZBLS",
+      "case_code": "ZBLS_U02",
+      "title": "ZBLS U #02",
+      "subgroup_title": "U",
+      "case_number": 2,
+      "probability_text": "Pilot-only slice; canonical probability metadata deferred.",
+      "status": "NEW",
+      "recognizer_url": "./assets/recognizers/zbls/svg/zbls_zbls_u02.svg",
+      "active_algorithm_id": "ZBLS:ZBLS_U02:algo:29027",
+      "algorithms": [
+        {
+          "id": "ZBLS:ZBLS_U02:algo:29027",
+          "name": "Main",
+          "formula": "F' U' F U R U R'",
           "is_custom": false,
           "status": "NEW"
         }

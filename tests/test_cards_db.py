@@ -44,8 +44,8 @@ def test_initialize_database_is_idempotent(tmp_path: Path) -> None:
         case_count = int(conn.execute("SELECT COUNT(*) FROM cases").fetchone()[0])
         algo_count = int(conn.execute("SELECT COUNT(*) FROM algorithms").fetchone()[0])
 
-    assert case_count == 172
-    assert algo_count == 337
+    assert case_count == 174
+    assert algo_count == 340
 
 
 def test_progress_status_update_roundtrip(tmp_path: Path) -> None:
@@ -110,10 +110,16 @@ def test_canonical_seed_tables_are_complete(tmp_path: Path) -> None:
                 """
             ).fetchone()[0]
         )
+        zbls_cases = int(
+            conn.execute(
+                "SELECT COUNT(*) FROM canonical_cases WHERE category_code = 'ZBLS'"
+            ).fetchone()[0]
+        )
 
-    assert canonical_case_count == 172
-    assert canonical_algo_count == 337
+    assert canonical_case_count == 174
+    assert canonical_algo_count == 340
     assert oll_nonempty == 57
+    assert zbls_cases == 2
 
 
 def test_initialize_database_does_not_require_legacy_txt_sources(tmp_path: Path) -> None:
@@ -131,8 +137,8 @@ def test_initialize_database_does_not_require_legacy_txt_sources(tmp_path: Path)
         case_count = int(conn.execute("SELECT COUNT(*) FROM cases").fetchone()[0])
         algo_count = int(conn.execute("SELECT COUNT(*) FROM algorithms").fetchone()[0])
 
-    assert case_count == 172
-    assert algo_count == 337
+    assert case_count == 174
+    assert algo_count == 340
 
 
 def test_oll_formulas_seeded_from_oll_txt(tmp_path: Path) -> None:

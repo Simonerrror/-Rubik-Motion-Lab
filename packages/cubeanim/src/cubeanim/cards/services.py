@@ -16,8 +16,6 @@ from cubeanim.cards.db import (
 from cubeanim.cards.recognizer import ensure_recognizer_assets
 from cubeanim_domain.sandbox import build_sandbox_timeline
 
-GROUPS = {"F2L", "OLL", "PLL"}
-
 
 @dataclass
 class CardsService:
@@ -50,17 +48,33 @@ class CardsService:
         self.db_path = path
         return {"db_path": str(path)}
 
+    def list_categories(self, *, enabled_only: bool = True) -> list[dict[str, Any]]:
+        with connect(self.db_path) as conn:
+            return repository.list_categories(conn, enabled_only=enabled_only)
+
+    def _known_category_codes(self) -> set[str]:
+        return {item["code"] for item in self.list_categories(enabled_only=True)}
+
+    @staticmethod
+    def _normalize_group_name(value: str, field: str) -> str:
+        normalized = value.strip().upper()
+        if not normalized:
+            raise ValueError(f"{field} must be non-empty")
+        return normalized
+
     def list_reference_sets(self, category: str) -> list[dict[str, Any]]:
-        normalized = category.strip().upper()
-        if normalized not in GROUPS:
-            raise ValueError(f"category must be one of {sorted(GROUPS)}")
+        normalized = self._normalize_group_name(category, "category")
+        known_codes = self._known_category_codes()
+        if normalized not in known_codes:
+            raise ValueError(f"category must be one of {sorted(known_codes)}")
         with connect(self.db_path) as conn:
             return repository.list_reference_sets(conn, category=normalized)
 
     def list_cases(self, group: str) -> list[dict[str, Any]]:
-        normalized = group.strip().upper()
-        if normalized not in GROUPS:
-            raise ValueError(f"group must be one of {sorted(GROUPS)}")
+        normalized = self._normalize_group_name(group, "group")
+        known_codes = self._known_category_codes()
+        if normalized not in known_codes:
+            raise ValueError(f"group must be one of {sorted(known_codes)}")
         with connect(self.db_path) as conn:
             rows = repository.list_cases(conn, group=normalized)
             return [self._decorate_case(row) for row in rows]
@@ -232,9 +246,7 @@ class CardsService:
 
     @classmethod
     def _validate_formula_for_group(cls, formula: str, group: str) -> None:
-        normalized_group = group.strip().upper()
-        if normalized_group not in GROUPS:
-            raise ValueError(f"group must be one of {sorted(GROUPS)}")
+        normalized_group = cls._normalize_group_name(group, "group")
         normalized_formula = cls._normalize_formula(formula)
         if not normalized_formula:
             raise ValueError("Formula is empty")

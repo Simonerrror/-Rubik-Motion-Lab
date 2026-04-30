@@ -8,7 +8,6 @@ from cubeanim_domain.oll import resolve_valid_oll_start_state, validate_oll_f2l_
 from cubeanim_domain.pll import resolve_valid_pll_start_state
 from cubeanim_domain.state import state_slots_metadata, state_string_after_moves, state_string_from_moves
 
-_SUPPORTED_GROUPS = {"F2L", "OLL", "PLL"}
 _AUTO_MERGE_UD_PAIRS = {
     ("U", "D'"),
     ("D'", "U"),
@@ -45,8 +44,8 @@ def _resolve_initial_state(group: str, inverse_moves: list[str]) -> str:
 
 def resolve_start_state(group: str, inverse_moves: list[str]) -> str:
     normalized_group = group.strip().upper()
-    if normalized_group not in _SUPPORTED_GROUPS:
-        raise ValueError(f"group must be one of {sorted(_SUPPORTED_GROUPS)}")
+    if not normalized_group:
+        raise ValueError("group must be non-empty")
     return _resolve_initial_state(normalized_group, inverse_moves)
 
 
@@ -82,8 +81,8 @@ def _merge_parallel_ud_steps(move_steps: list[list[str]]) -> list[list[str]]:
 
 def build_sandbox_timeline(formula: str, group: str) -> SandboxTimeline:
     normalized_group = group.strip().upper()
-    if normalized_group not in _SUPPORTED_GROUPS:
-        raise ValueError(f"group must be one of {sorted(_SUPPORTED_GROUPS)}")
+    if not normalized_group:
+        raise ValueError("group must be non-empty")
 
     normalized_formula = _normalize_formula(formula)
     if not normalized_formula:
