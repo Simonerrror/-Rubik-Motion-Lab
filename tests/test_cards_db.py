@@ -9,6 +9,7 @@ from cubeanim.formula import FormulaConverter
 from cubeanim.cards.db import connect, initialize_database, reset_runtime_state
 from cubeanim.cards.services import CardsService
 from cubeanim.oll import resolve_valid_oll_start_state, validate_oll_f2l_start_state
+from cubeanim.palette import CONTRAST_SAFE_CUBE_COLORS, FACE_ORDER
 from cubeanim.pll import balance_pll_formula_rotations
 from cubeanim.state import state_slots_metadata, state_string_from_moves
 
@@ -256,6 +257,41 @@ def test_f2l_recognizer_version_marker(tmp_path: Path) -> None:
     content = (svg_dir / "f2l_b01.svg").read_text(encoding="utf-8")
     assert "recognizer:v11-f2l category=F2L case=B01" in content
     assert "recognizer:v4-fallback" not in content
+
+
+def test_zbls_recognizer_matches_formula_start_state(tmp_path: Path) -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    db_path = tmp_path / "cards.db"
+    initialize_database(repo_root=repo_root, db_path=db_path)
+
+    formula = "F' U' F U R U R'"
+    move_steps = FormulaConverter.convert_steps(formula, repeat=1)
+    inverse_steps = FormulaConverter.invert_steps(move_steps)
+    inverse_flat = [move for step in inverse_steps for move in step]
+    start_state = state_string_from_moves(inverse_flat)
+    colors = dict(zip(FACE_ORDER, CONTRAST_SAFE_CUBE_COLORS, strict=True))
+
+    expected_u_colors: dict[tuple[int, int, int], str] = {}
+    for (position, face), color_code in zip(state_slots_metadata(), start_state, strict=True):
+        if face != "U":
+            continue
+        expected_u_colors[(int(position[0]), int(position[1]), int(position[2]))] = colors[color_code]
+
+    svg_dir = tmp_path / "recognizers" / "zbls" / "svg"
+    content = (svg_dir / "zbls_zbls_u02.svg").read_text(encoding="utf-8")
+    assert "recognizer:v1-zbls category=ZBLS case=ZBLS_U02" in content
+    assert "recognizer:v4-fallback" not in content
+
+    u_stickers = [
+        node
+        for node in _svg_polygon_nodes(content)
+        if node.attrib.get("data-layer") == "sticker" and node.attrib.get("data-face") == "U"
+    ]
+    assert len(u_stickers) == 9
+
+    for polygon in u_stickers:
+        pos = tuple(int(chunk) for chunk in str(polygon.attrib.get("data-pos", "")).split(","))
+        assert str(polygon.attrib.get("fill")) == expected_u_colors[pos]
 
 
 def test_f2l_recognizer_has_27_sticker_cells(tmp_path: Path) -> None:

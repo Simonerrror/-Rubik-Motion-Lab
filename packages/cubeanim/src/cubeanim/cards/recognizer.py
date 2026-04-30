@@ -409,17 +409,25 @@ def _state_color_by_face_and_pos(state: str) -> dict[tuple[str, tuple[int, int, 
     return lookup
 
 
-def _build_f2l_svg(case_code: str, formula: str) -> str:
+def _build_isometric_formula_svg(
+    *,
+    category: str,
+    case_code: str,
+    formula: str,
+    version: str,
+    mask_u_cubies: bool,
+) -> str:
     move_steps = FormulaConverter.convert_steps(formula, repeat=1)
     inverse_steps = FormulaConverter.invert_steps(move_steps)
     inverse_flat = [move for step in inverse_steps for move in step]
     start_state = state_string_from_moves(inverse_flat)
     color_by_face_and_pos = _state_color_by_face_and_pos(start_state)
     masked_positions: set[tuple[int, int, int]] = set()
-    for (position, _face), color_code in zip(state_slots_metadata(), start_state, strict=True):
-        if color_code != "U":
-            continue
-        masked_positions.add((int(position[0]), int(position[1]), int(position[2])))
+    if mask_u_cubies:
+        for (position, _face), color_code in zip(state_slots_metadata(), start_state, strict=True):
+            if color_code != "U":
+                continue
+            masked_positions.add((int(position[0]), int(position[1]), int(position[2])))
 
     colors = _face_color_map()
     stickerless_u = "#0B1220"
@@ -563,7 +571,7 @@ def _build_f2l_svg(case_code: str, formula: str) -> str:
     face_rank = {"U": 0, "F": 1, "R": 2}
     cells.sort(key=lambda item: (item[0], face_rank.get(item[1], 99), item[2]))
 
-    lines = _base_svg_lines(version="v11-f2l", category="F2L", case_code=case_code)
+    lines = _base_svg_lines(version=version, category=category, case_code=case_code)
     for _depth, face, pos, points in cells:
         pos_token = f"{pos[0]},{pos[1]},{pos[2]}"
         lines.append(
@@ -595,6 +603,26 @@ def _build_f2l_svg(case_code: str, formula: str) -> str:
 
     lines.append("</svg>")
     return "\n".join(lines)
+
+
+def _build_f2l_svg(case_code: str, formula: str) -> str:
+    return _build_isometric_formula_svg(
+        category="F2L",
+        case_code=case_code,
+        formula=formula,
+        version="v11-f2l",
+        mask_u_cubies=True,
+    )
+
+
+def _build_zbls_svg(case_code: str, formula: str) -> str:
+    return _build_isometric_formula_svg(
+        category="ZBLS",
+        case_code=case_code,
+        formula=formula,
+        version="v1-zbls",
+        mask_u_cubies=False,
+    )
 
 
 def _build_fallback_svg(category: str, case_code: str) -> str:
@@ -650,6 +678,11 @@ def _build_svg(category: str, case_code: str, formula: str | None = None) -> str
     if category == "F2L" and normalized_formula:
         try:
             return _build_f2l_svg(case_code=case_code, formula=normalized_formula)
+        except Exception:
+            pass
+    if category == "ZBLS" and normalized_formula:
+        try:
+            return _build_zbls_svg(case_code=case_code, formula=normalized_formula)
         except Exception:
             pass
     if category == "PLL" and normalized_formula:
