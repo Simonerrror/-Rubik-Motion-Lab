@@ -16,6 +16,7 @@ for entry in (repo_root, package_src):
 from tools.algorithm_manifest import (
     normalize_manifest_payload,
     render_seed_sql_block,
+    validate_manifest_for_import,
     validate_manifest_governance,
     validate_formulas_with_parser_and_timeline,
 )
@@ -23,6 +24,14 @@ from tools.algorithm_manifest import (
 
 def _load_manifest(name: str) -> dict:
     return json.loads((repo_root / "data" / "manifests" / name).read_text(encoding="utf-8"))
+
+
+def _zbls_payload_with_license(license_text: str) -> dict:
+    payload = _load_manifest("zbls_u_pilot.json")
+    source = dict(payload["source"])
+    source["license"] = license_text
+    payload["source"] = source
+    return payload
 
 
 def test_manifest_fixture_supports_required_fields() -> None:
@@ -58,10 +67,37 @@ def test_zbll_fixture_is_quarantined_until_source_license_is_explicit() -> None:
         validate_manifest_governance(manifest)
 
 
+def test_zbll_fixture_cannot_render_seed_sql_without_explicit_license() -> None:
+    payload = _load_manifest("zbll_t_fixture.json")
+    manifest = normalize_manifest_payload(payload)
+
+    with pytest.raises(ValueError, match="source.license"):
+        render_seed_sql_block(manifest, begin_marker="-- BEGIN TEST", end_marker="-- END TEST")
+
+
+@pytest.mark.parametrize(
+    "license_text,blocked_term",
+    [
+        ("Unknown", "unknown"),
+        ("Reuse basis unspecified by source", "unspecified"),
+        ("Pending legal review from owner", "pending legal review"),
+    ],
+)
+def test_zbls_manifest_rejects_uncertain_license_terms(license_text: str, blocked_term: str) -> None:
+    payload = _zbls_payload_with_license(license_text)
+    manifest = normalize_manifest_payload(payload)
+
+    with pytest.raises(ValueError, match="source.license"):
+        validate_manifest_governance(manifest)
+
+    with pytest.raises(ValueError, match=blocked_term):
+        validate_manifest_governance(manifest)
+
+
 def test_zbls_manifest_supports_required_fields_and_license_gate() -> None:
     payload = _load_manifest("zbls_u_pilot.json")
     manifest = normalize_manifest_payload(payload)
-    validate_manifest_governance(manifest)
+    validate_manifest_for_import(manifest)
 
     assert manifest.category == "ZBLS"
     assert manifest.subset == "U"
@@ -80,8 +116,7 @@ def test_zbls_manifest_supports_required_fields_and_license_gate() -> None:
 def test_zbls_manifest_formulas_validate_and_render_seed_sql() -> None:
     payload = _load_manifest("zbls_u_pilot.json")
     manifest = normalize_manifest_payload(payload)
-    validate_manifest_governance(manifest)
-    validate_formulas_with_parser_and_timeline(manifest)
+    validate_manifest_for_import(manifest)
 
     block = render_seed_sql_block(manifest, begin_marker="-- BEGIN TEST", end_marker="-- END TEST")
     assert block == render_seed_sql_block(manifest, begin_marker="-- BEGIN TEST", end_marker="-- END TEST")

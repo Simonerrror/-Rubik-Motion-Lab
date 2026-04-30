@@ -27,8 +27,7 @@ from cubeanim.formula import FormulaConverter
 from tools.algorithm_manifest import (
     normalize_manifest_payload,
     render_seed_sql_block,
-    validate_manifest_governance,
-    validate_formulas_with_parser_and_timeline,
+    validate_manifest_for_import,
 )
 
 DEFAULT_PDF_PATH = REPO_ROOT / "Best F2L Algorithms.pdf"
@@ -317,8 +316,7 @@ def read_yaml_json(path: Path) -> dict:
 
 def _generate_seed_sql(payload: dict) -> str:
     manifest = normalize_manifest_payload(payload)
-    validate_manifest_governance(manifest)
-    validate_formulas_with_parser_and_timeline(manifest)
+    validate_manifest_for_import(manifest)
     return render_seed_sql_block(manifest, begin_marker=BEGIN_MARKER, end_marker=END_MARKER)
 
 
@@ -335,8 +333,7 @@ def _replace_seed_block(seed_text: str, block: str) -> str:
 
 def validate_yaml_payload(payload: dict) -> None:
     manifest = normalize_manifest_payload(payload)
-    validate_manifest_governance(manifest)
-    validate_formulas_with_parser_and_timeline(manifest)
+    validate_manifest_for_import(manifest)
 
 
 def _build_canonical_payload_from_extraction(*, cases: list[dict], source_pdf_name: str) -> dict:
