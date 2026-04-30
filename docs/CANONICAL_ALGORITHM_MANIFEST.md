@@ -30,6 +30,7 @@ Repository-native manifests define canonical algorithm content before SQL seed g
   - timeline builder (`build_sandbox_timeline`)
 - SQL generation is deterministic from sorted case/algorithm order.
 - Seed/import flows call the pilot source-governance validator before formula validation.
+- `render_seed_sql_block(...)` enforces the governance gate for ZBLL/ZBLS so quarantined manifests cannot be rendered into import SQL.
 
 ## Source Governance (Pilot Gate)
 

@@ -256,12 +256,20 @@ def validate_formulas_with_parser_and_timeline(manifest: CanonicalAlgorithmManif
             build_sandbox_timeline(algorithm.formula, manifest.category)
 
 
+def validate_manifest_for_import(manifest: CanonicalAlgorithmManifest) -> None:
+    """Run mandatory checks before generating import artifacts."""
+    validate_manifest_governance(manifest)
+    validate_formulas_with_parser_and_timeline(manifest)
+
+
 def render_seed_sql_block(
     manifest: CanonicalAlgorithmManifest,
     *,
     begin_marker: str,
     end_marker: str,
 ) -> str:
+    validate_manifest_governance(manifest)
+
     category = manifest.category
     lines: list[str] = [
         begin_marker,
