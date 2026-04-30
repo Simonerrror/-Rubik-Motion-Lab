@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import re
 import shutil
@@ -123,9 +124,14 @@ def _run_layout_flow(page, base_url: str, is_mobile: bool) -> None:
     else:
         expect(page.locator("#sandbox-preview-image")).to_be_visible(timeout=10000)
 
-    for tab in ("tab-f2l", "tab-oll", "tab-pll"):
+    for tab in ("tab-f2l", "tab-oll", "tab-zbls", "tab-pll"):
         page.get_by_test_id(tab).click()
         expect(page.locator("[data-testid^='case-card-']").first).to_be_visible(timeout=10000)
+
+    page.get_by_test_id("tab-zbls").click()
+    expect(page.get_by_test_id("case-card-zbls-zbls-u01")).to_be_visible(timeout=10000)
+    page.get_by_test_id("tab-pll").click()
+    expect(page.locator("[data-testid^='case-card-']").first).to_be_visible(timeout=10000)
 
     _open_first_case(page, is_mobile=is_mobile)
     expect(page.locator("#sandbox-preview")).to_have_attribute("data-visible", "false", timeout=10000)
@@ -262,6 +268,8 @@ def test_cards_trainer_smoke_static_no_api(tmp_path: Path) -> None:
         assets_dir=trainer_out / "assets",
         base_catalog_url="./assets",
     )
+    catalog_payload = json.loads((trainer_out / "data" / "catalog-v2.json").read_text(encoding="utf-8"))
+    assert "ZBLS" in catalog_payload.get("categories", [])
 
     api_requests: list[str] = []
     page_errors: list[str] = []

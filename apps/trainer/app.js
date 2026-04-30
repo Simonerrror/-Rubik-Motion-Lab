@@ -22,7 +22,7 @@ import {
   preloadSandboxRuntime,
 } from "./modules/sandbox/runtime-loader.js";
 import { createSandboxStore } from "./modules/sandbox/store.js";
-import { setActiveTab, renderCatalog, syncProgressSortToggle } from "./modules/ui/catalog-view.js";
+import { renderCategoryTabs, setActiveTab, renderCatalog, syncProgressSortToggle } from "./modules/ui/catalog-view.js";
 import { createDetailsView } from "./modules/ui/details-view.js";
 import { createManualController } from "./modules/ui/manual-controller.js";
 import { createProfileModalController } from "./modules/ui/profile-modal-controller.js";
@@ -56,6 +56,12 @@ function normalizePreviewGroup(group) {
     return normalized;
   }
   return "PLL";
+}
+
+function catalogCategories() {
+  return Array.isArray(state.catalog?.categories)
+    ? state.catalog.categories.map((item) => String(item || "").trim().toUpperCase()).filter(Boolean)
+    : [];
 }
 
 function setSandboxPreviewGroup(group) {
@@ -375,11 +381,12 @@ async function init() {
     shell.init();
 
     state.catalog = await loadCatalogPayload();
-    if (state.catalog.categories.includes(state.category)) {
+    if (catalogCategories().includes(state.category)) {
       state.category = String(state.category);
     } else {
-      state.category = state.catalog.categories[0] || "PLL";
+      state.category = catalogCategories()[0] || "PLL";
     }
+    renderCategoryTabs(dom, state.catalog, state.category);
     setSandboxPreviewGroup(state.category);
     syncSandboxPreview({ visible: true });
 

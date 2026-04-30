@@ -1,5 +1,12 @@
 import { GROUPS } from "../core/constants.js";
 
+function allowedCategories(state) {
+  const categories = Array.isArray(state.catalog?.categories)
+    ? state.catalog.categories.map((item) => String(item || "").trim().toUpperCase()).filter(Boolean)
+    : [];
+  return categories.length ? categories : GROUPS;
+}
+
 /**
  * @param {Object} deps
  */
@@ -82,7 +89,7 @@ export function bindGlobalEvents(deps) {
       const target = event.currentTarget;
       if (!(target instanceof HTMLElement)) return;
       const category = String(target.dataset.category || "").toUpperCase();
-      if (!GROUPS.includes(category) || category === state.category) return;
+      if (!allowedCategories(state).includes(category) || category === state.category) return;
       state.category = category;
       state.activeCaseKey = null;
       state.activeCase = null;
