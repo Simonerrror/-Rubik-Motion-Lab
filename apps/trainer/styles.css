@@ -1007,8 +1007,24 @@ button.move-tile {
 .manual-modal {
   display: grid;
   place-items: center;
-  background: rgba(2, 8, 17, 0.64);
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  overflow: auto;
   z-index: 100;
+}
+
+.profile-modal::backdrop,
+.manual-modal::backdrop {
+  background: rgba(2, 8, 17, 0.64);
+  backdrop-filter: blur(6px);
 }
 
 .profile-modal.hidden,

@@ -5,6 +5,10 @@ export function createProfileModalController(deps) {
   const { dom, exportTrainerProfile, importTrainerProfile, mergeProfile, baseProfile, getProfile, applyProfile, showToast } = deps;
   let profileModalMode = "export";
 
+  function isDialog() {
+    return typeof HTMLDialogElement !== "undefined" && dom.profileModal instanceof HTMLDialogElement;
+  }
+
   function setMessage(message, isError = false) {
     if (!dom.profileMsg) return;
     dom.profileMsg.textContent = String(message || "");
@@ -12,12 +16,18 @@ export function createProfileModalController(deps) {
   }
 
   function close() {
+    if (isDialog() && dom.profileModal.open) {
+      dom.profileModal.close();
+    }
     dom.profileModal?.classList.add("hidden");
   }
 
   async function open(mode) {
     profileModalMode = mode;
     dom.profileModal?.classList.remove("hidden");
+    if (isDialog() && !dom.profileModal.open) {
+      dom.profileModal.showModal();
+    }
 
     if (mode === "export") {
       dom.profileApplyBtn.disabled = true;
@@ -83,6 +93,16 @@ export function createProfileModalController(deps) {
   function isOpen() {
     return Boolean(dom.profileModal && !dom.profileModal.classList.contains("hidden"));
   }
+
+  dom.profileModal?.addEventListener("close", () => {
+    if (isDialog() && dom.profileModal.open) return;
+    dom.profileModal?.classList.add("hidden");
+  });
+
+  dom.profileModal?.addEventListener("cancel", (event) => {
+    event.preventDefault();
+    close();
+  });
 
   return {
     get mode() {

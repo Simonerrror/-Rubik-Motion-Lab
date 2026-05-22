@@ -164,9 +164,9 @@
 
   <div class="toast" id="toast"></div>
 
-  <div id="profile-modal" class="profile-modal hidden">
+  <dialog id="profile-modal" class="profile-modal hidden" closedby="any" aria-labelledby="profile-modal-title">
     <div class="profile-modal-card">
-      <div class="profile-modal-head">Profile Transfer</div>
+      <div id="profile-modal-title" class="profile-modal-head">Profile Transfer</div>
       <textarea id="profile-data" class="profile-textarea" rows="8" placeholder="Base64URL code"></textarea>
       <div class="profile-actions">
         <button id="profile-apply-btn" class="trainer-btn" type="button">Apply</button>
@@ -175,10 +175,10 @@
       </div>
       <div id="profile-msg" class="profile-msg" aria-live="polite"></div>
     </div>
-  </div>
+  </dialog>
 
-  <div id="manual-modal" class="manual-modal hidden" aria-hidden="true">
-    <section class="manual-card" role="dialog" aria-modal="true" aria-labelledby="manual-title">
+  <dialog id="manual-modal" class="manual-modal hidden" closedby="any" aria-hidden="true" aria-labelledby="manual-title">
+    <section class="manual-card">
       <div class="manual-head">
         <div>
           <div class="manual-kicker">Bilingual Guide</div>
@@ -195,7 +195,7 @@
         <div id="manual-content" class="manual-content"></div>
       </div>
     </section>
-  </div>
+  </dialog>
 
   <script type="module" src="./app.js"></script>
 </body>

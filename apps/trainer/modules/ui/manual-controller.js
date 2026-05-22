@@ -19,9 +19,14 @@ export function createManualController(deps) {
   const { state, dom, shell, showToast } = deps;
   let contentPromise = null;
   let activeSectionId = "overview";
+  let suppressCloseHashUpdate = false;
 
   function availableLanguages() {
     return ["ru", "en"];
+  }
+
+  function isDialog() {
+    return typeof HTMLDialogElement !== "undefined" && dom.manualModal instanceof HTMLDialogElement;
   }
 
   function isOpen() {
@@ -164,6 +169,9 @@ export function createManualController(deps) {
       await ensureContent();
       render();
       dom.manualModal?.classList.remove("hidden");
+      if (isDialog() && !dom.manualModal.open) {
+        dom.manualModal.showModal();
+      }
       dom.manualModal?.setAttribute("aria-hidden", "false");
       shell.setSheet("manual");
       setActiveSection(sectionId || activeSectionId, { updateHash, scroll: true });
@@ -174,6 +182,10 @@ export function createManualController(deps) {
 
   function close(options = {}) {
     const { updateHash = true } = options;
+    suppressCloseHashUpdate = !updateHash;
+    if (isDialog() && dom.manualModal.open) {
+      dom.manualModal.close();
+    }
     dom.manualModal?.classList.add("hidden");
     dom.manualModal?.setAttribute("aria-hidden", "true");
     if (state.sheet === "manual") {
@@ -219,6 +231,22 @@ export function createManualController(deps) {
       if (event.target === dom.manualModal) {
         close({ updateHash: true });
       }
+    });
+    dom.manualModal?.addEventListener("cancel", (event) => {
+      event.preventDefault();
+      close({ updateHash: true });
+    });
+    dom.manualModal?.addEventListener("close", () => {
+      if (isDialog() && dom.manualModal.open) return;
+      dom.manualModal?.classList.add("hidden");
+      dom.manualModal?.setAttribute("aria-hidden", "true");
+      if (state.sheet === "manual") {
+        shell.setSheet("none");
+      }
+      if (!suppressCloseHashUpdate && parseManualHash()) {
+        clearHash();
+      }
+      suppressCloseHashUpdate = false;
     });
     window.addEventListener("hashchange", syncFromHash);
     syncFromHash();
